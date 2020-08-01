@@ -3957,7 +3957,7 @@ source(here("scripts", "save_results_to_csv_abssyn.R"))
 
 ```{r Beep}
 
-save.image(here("Analysis_temp_abssyn.RData"))
+save.image(here("data", "Analysis_temp_abssyn.RData"))
 
 beep()
 
