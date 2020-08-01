@@ -1,0 +1,144 @@
+---
+title: "Plant Distriutions"
+output: html_notebook
+---
+
+```{r Setup, include=FALSE}
+
+#load libraries
+library("here")
+library("data.table")
+library("beepr")
+library("tidyverse")
+
+#load data
+plant.occ <- fread(here("Data", "occurrences_species_yearly_mean_doy_pruned.csv"),
+                   stringsAsFactors = TRUE) %>%
+  filter(kingdom == "Plantae")%>%
+  filter(year >= 1950)
+
+```
+
+### Dataset structure:
+
+```{r Dataset structure}
+str(plant.occ)
+```
+
+
+## Taxonomic Distributions
+
+```{r Plot Order and family dist}
+
+#for order
+plant.count.order <- count(plant.occ, order)
+
+ggplot(plant.count.order) +
+  geom_col(aes(x = reorder(order, -n), y = n)) +
+  labs(x = "Order", 
+       y = "# of yearly mean DOYs",
+       title = "Order Distribution") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.ticks = element_line(colour = "gray31"),
+    axis.line = element_line(colour = "gray31"),
+    legend.position = "none",
+    panel.background = element_blank(),
+    panel.grid.major = element_blank())
+
+#for family
+plant.count.family <- count(plant.occ, family)
+
+ggplot(plant.count.family) +
+  geom_col(aes(x = reorder(family, -n), y = n)) +
+  labs(x = "Family", 
+       y = "# of yearly mean DOYs",
+       title = "Family Distribution") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.ticks = element_line(colour = "gray31"),
+    axis.line = element_line(colour = "gray31"),
+    legend.position = "none",
+    panel.background = element_blank(),
+    panel.grid.major = element_blank())
+
+
+```
+
+## Plant trait distributions
+
+```{r Plot trait distributions}
+
+#generate vector of every single occurrence of a habitat
+habs <- as.character(plant.occ$Habitat) %>% 
+  str_split(", ", simplify = TRUE )%>%
+  str_c(sep = ", ") %>%
+  str_replace_na(replacement = "unknown") %>%
+  #exclude all empty fields
+  str_subset("^$", negate = TRUE)
+
+#generate list of all possible habitats
+hablist <- unique(habs)
+
+#initiate vector to hold numbers of Habitats
+count <- vector("numeric", length(hablist))
+
+#combine lists 
+hab.count <- as.data.frame(cbind(hablist, count), stringsAsFactors = FALSE) %>%
+  mutate(count = as.numeric(count))
+
+#count every occurrence of a habitat in the data
+for (i in hablist) {
+  
+  hab.count$count[hab.count$hablist == i] <- sum(str_detect(habs, as.character(i)))
+  
+}
+
+ggplot(hab.count) +
+  geom_col(aes(x = reorder(hablist, -count), y = count)) +
+  labs(x = "Habitat", 
+       y = "# of plant records from this habitat",
+       title = "Habitat Distribution") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.ticks = element_line(colour = "gray31"),
+    axis.line = element_line(colour = "gray31"),
+    legend.position = "none",
+    panel.background = element_blank(),
+    panel.grid.major = element_blank())
+
+
+```
+
+## Plant Trait Correletaions
+
+```{r Trait pairs}
+
+#convert all vectors to numeric for pairs and maybe PCA
+numericPlants <- select(plant.occ, species, year, doy, SciName, LifeForm, LifeSpan, FlDur, ReprType,
+       Dicliny, Dichogamy, SelfComp, PollVecGrp, BreedSys, FlowClass, Habitat, PollDep) %>% 
+  mutate_all(as.numeric) 
+
+#plot pairs
+pairs(x = numericPlants, 
+      upper.panel= NULL, # Only show the plots below diagonal
+      pch = 16, cex= 0.3, # Set point character type and size
+      cex.axis= 1.0)
+
+#record plot for saving as png
+traitPairs <- recordPlot()
+
+png(here("Plots", "Plant_trait_correlations.png"), width = 6000, height = 4000)
+
+print(traitPairs)
+
+dev.off()
+
+
+```
+
+
+```{r Beep, include=FALSE}
+beep()
+```
+
