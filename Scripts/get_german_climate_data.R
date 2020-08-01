@@ -1,5 +1,12 @@
+stop("This script is only for archiving purposes!
+     Running it again might result in slightly different
+     analysis results as the data for 2019
+     was not in its final state when the data was originally downloaded.
+     (see DWD documentation for difference between recent and historical data)")
+
 
 # Setup -------------------------------------------------------------------
+
 
 #load packages
 library("here")

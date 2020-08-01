@@ -125,8 +125,7 @@ res.figures <- append.df(name = "medianRecDecadal",
 # Slope numbers -----------------------------------------------------------
 
 # count yearly numbers, should all be the same for temp
-plapoll.count.year.slopes <- count(stat.spec.time, kingdom,
-                                   wt = n())
+plapoll.count.year.slopes <- count(stat.spec.time, kingdom)
 
 res.figures <- append.df(name = "nPlantSlopeYearly",
                          value = plapoll.count.year.slopes$n[2])

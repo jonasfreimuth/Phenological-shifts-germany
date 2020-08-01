@@ -429,7 +429,6 @@ dat.occ.dec %>%
     ci.min.doy = ci.min(doy),
     ci.max.doy = ci.max(doy),
     min.doy = min(doy),
-    mean.min.doy = 
     max.doy = max(doy),
     duration = max(doy) - min(doy),
     median.doy = median(doy),
