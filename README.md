@@ -2,8 +2,8 @@
 
 ## Setup
 
-* After downloading the repository, open the project in RStuio via ``Phenological-shifts-germany.Rproj`` in the main directory
-* renv should be automatically intalling
+* After downloading the repository, open the project in RStudio via ``Phenological-shifts-germany.Rproj`` in the main directory
+* renv should be automatically installing
 * to install all necessary packages, simply call ``renv::restore() ``
 
 ## The Code
