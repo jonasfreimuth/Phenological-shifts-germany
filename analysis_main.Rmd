@@ -3918,7 +3918,7 @@ analyse.trait(data = mutate(dat.occ.plant, meanFlMonth = floor((FlStart + FlEnd)
 ```{r Run Plot saving Script}
 
 #run script to save plots with different graphic parameters for publication
-source(here("Scripts", "save_plots_from_analysis_abssyn.R"))
+source(here("Scripts", "plot_results.R"))
 
 if (any(c("full", "all.spec") %in% opts)){
   
@@ -3951,7 +3951,7 @@ write.csv(dat.int.temp, here("Data", "pla_poll_interacions_temp.csv"),
           row.names = FALSE)
 
 # save all results to csv
-source(here("scripts", "save_results_to_csv_abssyn.R"))
+source(here("scripts", "save_results_to_csv.R"))
 
 ```
 
