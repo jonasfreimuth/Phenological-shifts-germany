@@ -1,3 +1,9 @@
+stop("This script was used to compile the gbif data sets used in the analysis.
+      Running it requires setting your GBIF credentials in some way (usually in .Renviron).
+      See help('Startup') or the rgbif documentation, especially rgbif::occ_download.
+      Running this script again will generate different downloads as there would have been changes in the 
+      data on GBIF since its been last run.")
+
 
 # Setup -------------------------------------------------------------------
 
@@ -31,44 +37,6 @@ n.keys.poll <- str_count(keys.poll, ",") + 1
 plant_traits <- read.csv(here("Data", "bioflor_traits.csv")) %>%
   mutate(species = as.character(species),
          SciName = as.character(AccName)) 
-
-# #add taxon keys for Accepted gbif species
-# plant_traits <- bind_cols(plant_traits,
-#                       bind_rows(
-#                         lapply(
-#                           get_gbifid_(plant_traits$SciName, messages = FALSE),
-#                           function(x) {
-#                             if (nrow(x) == 0) {data.frame(AccName = NA,
-#                                                           GbifKey = NA,
-#                                                           stringsAsFactors = FALSE)
-#                             } else {
-#                               data <- x[1, ]
-#                               if (anyNA(data$rank) | data$rank != "species") {
-#                                 data.frame(AccName = NA,
-#                                            GbifKey = NA,
-#                                            stringsAsFactors = FALSE)
-#                               } else if (data$status == "ACCEPTED") {
-#                                 data.frame(AccName = as.character(data$scientificname),
-#                                            GbifKey = as.character(data$usagekey),
-#                                            stringsAsFactors = FALSE)
-#                               } else if (any(data$status == "SYNONYM", data$status == "DOUBTFUL") &
-#                                          data$matchtype == "EXACT") {
-#                                 data.frame(AccName = as.character(name_usage(key = data$specieskey)$data$scientificName),
-#                                            GbifKey = as.character(data$specieskey),
-#                                            stringsAsFactors = FALSE)
-#                               } else {
-#                                 data.frame(AccName = NA,
-#                                            GbifKey = NA,
-#                                            stringsAsFactors = FALSE)
-#                               }
-#                             }
-#                           }
-#                         )))
-# 
-# plant_traits$species <- str_extract(plant_traits$AccName, "^\\w+\\s\\w+")
-# 
-# write.csv(plant_traits, here("Data", "bioflor_plant_traits.csv"), row.names = FALSE)
-
 
 #get taxon keys from species list
 keys.plant <- plant_traits %>%

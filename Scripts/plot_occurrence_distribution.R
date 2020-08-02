@@ -13,7 +13,8 @@ dir.check <- function(path) {
   # check if dir exists
   xist <- dir.exists(path)
   
-  parent <- str_sub(string = path, end = max(as.data.frame(str_locate_all(path, "/"))$end)-1)
+  # get parent directory (there might be a better way, right now it takes )
+  parent <- str_sub(string = path, end = str_locate(path, "/(?=\\w+$)")[1,2] - 1)
   
   # if yes stop and do nothing
   if(xist) {
@@ -49,6 +50,9 @@ col.group = c("Coleoptera" = "chartreuse",
               "Plants" = "darkgreen")
 
 # Load and prune data -----------------------------------------------------
+
+# pruning should go like in get_occurrence_data.R but is done extra here to preserve
+# institutions which get taken out there
 
 #load data
 dat.occ <- fread(
