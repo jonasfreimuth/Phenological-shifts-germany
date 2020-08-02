@@ -71,7 +71,7 @@ delete.occ.download <- TRUE
 # - data.quality.assesment: plots all occurrence records of plants and pollinators in one each
 #                           (not included in full, requires more than 8 GB of RAM (right now at least))
 # - species: plots yearly mean doys and regression for each species
-opts <- c("full")
+opts <- c()
 
 # #set max months of flowering threshold (redo pruning after changing)
 # thr.FlDur <- 12
