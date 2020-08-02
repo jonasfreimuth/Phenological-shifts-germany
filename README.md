@@ -1,5 +1,14 @@
 # Phenological-shifts-germany
 
+## Requirements
+
+### Software:
+* R 4.0 + 
+* RStudio 1.3 + (renv integration)
+
+### Hardware
+It might not work with less than 8 GB of RAM
+
 ## Setup
 
 * After downloading the repository, open the project in RStudio via ``Phenological-shifts-germany.Rproj`` in the main directory
