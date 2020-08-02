@@ -125,8 +125,7 @@ res.figures <- append.df(name = "medianRecDecadal",
 # Slope numbers -----------------------------------------------------------
 
 # count yearly numbers, should all be the same for temp
-plapoll.count.year.slopes <- count(stat.spec.time, kingdom,
-                                   wt = n())
+plapoll.count.year.slopes <- count(stat.spec.time, kingdom)
 
 res.figures <- append.df(name = "nPlantSlopeYearly",
                          value = plapoll.count.year.slopes$n[2])
@@ -281,12 +280,12 @@ res.figures <- append.df(name = "nSlopeLepTemp",
 #  Interaction figures ----------------------------------------------------
 
 res.figures <- append.df(name = "NIntHov",
-                         value = stat.int.meta$N.doy.diff.slope[1])
+                         value = stat.int.meta$N.synchrony.slope[1])
 res.figures <- append.df(name = "slopeIntHov",
-                         value = stat.int.meta$mean.doy.diff.slope[1],
+                         value = stat.int.meta$mean.synchrony.slope[1],
                          multiplier = 10)
 res.figures <- append.df(name = "slopeIntHovSE",
-                         value = stat.int.meta$se.doy.diff.slope[1],
+                         value = stat.int.meta$se.synchrony.slope[1],
                          multiplier = 10)
 res.figures <- append.df(name = "nPlaIntHov",
                          value = stat.int.meta$n.plant[1])
@@ -299,12 +298,12 @@ res.figures <- append.df(name = "revPointIntHov",
                          value = floor(stat.int.meta$xintercept[1]))
 
 res.figures <- append.df(name = "NIntBee",
-                         value = stat.int.meta$N.doy.diff.slope[2])
+                         value = stat.int.meta$N.synchrony.slope[2])
 res.figures <- append.df(name = "slopeIntBee",
-                         value = stat.int.meta$mean.doy.diff.slope[2],
+                         value = stat.int.meta$mean.synchrony.slope[2],
                          multiplier = 10)
 res.figures <- append.df(name = "slopeIntBeeSE",
-                         value = stat.int.meta$se.doy.diff.slope[2],
+                         value = stat.int.meta$se.synchrony.slope[2],
                          multiplier = 10)
 res.figures <- append.df(name = "nPlaIntBee",
                          value = stat.int.meta$n.plant[2])
@@ -314,12 +313,12 @@ res.figures <- append.df(name = "revPointIntBee",
                          value = floor(stat.int.meta$xintercept[2]))
 
 res.figures <- append.df(name = "NIntBut",
-                         value = stat.int.meta$N.doy.diff.slope[3])
+                         value = stat.int.meta$N.synchrony.slope[3])
 res.figures <- append.df(name = "slopeIntBut",
-                         value = stat.int.meta$mean.doy.diff.slope[3],
+                         value = stat.int.meta$mean.synchrony.slope[3],
                          multiplier = 10)
 res.figures <- append.df(name = "slopeIntButSE",
-                         value = stat.int.meta$se.doy.diff.slope[3],
+                         value = stat.int.meta$se.synchrony.slope[3],
                          multiplier = 10)
 res.figures <- append.df(name = "nPlaIntBut",
                          value = stat.int.meta$n.plant[3])
@@ -602,6 +601,155 @@ res.figures <- append.df(name = "earlfracSlopeBut",
 res.figures <- append.df(name = "earlfracSlopeAll",
                          value = eqs.ins.earl$slope[4],
                          multiplier = 10)
+
+
+# First, last, duration shifts --------------------------------------------
+
+# mean assymetry slopes [slopes should already be in days/decade]
+res.figures <- append.df(name = "slopePlaDiff",
+                         value = stat.spec.dur.meta$mean.slope.diff[5])
+res.figures <- append.df(name = "slopePlaDiffSe",
+                         value = stat.spec.dur.meta$se.slope.diff[5])
+res.figures <- append.df(name = "nSlopePlaDiff",
+                         value = stat.spec.dur.meta$n.slope.diff[5])
+
+res.figures <- append.df(name = "slopeColDiff",
+                         value = stat.spec.dur.meta$mean.slope.diff[1])
+res.figures <- append.df(name = "slopeColDiffSe",
+                         value = stat.spec.dur.meta$se.slope.diff[1])
+res.figures <- append.df(name = "nSlopeColDiff",
+                         value = stat.spec.dur.meta$n.slope.diff[1])
+
+res.figures <- append.df(name = "slopeDipDiff",
+                         value = stat.spec.dur.meta$mean.slope.diff[2])
+res.figures <- append.df(name = "slopeDipDiffSe",
+                         value = stat.spec.dur.meta$se.slope.diff[2])
+res.figures <- append.df(name = "nSlopeDipDiff",
+                         value = stat.spec.dur.meta$n.slope.diff[2])
+
+res.figures <- append.df(name = "slopeHymDiff",
+                         value = stat.spec.dur.meta$mean.slope.diff[3])
+res.figures <- append.df(name = "slopeHymDiffSe",
+                         value = stat.spec.dur.meta$se.slope.diff[3])
+res.figures <- append.df(name = "nSlopeHymDiff",
+                         value = stat.spec.dur.meta$n.slope.diff[3])
+
+res.figures <- append.df(name = "slopeLepDiff",
+                         value = stat.spec.dur.meta$mean.slope.diff[4])
+res.figures <- append.df(name = "slopeLepDiffSe",
+                         value = stat.spec.dur.meta$se.slope.diff[4])
+res.figures <- append.df(name = "nSlopeLepDiff",
+                         value = stat.spec.dur.meta$n.slope.diff[4])
+
+# duration slopes
+res.figures <- append.df(name = "slopePlaDur",
+                         value = stat.spec.dur.meta$mean.slope[5])
+res.figures <- append.df(name = "slopePlaDurSe",
+                         value = stat.spec.dur.meta$se.slope[5])
+res.figures <- append.df(name = "nSlopePlaDur",
+                         value = stat.spec.dur.meta$n.slope[5])
+
+res.figures <- append.df(name = "slopeColDur",
+                         value = stat.spec.dur.meta$mean.slope[1])
+res.figures <- append.df(name = "slopeColDurSe",
+                         value = stat.spec.dur.meta$se.slope[1])
+res.figures <- append.df(name = "nSlopeColDur",
+                         value = stat.spec.dur.meta$n.slope[1])
+
+res.figures <- append.df(name = "slopeDipDur",
+                         value = stat.spec.dur.meta$mean.slope[2])
+res.figures <- append.df(name = "slopeDipDurSe",
+                         value = stat.spec.dur.meta$se.slope[2])
+res.figures <- append.df(name = "nSlopeDipDur",
+                         value = stat.spec.dur.meta$n.slope[2])
+
+res.figures <- append.df(name = "slopeHymDur",
+                         value = stat.spec.dur.meta$mean.slope[3])
+res.figures <- append.df(name = "slopeHymDurSe",
+                         value = stat.spec.dur.meta$se.slope[3])
+res.figures <- append.df(name = "nSlopeHymDur",
+                         value = stat.spec.dur.meta$n.slope[3])
+
+res.figures <- append.df(name = "slopeLepDur",
+                         value = stat.spec.dur.meta$mean.slope[4])
+res.figures <- append.df(name = "slopeLepDurSe",
+                         value = stat.spec.dur.meta$se.slope[4])
+res.figures <- append.df(name = "nSlopeLepDur",
+                         value = stat.spec.dur.meta$n.slope[4])
+
+# first occurrence slopes
+res.figures <- append.df(name = "slopePlaFirst",
+                         value = stat.spec.dur.meta$mean.slope.first[5])
+res.figures <- append.df(name = "slopePlaFirstSe",
+                         value = stat.spec.dur.meta$se.slope.first[5])
+res.figures <- append.df(name = "nSlopePlaFirst",
+                         value = stat.spec.dur.meta$n.slope.first[5])
+
+res.figures <- append.df(name = "slopeColFirst",
+                         value = stat.spec.dur.meta$mean.slope.first[1])
+res.figures <- append.df(name = "slopeColFirstSe",
+                         value = stat.spec.dur.meta$se.slope.first[1])
+res.figures <- append.df(name = "nSlopeColFirst",
+                         value = stat.spec.dur.meta$n.slope.first[1])
+
+res.figures <- append.df(name = "slopeDipFirst",
+                         value = stat.spec.dur.meta$mean.slope.first[2])
+res.figures <- append.df(name = "slopeDipFirstSe",
+                         value = stat.spec.dur.meta$se.slope.first[2])
+res.figures <- append.df(name = "nSlopeDipFirst",
+                         value = stat.spec.dur.meta$n.slope.first[2])
+
+res.figures <- append.df(name = "slopeHymFirst",
+                         value = stat.spec.dur.meta$mean.slope.first[3])
+res.figures <- append.df(name = "slopeHymFirstSe",
+                         value = stat.spec.dur.meta$se.slope.first[3])
+res.figures <- append.df(name = "nSlopeHymFirst",
+                         value = stat.spec.dur.meta$n.slope.first[3])
+
+res.figures <- append.df(name = "slopeLepFirst",
+                         value = stat.spec.dur.meta$mean.slope.first[4])
+res.figures <- append.df(name = "slopeLepFirstSe",
+                         value = stat.spec.dur.meta$se.slope.first[4])
+res.figures <- append.df(name = "nSlopeLepFirst",
+                         value = stat.spec.dur.meta$n.slope.first[4])
+
+# last occurrence slopes
+res.figures <- append.df(name = "slopePlaLast",
+                         value = stat.spec.dur.meta$mean.slope.last[5])
+res.figures <- append.df(name = "slopePlaLastSe",
+                         value = stat.spec.dur.meta$se.slope.last[5])
+res.figures <- append.df(name = "nSlopePlaLast",
+                         value = stat.spec.dur.meta$n.slope.last[5])
+
+res.figures <- append.df(name = "slopeColLast",
+                         value = stat.spec.dur.meta$mean.slope.last[1])
+res.figures <- append.df(name = "slopeColLastSe",
+                         value = stat.spec.dur.meta$se.slope.last[1])
+res.figures <- append.df(name = "nSlopeColLast",
+                         value = stat.spec.dur.meta$n.slope.last[1])
+
+res.figures <- append.df(name = "slopeDipLast",
+                         value = stat.spec.dur.meta$mean.slope.last[2])
+res.figures <- append.df(name = "slopeDipLastSe",
+                         value = stat.spec.dur.meta$se.slope.last[2])
+res.figures <- append.df(name = "nSlopeDipLast",
+                         value = stat.spec.dur.meta$n.slope.last[2])
+
+res.figures <- append.df(name = "slopeHymLast",
+                         value = stat.spec.dur.meta$mean.slope.last[3])
+res.figures <- append.df(name = "slopeHymLastSe",
+                         value = stat.spec.dur.meta$se.slope.last[3])
+res.figures <- append.df(name = "nSlopeHymLast",
+                         value = stat.spec.dur.meta$n.slope.last[3])
+
+res.figures <- append.df(name = "slopeLepLast",
+                         value = stat.spec.dur.meta$mean.slope.last[4])
+res.figures <- append.df(name = "slopeLepLastSe",
+                         value = stat.spec.dur.meta$se.slope.last[4])
+res.figures <- append.df(name = "nSlopeLepLast",
+                         value = stat.spec.dur.meta$n.slope.last[4])
+
+
 
 # Save data to csv --------------------------------------------------------
 

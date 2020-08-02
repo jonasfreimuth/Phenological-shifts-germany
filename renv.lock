@@ -884,6 +884,13 @@
       "Repository": "CRAN",
       "Hash": "21c0d9d281ed32837b26551dc6f72339"
     },
+    "rgdal": {
+      "Package": "rgdal",
+      "Version": "1.5-12",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "016465080382049b80e24de145c62474"
+    },
     "rgeos": {
       "Package": "rgeos",
       "Version": "0.5-3",
