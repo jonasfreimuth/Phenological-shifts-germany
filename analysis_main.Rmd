@@ -53,6 +53,12 @@ force.pruning <- FALSE
 # really impatient)
 force.averaging <- FALSE
 
+# keep raw occurrence files from download? 
+# enabling this will retain the huge files downloaded from gbif containing raw occurrence data
+# useful when working on that part of the get_occurrence_data script, so you don't have to download
+#   everything again. All the files take up about 22 GB when kept.
+delete.occ.download <- TRUE
+
 # give level of addtional plots
 # full -> do everything
 # base -> only base analysis (or just leave it blank for now)

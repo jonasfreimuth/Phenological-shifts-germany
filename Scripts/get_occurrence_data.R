@@ -103,6 +103,13 @@ if (run.occ.refine) {
       # remove the zip file
       file.remove(here("download", paste0(k, ".zip")))
       
+      # if not disabled, also remove occurrence txt file again
+      if (delete.occ.download) {
+        
+        file.remove(here("download", paste0("occurrence_", k, ".txt")))
+        
+      }
+      
       # create/overwrite the file for download status
       sink(here("data", "download_ran.txt"))
       
