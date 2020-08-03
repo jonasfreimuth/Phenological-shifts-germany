@@ -6,7 +6,7 @@
 * R 4.0 + 
 * RStudio 1.3 + (renv integration)
 
-### Hardware
+### Hardware:
 It might not work with less than 8 GB of RAM
 
 ## Setup
