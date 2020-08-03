@@ -303,25 +303,6 @@ if (run.pruning |
     fwrite(here("data", "pruned_occ_institution_count.csv"))
   
   
-  # ## Plant Pollinator Cleanup
-  #
-  # #split plant and pollinator data
-  # dat.occ.plant <- filter(dat.occ, kingdom == "Plantae")
-  # dat.occ.poll <- filter(dat.occ, kingdom == "Animalia")
-  #
-  # #join trait data to plants
-  # dat.occ.plant <-
-  #   left_join(dat.occ.plant, bioflor_traits, by = "species")
-  #
-  #
-  # # Plant Cleanup
-  #
-  # #only use plants with less than x months of flowering
-  # dat.occ.plant <- filter(dat.occ.plant, FlDur <= thr.FlDur)
-  #
-  # #combine both data frames again
-  # dat.occ <- bind_rows(dat.occ.plant, dat.occ.poll)
-  
   ## Add climate data and save
   
   #join overall climate data  and plant trait data to raw observational data
