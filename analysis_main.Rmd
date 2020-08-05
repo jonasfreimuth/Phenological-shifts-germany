@@ -70,6 +70,11 @@ delete.occ.download <- TRUE
 # - int.spec.dec: same as spec int slope but on the level of difference of doy and in decades
 # - data.quality.assesment: plots all occurrence records of plants and pollinators in one each
 #                           (not included in full, requires more than 8 GB of RAM (right now at least))
+# - additional:   * spatial occurrence distributions by institution
+#                 * spatial occurrence distribution overall
+#                 * decadal spatial occurrence distribution
+#                 * doy distribution over the year for (for now only) all Butterfly species 
+#                   (to estimate the degree of multivoltism)
 # - species: plots yearly mean doys and regression for each species
 opts <- c()
 
@@ -3928,7 +3933,13 @@ source(here("Scripts", "plot_results.R"))
 
 if (any(c("full", "all.spec") %in% opts)){
   
-  source(here("Scripts", "Plot_all_species_in_one.R"))
+  source(here("Scripts", "plot_all_species_in_one.R"))
+  
+}
+
+if (any(c("full", "adiitional") %in% opts)){
+  
+  source(here("Scripts", "plot_occurrence_distribution.R.R"))
   
 }
 
