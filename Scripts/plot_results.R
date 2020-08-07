@@ -437,6 +437,10 @@ print(
 dev.off()
 
 #same as above, but with PollOrders
+# this plot has been modified for the graphical abstract
+# it is somewhat hacky, as points are still drawn, but invisibly
+# also the y limit excludes some of the raw data, but since they are not of interest
+# for this purpose it should be
 
 png(here("Plots", "group_trends_time_orders.png"), width = 1600, height = 1000)
 
@@ -444,15 +448,15 @@ print(
   ggplot() +
     geom_point(data = dat.occ,
                aes(x = year, y = mean.doy,
-                   col = id.grp), 
-               size = 2, alpha = 0.4,
+                   col = id.grp),
+               size = 2, alpha = 0,
                position = position_dodge(width = 0.5)) +
-    # plot the regression lines faintly in gray at first so they separate from the dots
-    geom_abline(aes(intercept = intercept, slope = slope),
-                lm.res.plapoll.time,
-                size = 5,
-                col = "gray31", alpha = .5,
-                show.legend = FALSE) +
+    # # plot the regression lines faintly in gray at first so they separate from the dots
+    # geom_abline(aes(intercept = intercept, slope = slope),
+    #             data = lm.res.plapoll.time,
+    #             size = 5,
+    #             col = "gray31", alpha = .5,
+    #             show.legend = FALSE) +
     geom_abline(aes(intercept = intercept, slope = slope, lty = breaks, col = id.grp),
                 lm.res.plapoll.time,
                 size = 2, show.legend = FALSE) +
@@ -463,6 +467,7 @@ print(
     #             alpha = 0.7) +
     labs(x = "Year",
          y = "Yearly mean DOY") +
+    ylim(c(0, 250)) +
     scale_color_manual(name = "Group",
                        labels = col.group.stc$group, 
                        values = col.group.stc$colour) +
