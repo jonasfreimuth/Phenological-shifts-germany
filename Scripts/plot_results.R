@@ -848,7 +848,7 @@ dur_mikado_plot <- function(data, filename = NULL, width = 1500, height = 1000,
             axis.ticks.length.x.bottom = unit(8, "bigpts"),
             axis.line = element_line(colour = col.ax, size = 1.2),
             strip.background = element_blank(),
-            plot.margin = unit(c(0, 64, 0, 64), "bigpts"),
+            plot.margin = unit(c(128, 64, 0, 64), "bigpts"),
             plot.title = element_text(size = 40, hjust = 0.5),
             plot.subtitle = element_text(size = 30, hjust = 0.5),
             legend.position = "right",
@@ -2005,6 +2005,7 @@ print(
           legend.title = element_text(size = 50),
           panel.background = element_blank(),
           panel.grid.major = element_blank(),
+          panel.spacing.y = unit(128, "bigpts"),
           strip.background = element_blank(),
           strip.text = element_text(size = 50),
           plot.margin = unit(c(128, 0, 0, 0), "bigpts")
@@ -2656,7 +2657,7 @@ traitplot("mnflmnt")
 
 #plot mean flowering month plot properly
 png(here("Plots/traits",
-         str_glue("Mean_CI_mnflmnt_time.png")), width = 1600, height = 1000)
+         "Mean_CI_mnflmnt_time.png"), width = 1600, height = 1000)
 
 plots_mnflmnt[[1]] +
   xlab("Mean month of flowering")
@@ -3447,7 +3448,7 @@ print(
       strip.text = element_text(size = 40),
       panel.grid.major.y = element_blank(),
       panel.grid.major.x = element_blank(),
-      plot.margin = unit(c(64, 0, 0, 0), "bigpts")
+      plot.margin = unit(c(128, 0, 0, 0), "bigpts")
     )
 )
 

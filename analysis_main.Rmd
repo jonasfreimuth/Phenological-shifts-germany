@@ -46,6 +46,10 @@ cutoff.year <- 1960
 #set cutoff for decadal records
 cutoff.dec <- 1980
 
+# force running of the entire script regardless of no new changes in the data?
+# if FALSE, workspace data from previous run will be loaded
+force.main <- FALSE
+
 # force prunning? (necessary after changing earliest year cutoff)
 force.pruning <- FALSE
 
@@ -84,8 +88,6 @@ opts <- c()
 
 
 # Functions --------------------------------------------
-
-
 
 #define function for species plotting
 specplot <-  function(data, spec) {
@@ -258,6 +260,7 @@ slopes <- function(data, formula = mean.doy ~ year,
   # stat.i <- stat.out[1,]
   
   #select summary vars according to tax level
+  # there's porbably a better way to do this but i can't be asked right now
     if(taxon == "species") {
       
       #make a list of col names
@@ -386,104 +389,9 @@ slopes <- function(data, formula = mean.doy ~ year,
     
   })
   
-  # 
-  # 
-  # #start loop that runs a lm for each instance of the level and saves statistic values
-  # for (i in sort(unique(data$tax_level))) {
-  #   
-  #   #get current position in both data frames
-  #   j <- match(i, sort(unique(data$tax_level)))
-  #   
-  #   #create subset for that level
-  #   dat.i <- filter(data, tax_level == i)
-  #   
-  #   #if not enough records for taxlevel are present, skip
-  #   if (nrow(dat.i) < thr) {
-  #     
-  #     next
-  #     
-  #   }
-  #   
-  #   #perform linear model on that subset and save summary
-  #   lm.i <- lm(formula, dat.i)
-  #   sum.lm.i <- summary(lm.i)
-  #   
-  #   #calculate confidence interval of slope
-  #   ci.i <- confint(lm.i, as.character(formula)[3], level = 0.95)
-  #   
-  #   
-  #   #add summary data
-  #   stat.i <- dat.i %>%
-  #     group_by(!!! sum_vars) %>%
-  #     summarise(start = min(time),
-  #               end = max(time),
-  #               span = (max(time) - min(time)) + 1,
-  #               n = length(time),
-  #               mean.doy = mean(mean.doy))
-  #   
-  #   
-  #   #add statistics data
-  #   stat.i <- stat.i %>%
-  #     mutate(slope = sum.lm.i$coefficients[2,1],
-  #            intercept = sum.lm.i$coefficients[1,1],
-  #            pval = pf(sum.lm.i$fstatistic[1], sum.lm.i$fstatistic[2],
-  #                      sum.lm.i$fstatistic[3], lower.tail=FALSE),
-  #            rsquared = sum.lm.i$r.squared,
-  #            df = sum.lm.i$fstatistic[3],
-  #            fstat = sum.lm.i$fstatistic[1],
-  #            ci.min = ci.i[1,1],
-  #            ci.max = ci.i[1,2]
-  #            
-  #     )
-  #   
-  #   #bind loop data to overall data
-  #   stat.out <- bind_rows(stat.out, stat.i)
-  #   
-  #   
-  # }
-  # 
-  # #remove nas
-  # stat.out <- drop_na(stat.out, slope)
-  
-  # browser()
-  
+  # convert list to data frame
   stat.out <- bind_rows(stat.out) %>%
     drop_na(slope)
-  
-  # #cut uneeded tax levels
-  #   if (taxon == "genus") {
-  #     stat.out <- select(stat.out, everything(), -species)
-  #     
-  #   } else if (taxon == "family") {
-  #     stat.out <- select(stat.out, everything(), -species, -genus)
-  #     
-  #   } else if (taxon == "order") {
-  #     stat.out <-
-  #       select(stat.out, everything(), -species, -genus, -family)
-  #     
-  #   } else if (taxon == "phylum") {
-  #     stat.out <-
-  #       select(stat.out,
-  #              everything(),
-  #              -species,
-  #              -genus,
-  #              -family,
-  #              -order,
-  #              -id.grp)
-  #     
-  #   } else if (taxon == "kingdom") {
-  #     stat.out <-
-  #       select(stat.out,
-  #              everything(),
-  #              -species,
-  #              -genus,
-  #              -family,
-  #              -order,
-  #              -id.grp ,
-  #              -phylum)
-  #     
-  #   }
-    
   
   #correct pvalues for multiple testing
   stat.out$fdr.pval <- p.adjust(stat.out$pval, method="fdr")
@@ -743,6 +651,33 @@ if(run.occ.get |
   source(here("scripts", "get_occurrence_data.R"), local = TRUE)
   
 }
+
+```
+
+
+```{r control running of the rest}
+
+# check if it is necessary to run the whole script in principle
+if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
+   
+  # now check whether there were changes in the data i.e. we had to run the occurrence getting script
+  # if not, it should be save to just load the previous data and stop
+  if (! run.occ.get) {
+    
+    load(here("Data", "workspace_save.RData"))
+    
+    # beep to notify we've stopped
+    beep()
+    
+    # stop the script
+    stop(paste("Running main script not necessary, loaded old workspace and stopped.", 
+               "Enable force.main at the start of the script to force the execution of the whole script.",
+               sep = "\n"))
+    
+  }
+  
+   
+ }
 
 ```
 
@@ -3975,7 +3910,7 @@ source(here("scripts", "save_results_to_csv.R"))
 
 ```{r Beep}
 
-save.image(here("data", "Analysis_temp_abssyn.RData"))
+save.image(here("data", "workspace_save.RData"))
 
 beep()
 
