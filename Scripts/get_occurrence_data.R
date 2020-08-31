@@ -27,7 +27,7 @@ bioflor_traits <- fread(here("static_data", "bioflor_traits.csv"), showProgress 
 # if not, run the script for obtaining climate data
 
 if (!(file.exists(here("static_data", "overall_mean_temperature.csv")) &
-       file.exists(here("static_data", "overall_mean_temperature.csv")))) {
+      file.exists(here("static_data", "overall_mean_temperature.csv")))) {
   
   source(here("scripts", "get_german_climate_data.R"))
   
@@ -103,13 +103,6 @@ if (run.occ.refine) {
       # remove the zip file
       file.remove(here("download", paste0(k, ".zip")))
       
-      # if not disabled, also remove occurrence txt file again
-      if (delete.occ.download) {
-        
-        file.remove(here("download", paste0("occurrence_", k, ".txt")))
-        
-      }
-      
       # create/overwrite the file for download status
       sink(here("data", "download_ran.txt"))
       
@@ -134,7 +127,6 @@ if (run.occ.refine) {
                             "year", "month", "day", "eventDate", "hasGeospatialIssues", "issue")
     ) 
     
-   
     
     #exclude records without days
     exp <- filter(exp, day != "")
@@ -180,8 +172,15 @@ if (run.occ.refine) {
     # save the col names to add again later
     occ.names <- names(exp)
     
+    # if not disabled, also remove occurrence txt file again
+    if (delete.occ.download) {
+      
+      file.remove(here("download", paste0("occurrence_", k, ".txt")))
+      
+    }
+    
   }
- 
+  
   # remove unneeded objects
   rm("exp")
   
@@ -338,16 +337,16 @@ if (run.pruning |
 dat.occ.mean <- fread(here("Data", "occurrences_full_pruned.csv"),
                       showProgress = FALSE,
                       select = c("kingdom",
-                      "phylum",
-                      "order",
-                      "family",
-                      "genus",
-                      "species",
-                      "id.grp",
-                      "decade",
-                      "year",
-                      "month",
-                      "doy")) %>%
+                                 "phylum",
+                                 "order",
+                                 "family",
+                                 "genus",
+                                 "species",
+                                 "id.grp",
+                                 "decade",
+                                 "year",
+                                 "month",
+                                 "doy")) %>%
   group_by(kingdom, phylum, order, family, genus, id.grp, decade) %>%
   group_by(species, .add = TRUE) %>%
   group_by(year, .add = TRUE) %>%
@@ -371,12 +370,12 @@ dat.occ.mean <- fread(here("Data", "occurrences_full_pruned.csv"),
   left_join(bioflor_traits, by = "species") %>%
   left_join(fread(here("static_data", "overall_mean_temperature.csv")),
             by = c("year")) %>%
-#save species yearly mean doy data
-fwrite(
-  here("Data", "occurrences_species_yearly_mean_doy_pruned.csv"),
-  showProgress = FALSE,
-  na = NA
-)
+  #save species yearly mean doy data
+  fwrite(
+    here("Data", "occurrences_species_yearly_mean_doy_pruned.csv"),
+    showProgress = FALSE,
+    na = NA
+  )
 
 
 
