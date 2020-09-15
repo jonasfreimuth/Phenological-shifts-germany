@@ -134,14 +134,16 @@ dir.check <- function(path) {
 }
 
 
-# function for calculating a position above the range of a vector x 
+# function for calculating a position above the range of a vector x
 # muliple vectors can be supplied, again, the max result of all vectors
 # is returned
 ypos <- function(x, ..., frac = 0.3) {
   
   x <- c(x, ...)
   
-  return(max(x, na.rm = TRUE) + abs(max(x, na.rm = TRUE)) * frac)
+  pos <- max(x, na.rm = TRUE) + abs(max(x, na.rm = TRUE)) * frac
+  
+  return(pos)
   
 } 
 
@@ -175,9 +177,9 @@ calc.ci <- function(data, level = 0.975) {
 xintercpt <- function(yintercept, slope) {
   
   # calculate x intercept (y = 0)
-  xintercpt <- -(yintercept/slope)
+  xintercept <- -(yintercept/slope)
   
-  return(xintercpt)
+  return(xintercept)
   
 }
 
@@ -668,6 +670,10 @@ if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
     
     # beep to notify we've stopped
     beep()
+    
+    # wait a moment before termination so the beep can go through
+    Sys.sleep(1.5)
+    
     
     # stop the script
     stop(paste("Running main script not necessary, loaded old workspace and stopped.", 
