@@ -306,14 +306,14 @@ png(here("Plots", "Germany temperature over time.png"), width = 1600, height = 1
 print(
   #generate plot
   ggplot(dat.temp) +
-    geom_point(aes(year, y_mean_temp, col = y_mean_temp)) +
-    geom_smooth(aes(year, y_mean_temp), method = "lm") +
+    geom_point(aes(year, y_mean_temp, col = y_mean_temp), size = 3) +
+    geom_smooth(aes(year, y_mean_temp), method = "lm", col = "blue", size = 1.5) +
     labs(x = "Year", y = "Yearly mean temperature [\u00B0C]") +
     scale_color_gradient(low = "#2F5496", high = "#FF0000") +
-    geom_text(aes(x = 1985, y = 10), label = paste0("r =  ", round(cor.temp[["estimate"]], 2)),
-              col = "gray38") +
+    geom_text(aes(x = 1990, y = 10), label = paste0("r =  ", round(cor.temp[["estimate"]], 2)),
+              col = "gray38", size = 8) +
     theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 25),
+          axis.text = element_text(size = 30),
           axis.ticks = element_line(colour = col.ax, size = 1.2),
           axis.ticks.length.y.left = unit(8, "bigpts"),
           axis.ticks.length.x.bottom = unit(8, "bigpts"),
@@ -1628,7 +1628,8 @@ slope_plot_save <- function(x = id.grp,
                             metadata = all.time.meta,
                             xlab = NULL, ylab = NULL,
                             ylim = NULL,
-                            points = TRUE) {
+                            data_points = TRUE,
+                            scale_y_10 = TRUE) {
   
   x <- enquo(x)
   y <- enquo(y)
@@ -1645,29 +1646,41 @@ slope_plot_save <- function(x = id.grp,
               pivot_longer(metadata, cols = starts_with("ci"))$value) 
     
     #calculate maximum ydimensions
-    ylim <- c(min(yvec, na.rm = TRUE) * 1.4,
-              max(yvec, na.rm = TRUE) * 1.4)
+    ylim <- c(min(yvec, na.rm = TRUE) * 1.45,
+              max(yvec, na.rm = TRUE) * 1.45)
     
     
   }
   
   # ypos.df <- select(data, vec := !! y)
   
+  # we buld the plot in sections to control whether some things should get added
+  # first the basic plot
   plot <- ggplot(data = metadata) +
-    geom_hline(yintercept = 0, lty = 2, col = col.line) + 
-    geom_jitter(data = data,
-                aes(x = !! x, y = !! y), 
-                size = 5, width = 0.2, col = col.pt,
-                alpha = 0.3) +
+    geom_hline(yintercept = 0, lty = 2, col = col.line)
+  
+  # if necessary, add raw data
+  if (data_points == TRUE) {
+    
+    plot <- plot  + 
+      geom_jitter(data = data,
+                  aes(x = !! x, y = !! y), 
+                  size = 5, width = 0.2, col = col.pt,
+                  alpha = 0.3) 
+    
+  }
+  
+  # continue with the rest of the plot
+  plot <- plot +
     geom_point(aes(x = !! x, y = !! ymeta, col = !! x),
                size = 8) +
     geom_errorbar(aes(x = !! x, 
                       ymin = !! ymin, ymax = !! ymax,
                       col = !! x),
                   size = 2) +
-    geom_text(aes(x = !! x, y = ypos(c(data$slope,
-                                       metadata$ci.max),
-                                     frac = 0.5),
+    geom_text(aes(x = !! x, y = ypos(metadata$ci.max,
+                                     if (data_points == TRUE) {data$slope},
+                                     frac = 0.6),
                   label = paste0("N =  ", n.slope)),
               col = col.note, size = 15) +
     #add labels for differing factor levels
@@ -1678,18 +1691,31 @@ slope_plot_save <- function(x = id.grp,
                       formula(str_glue("{quo_get_expr(y)} ~ {quo_get_expr(x)}"))),
       aes(
         x = level,
-        y = ypos(c(data$slope,
-                   metadata$ci.max),
-                 frac = 0.1),
+        y = ypos(metadata$ci.max,
+                 if (data_points == TRUE) {data$slope},
+                 frac = 0.2),
         label = letter
       ),
       size = 13,
       col = col.note
     ) +
     labs(x = xlab,
-         y = ylab) +
-    coord_cartesian(ylim = ylim) +
-    scale_y_continuous(labels = mult_10_format()) +
+         y = ylab)
+  
+  # if we're dealing with time data, scale the y-axis by ten
+  # (to reflect days/decade, data is in days/year)
+  if (scale_y_10 == TRUE) {
+    plot <- plot + scale_y_continuous(labels = mult_10_format())
+  }
+  
+  
+  # if no data points are plotted, ignore ylimits
+  if (data_points == TRUE) {
+    plot <- plot + coord_cartesian(ylim = ylim)
+  }
+  
+  # continue with the rest of the plot
+  plot <- plot +
     scale_color_manual(name = "Group",
                        labels = col.group$group,
                        values = col.group$colour) +
@@ -1708,9 +1734,16 @@ slope_plot_save <- function(x = id.grp,
       panel.grid.major = element_blank(),
       panel.spacing = unit(32, "bigpts"),
       strip.background = element_blank(),
-      strip.text = element_text(size = 40),
-      plot.margin = unit(c(128, 0, 0, 0), "bigpts")
-    )
+      strip.text = element_text(size = 40))
+  
+  # change margin size depending on whether its a raw data plot
+  if (data_points == TRUE) {
+    plot <- plot + 
+      theme(plot.margin = unit(c(128, 0, 0, 0), "bigpts"))
+  }  else { 
+    plot <- plot + 
+      theme(plot.margin = unit(c(256, 0, 0, 0), "bigpts"))
+  }
   
   return(plot)
   
@@ -1719,7 +1752,8 @@ slope_plot_save <- function(x = id.grp,
 png(here("Plots", "group_mean_slopes_time.png"), width = 1600, height = 1000)
 
 print(
-  slope_plot_save(xlab = "Group", ylab = "Mean slope [days/decade] (\u00B1 95% CI)")
+  slope_plot_save(xlab = "Group", ylab = "Mean slope [days/decade] (\u00B1 95% CI)",
+                  data_points = TRUE, scale_y_10 = TRUE)
 )
 
 dev.off()
@@ -1729,169 +1763,30 @@ png(here("Plots", "group_mean_slopes_temp.png"), width = 1600, height = 1000)
 
 print(
   slope_plot_save(data = stat.all.temp, metadata = all.temp.meta,
-                  xlab = "Group", ylab = "Mean slope [days/\u00B0C] (\u00B1 95% CI)")
+                  xlab = "Group", ylab = "Mean slope [days/\u00B0C] (\u00B1 95% CI)",
+                  data_points = TRUE, scale_y_10 = FALSE)
 )
 
 dev.off()
 
 #without raw data +++++++++++++++++++++++++++++
 
-png(here("Plots", "group_mean_slopes_time_nopts.png"), width = 1600, height = 1000)
+png(here("Plots", "group_mean_slopes_time_nopts.png"), width = 1600, height = 1200)
 
 print(
-  #plot for time
-  ggplot(data = all.time.meta) +
-    geom_hline(yintercept = 0, size = 1.5, lty = 3, col = col.line) +
-    geom_point(aes(x = id.grp, y = mean.slope,
-                   col = id.grp, pch = id.grp),
-               size = 8) +
-    geom_errorbar(
-      aes(x = id.grp,
-          ymin = ci.min, ymax = ci.max,
-          col = id.grp),
-      size = 2
-    ) +
-    geom_text(
-      aes(
-        x = id.grp,
-        y = ypos(stat.group.time.meta$ci.max),
-        label = paste0("n = ", n.slope)
-      ),
-      size = 13,
-      col = "gray31"
-    ) +
-    #add labels for differing factor levels
-    geom_text(
-      data = pairdiff(filter(stat.spec.temp,
-                             #exclude Hymneoptera, Diptera and the Insects overall group
-                             !(id.grp %in% c(excl.group.year, col.grp$group[5]))),
-                      slope ~ id.grp),
-      aes(
-        x = level,
-        y = ypos(stat.group.time.meta$ci.max, frac = 0.1),
-        label = letter
-      ),
-      size = 13,
-      col = "gray31"
-    ) +
-    geom_text(aes(x = 5.5, y = ypos(stat.spec.time$slope,
-                                    stat.group.time.meta$ci.max,
-                                    frac = 0),
-                  label = ttest.pvals$time),
-              col = "gray31",
-              size = 13) +
-    geom_segment(aes(x = 4.5, xend = 4.5, y = -Inf, yend = ypos(stat.spec.time$slope,
-                                                                stat.group.time.meta$ci.max,
-                                                                frac = 0.1)),
-                 size = 1.3,
-                 col = "gray31", lty = 2) +
-    labs(x = "Group", y = "Mean slope [days/decade] (\u00B1 95% CI)") +
-    scale_y_continuous(labels = mult_10_format()) +
-    scale_shape_manual(values = c(19, 19, 19, 19, 18, 19)) +
-    scale_color_manual(name = "Group",
-                       labels = col.group$group, 
-                       values = col.group$colour) +
-    theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
-      axis.text.x = element_text(
-        size = 35,
-        angle = 25,
-        hjust = 1
-      ),
-      axis.ticks = element_line(colour = col.ax, size = 1.2),
-      axis.ticks.length.y.left = unit(8, "bigpts"),
-      axis.ticks.length.x.bottom = unit(8, "bigpts"),
-      axis.line = element_line(colour = col.ax, size = 1.2),
-      legend.position = "none",
-      panel.background = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.spacing = unit(32, "bigpts"),
-      strip.background = element_blank(),
-      strip.text = element_text(size = 40),
-      plot.margin = unit(c(128, 0, 0, 0), "bigpts")
-    )
+  slope_plot_save(xlab = "Group", ylab = "Mean slope [days/decade] (\u00B1 95% CI)",
+                  data_points = FALSE, scale_y_10 = TRUE)
 )
 
 dev.off()
 
 
-png(here("Plots", "group_mean_slopes_temp_nopts.png"), width = 1600, height = 1000)
+png(here("Plots", "group_mean_slopes_temp_nopts.png"), width = 1600, height = 1200)
 
 print(
-  #plot for temp
-  ggplot(data = all.temp.meta) +
-    geom_hline(yintercept = 0, size = 1.5, lty = 3, col = col.line) +
-    geom_point(aes(x = id.grp, y = mean.slope,
-                   col = id.grp, pch = id.grp),
-               size = 8) +
-    geom_errorbar(
-      aes(x = id.grp,
-          ymin = ci.min, ymax = ci.max,
-          col = id.grp),
-      size = 2
-    ) +
-    geom_text(
-      aes(
-        x = id.grp,
-        y = ypos(stat.group.temp.meta$ci.max),
-        label = paste0("n = ", n.slope)
-      ),
-      size = 13,
-      col = "gray31"
-    ) +
-    #add labels for differing factor levels
-    geom_text(
-      data = pairdiff(filter(stat.spec.temp,
-                             #exclude Hymneoptera, Diptera and the Insects overall group
-                             !(id.grp %in% c(excl.group.year, col.grp$group[5]))),
-                      slope ~ id.grp),
-      aes(
-        x = level,
-        y = ypos(stat.group.temp.meta$ci.max, frac = 0.1),
-        label = letter
-      ),
-      size = 13,
-      col = "gray31"
-    ) +
-    geom_text(aes(x = 5.5, y = ypos(stat.spec.temp$slope,
-                                    stat.group.temp.meta$ci.max,
-                                    frac = 0),
-                  label = ttest.pvals$temp),
-              col = "gray31",
-              size = 13) +
-    geom_segment(aes(x = 4.5, xend = 4.5, y = -Inf, yend = ypos(stat.spec.temp$slope,
-                                                                stat.group.temp.meta$ci.max,
-                                                                frac = 0.1)),
-                 size = 1.3,
-                 col = "gray31", lty = 2) +
-    labs(x = "Group", y = "Mean slope [days/\u00B0C]") +
-    scale_shape_manual(values = c(19, 19, 19, 19, 18, 19)) +
-    scale_color_manual(
-      name = "Group",
-      labels = col.group$group,
-      values = col.group$colour
-    ) +
-    theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
-      axis.text.x = element_text(
-        size = 35,
-        angle = 30,
-        hjust = 1
-      ),
-      axis.ticks = element_line(colour = col.ax, size = 1.2),
-      axis.ticks.length.y.left = unit(8, "bigpts"),
-      axis.ticks.length.x.bottom = unit(8, "bigpts"),
-      axis.line = element_line(colour = col.ax, size = 1.2),
-      legend.position = "none",
-      panel.background = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.spacing = unit(32, "bigpts"),
-      strip.background = element_blank(),
-      strip.text = element_text(size = 40),
-      plot.margin = unit(c(128, 0, 0, 0), "bigpts")
-    )
+  slope_plot_save(data = stat.all.temp, metadata = all.temp.meta,
+                  xlab = "Group", ylab = "Mean slope [days/\u00B0C] (\u00B1 95% CI)",
+                  data_points = FALSE, scale_y_10 = FALSE)
 )
 
 dev.off()
@@ -3457,14 +3352,14 @@ dev.off()
 
 #without raw data
 
-png(here("Plots", "group_mean_doy_differences_nopts.png"), width = 1600, height = 1000)
+png(here("Plots", "group_mean_doy_differences_nopts.png"), width = 1600, height = 1200)
 
 print(
   ggplot() +
     geom_hline(
       size = 1.5,
       yintercept = 0,
-      lty = 2, col = "gray31"
+      lty = lty.sec, col = "gray31"
     ) +
     # geom_point(data = stat.int.time,
     #            aes(x = group, y = synchrony.slope, shape = decades),
@@ -3491,7 +3386,9 @@ print(
       data = stat.int.meta,
       aes(
         x = group,
-        y = ypos(stat.int.meta$ci.max, frac = 0.5),
+        # including the 0.x ensures we're at leat at x heightwise
+        # (0.x because of the 10x scaling)
+        y = ypos(stat.int.meta$ci.max, 0.2, frac = 0.5), 
         label = paste0("n = ", N.synchrony.slope)
       ),
       size = 15,
@@ -3501,7 +3398,7 @@ print(
     geom_text(
       data = pairdiff(stat.int.time, synchrony.slope ~ group),
       aes(x = level,
-          y = ypos(stat.int.meta$ci.max, frac = 0.2),
+          y = ypos(stat.int.meta$ci.max, 0.2, frac = 0.2), # see above
           label = letter),
       size = 15,
       col = "gray31"
@@ -3532,7 +3429,8 @@ print(
       strip.background = element_blank(),
       strip.text = element_text(size = 40),
       panel.grid.major.y = element_blank(),
-      panel.grid.major.x = element_blank()
+      panel.grid.major.x = element_blank(),
+      plot.margin = unit(c(256, 0, 0, 0), "bigpts")
     )
 )
 
