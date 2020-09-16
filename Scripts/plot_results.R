@@ -44,6 +44,9 @@ col.ax <- "gray31"
 # set col for annotations
 col.note <- "gray31"
 
+# annotation text size
+annot_text <- 20
+
 
 # set colour tables -------------------------------------------------------
 
@@ -301,19 +304,54 @@ mult_10_format <- function() {
 
 # It's getting hot in Germany ---------------------------------------------
 
+ggsave(
+  ggplot(dat.temp,
+         aes(year, y_mean_temp, col = y_mean_temp)) +
+    geom_point(size = 5) +
+    geom_line(size = 2) +
+    geom_smooth(aes(year, y_mean_temp), method = "lm", col = "blue", size = 2, se = FALSE) +
+    labs(
+      title = "Yearly mean temperature in Germany",
+      x = "Year", y = "Mean temperature [\u00B0C]") +
+    scale_color_gradient(low = "#2F5496", high = "#FF0000") +
+    geom_text(aes(x = 1990, y = 10), label = paste0("r =  ", round(cor.temp[["estimate"]], 2)),
+              col = "gray38", size = 20) +
+    theme(axis.title = element_text(size = 50),
+          axis.text = element_text(size = 50),
+          axis.ticks = element_line(colour = col.ax, size = 1.2),
+          axis.ticks.length.y.left = unit(8, "bigpts"),
+          axis.ticks.length.x.bottom = unit(8, "bigpts"),
+          axis.line = element_line(colour = col.ax, size = 1.2),
+          legend.position = "none",
+          panel.background = element_blank(),
+          panel.grid = element_blank(),
+          plot.title = element_text(size = 60, hjust = 0.5),
+          plot.margin = unit(c(32, 32, 0, 32), "bigpts")) +
+    # special theme for graphical abstract
+    theme(
+      plot.background = element_rect(fill = "transparent", color = NA),
+      legend.background = element_rect(fill = "transparent"), 
+      legend.box.background = element_rect(fill = "transparent") 
+    ),
+  filename = here("Plots", "Germany temperature over time.png"), width = 22, height = 14,
+  bg = "transparent"
+)
+
 png(here("Plots", "Germany temperature over time.png"), width = 1600, height = 1000)
 
 print(
   #generate plot
-  ggplot(dat.temp) +
-    geom_point(aes(year, y_mean_temp, col = y_mean_temp), size = 3) +
-    geom_smooth(aes(year, y_mean_temp), method = "lm", col = "blue", size = 1.5) +
+  ggplot(dat.temp,
+         aes(year, y_mean_temp, col = y_mean_temp)) +
+    geom_point(size = 5) +
+    geom_line(size = 2) +
+    geom_smooth(aes(year, y_mean_temp), method = "lm", col = "blue", size = 2, se = FALSE) +
     labs(x = "Year", y = "Yearly mean temperature [\u00B0C]") +
     scale_color_gradient(low = "#2F5496", high = "#FF0000") +
     geom_text(aes(x = 1990, y = 10), label = paste0("r =  ", round(cor.temp[["estimate"]], 2)),
-              col = "gray38", size = 8) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 30),
+              col = "gray38", size = 20) +
+    theme(axis.title = element_text(size = 50),
+          axis.text = element_text(size = 50),
           axis.ticks = element_line(colour = col.ax, size = 1.2),
           axis.ticks.length.y.left = unit(8, "bigpts"),
           axis.ticks.length.x.bottom = unit(8, "bigpts"),
@@ -1628,6 +1666,7 @@ slope_plot_save <- function(x = id.grp,
                             metadata = all.time.meta,
                             xlab = NULL, ylab = NULL,
                             ylim = NULL,
+                            title = NULL,
                             data_points = TRUE,
                             scale_y_10 = TRUE) {
   
@@ -1657,7 +1696,7 @@ slope_plot_save <- function(x = id.grp,
   # we buld the plot in sections to control whether some things should get added
   # first the basic plot
   plot <- ggplot(data = metadata) +
-    geom_hline(yintercept = 0, lty = 2, col = col.line)
+    geom_hline(yintercept = 0, lty = lty.sec, col = col.line)
   
   # if necessary, add raw data
   if (data_points == TRUE) {
@@ -1673,7 +1712,7 @@ slope_plot_save <- function(x = id.grp,
   # continue with the rest of the plot
   plot <- plot +
     geom_point(aes(x = !! x, y = !! ymeta, col = !! x),
-               size = 8) +
+               size = 10) +
     geom_errorbar(aes(x = !! x, 
                       ymin = !! ymin, ymax = !! ymax,
                       col = !! x),
@@ -1682,7 +1721,7 @@ slope_plot_save <- function(x = id.grp,
                                      if (data_points == TRUE) {data$slope},
                                      frac = 0.6),
                   label = paste0("N =  ", n.slope)),
-              col = col.note, size = 15) +
+              col = col.note, size = annot_text) +
     #add labels for differing factor levels
     geom_text(
       data = pairdiff(filter(data,
@@ -1693,14 +1732,15 @@ slope_plot_save <- function(x = id.grp,
         x = level,
         y = ypos(metadata$ci.max,
                  if (data_points == TRUE) {data$slope},
-                 frac = 0.2),
+                 frac = 0.3),
         label = letter
       ),
-      size = 13,
+      size = annot_text,
       col = col.note
     ) +
     labs(x = xlab,
-         y = ylab)
+         y = ylab,
+         title = title)
   
   # if we're dealing with time data, scale the y-axis by ten
   # (to reflect days/decade, data is in days/year)
@@ -1720,11 +1760,12 @@ slope_plot_save <- function(x = id.grp,
                        labels = col.group$group,
                        values = col.group$colour) +
     theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
-      axis.text.x = element_text(size = 35,
-                                 angle = 25,
-                                 hjust = 1),
+      axis.title = element_text(size = 50),
+      axis.text = element_text(size = 45),
+      axis.text.x = element_text(size = 45,
+                                 # angle = 25,
+                                 # hjust = 1
+                                 ),
       axis.ticks = element_line(colour = col.ax, size = 1.2),
       axis.ticks.length.y.left = unit(8, "bigpts"),
       axis.ticks.length.x.bottom = unit(8, "bigpts"),
@@ -1734,63 +1775,62 @@ slope_plot_save <- function(x = id.grp,
       panel.grid.major = element_blank(),
       panel.spacing = unit(32, "bigpts"),
       strip.background = element_blank(),
-      strip.text = element_text(size = 40))
+      strip.text = element_text(size = 40),
+      plot.title = element_text(size = 60, hjust = 0.5, vjust = 18)) +
+    # special theme for graphical abstract
+    theme(
+      plot.background = element_rect(fill = "transparent", color = NA),
+      panel.grid = element_blank(),
+      legend.background = element_rect(fill = "transparent"), 
+      legend.box.background = element_rect(fill = "transparent") 
+    )
   
   # change margin size depending on whether its a raw data plot
   if (data_points == TRUE) {
     plot <- plot + 
-      theme(plot.margin = unit(c(128, 0, 0, 0), "bigpts"))
+      theme(plot.margin = unit(c(128, 32, 0, 32), "bigpts"))
   }  else { 
     plot <- plot + 
-      theme(plot.margin = unit(c(256, 0, 0, 0), "bigpts"))
+      theme(plot.margin = unit(c(256, 32, 0, 32), "bigpts"))
   }
   
   return(plot)
   
 }
 
-png(here("Plots", "group_mean_slopes_time.png"), width = 1600, height = 1000)
-
-print(
-  slope_plot_save(xlab = "Group", ylab = "Mean slope [days/decade] (\u00B1 95% CI)",
-                  data_points = TRUE, scale_y_10 = TRUE)
+ggsave(
+  slope_plot_save(xlab = "Group", ylab = "Mean shift [days/decade] (\u00B1 95% CI)",
+                  data_points = TRUE, scale_y_10 = TRUE),
+  filename = here("Plots", "group_mean_slopes_time.png"), width = 20, height = 15,
+  bg = "transparent"
 )
 
-dev.off()
 
-
-png(here("Plots", "group_mean_slopes_temp.png"), width = 1600, height = 1000)
-
-print(
+ggsave(
   slope_plot_save(data = stat.all.temp, metadata = all.temp.meta,
-                  xlab = "Group", ylab = "Mean slope [days/\u00B0C] (\u00B1 95% CI)",
-                  data_points = TRUE, scale_y_10 = FALSE)
+                  xlab = "Group", ylab = "Mean shift [days/\u00B0C] (\u00B1 95% CI)",
+                  data_points = TRUE, scale_y_10 = FALSE),
+  filename = here("Plots", "group_mean_slopes_temp.png"), width = 20, height = 15,
+  bg = "transparent"
 )
-
-dev.off()
 
 #without raw data +++++++++++++++++++++++++++++
 
-png(here("Plots", "group_mean_slopes_time_nopts.png"), width = 1600, height = 1200)
-
-print(
-  slope_plot_save(xlab = "Group", ylab = "Mean slope [days/decade] (\u00B1 95% CI)",
-                  data_points = FALSE, scale_y_10 = TRUE)
+ggsave(
+  slope_plot_save(xlab = "Group", ylab = "Mean shift [days/decade] (\u00B1 95% CI)",
+                  title = "Phenological shifts over time"
+                  data_points = FALSE, scale_y_10 = TRUE),
+  filename = here("Plots", "group_mean_slopes_time_nopts.png"), width = 20, height = 15,
+  bg = "transparent"
 )
 
-dev.off()
-
-
-png(here("Plots", "group_mean_slopes_temp_nopts.png"), width = 1600, height = 1200)
-
-print(
+ggsave(
   slope_plot_save(data = stat.all.temp, metadata = all.temp.meta,
-                  xlab = "Group", ylab = "Mean slope [days/\u00B0C] (\u00B1 95% CI)",
-                  data_points = FALSE, scale_y_10 = FALSE)
+                  xlab = "Group", ylab = "Mean shift [days/\u00B0C] (\u00B1 95% CI)",
+                  data_points = FALSE, scale_y_10 = FALSE),
+  filename = here("Plots", "group_mean_slopes_temp_nopts.png"), width = 20, height = 15,
+  bg = "transparent"
 )
-
-dev.off()
-
 
 
 # Correlation of Time and temp slopes -------------------------------------
@@ -3352,9 +3392,7 @@ dev.off()
 
 #without raw data
 
-png(here("Plots", "group_mean_doy_differences_nopts.png"), width = 1600, height = 1200)
-
-print(
+ggsave(
   ggplot() +
     geom_hline(
       size = 1.5,
@@ -3379,7 +3417,7 @@ print(
     geom_point(
       data = stat.int.meta,
       aes(x = group, y = mean.synchrony.slope, col = group),
-      size = 8,
+      size = 10,
       position = position_dodge(width = 1)
     ) +
     geom_text(
@@ -3388,19 +3426,19 @@ print(
         x = group,
         # including the 0.x ensures we're at leat at x heightwise
         # (0.x because of the 10x scaling)
-        y = ypos(stat.int.meta$ci.max, 0.2, frac = 0.5), 
+        y = ypos(stat.int.meta$ci.max, 0.25, frac = 0.6), 
         label = paste0("n = ", N.synchrony.slope)
       ),
-      size = 15,
+      size = annot_text,
       col = "gray31"
     ) +
     #add labels for differing factor levels
     geom_text(
       data = pairdiff(stat.int.time, synchrony.slope ~ group),
       aes(x = level,
-          y = ypos(stat.int.meta$ci.max, 0.2, frac = 0.2), # see above
+          y = ypos(stat.int.meta$ci.max, 0.25, frac = 0.2), # see above
           label = letter),
-      size = 15,
+      size = annot_text,
       col = "gray31"
     ) +
     # geom_text(data = pairdiff(stat.int.time, synchrony.slope ~ decades, Letters = letters),
@@ -3412,12 +3450,14 @@ print(
       labels = col.int$group,
       values = col.int$colour
     ) +
-    labs(x = "Group",
-         y = "Change in plant-pollinator synchrony\n[days/decade] (\u00B1 95% CI)") +
+    labs(
+      title = "Group shifts of synchrony",
+      x = "Group",
+      y = "Synchrony shift [days/decade] (\u00B1 95% CI)") +
     scale_y_continuous(labels = mult_10_format()) +
     theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
+      axis.title = element_text(size = 50),
+      axis.text = element_text(size = 45),
       axis.ticks = element_line(colour = col.ax, size = 1.2),
       axis.ticks.length.x.bottom = unit(8, "bigpts"),
       axis.line = element_line(colour = col.ax, size = 1.2),
@@ -3430,8 +3470,15 @@ print(
       strip.text = element_text(size = 40),
       panel.grid.major.y = element_blank(),
       panel.grid.major.x = element_blank(),
-      plot.margin = unit(c(256, 0, 0, 0), "bigpts")
-    )
+      plot.margin = unit(c(256, 32, 0, 32), "bigpts"),
+      plot.title = element_text(size = 60, hjust = 0.5, vjust = 18)
+    ) +
+    # special theme for graphical abstract
+    theme(
+      plot.background = element_rect(fill = "transparent", color = NA),
+      legend.background = element_rect(fill = "transparent"), 
+      legend.box.background = element_rect(fill = "transparent") 
+    ),
+  filename = here("Plots", "group_mean_doy_differences_nopts.png"), width = 20, height = 15,
+  bg = "transparent"
 )
-
-dev.off()
