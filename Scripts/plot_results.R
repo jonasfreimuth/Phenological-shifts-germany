@@ -57,11 +57,11 @@ col.grp <- data.frame(group = c("Beetles", "Flies", "Bees", "Butterflies",
                                 "Hoverfly", "Bee", "Butterfly",
                                 "Overall",
                                 "Yes", "Intermediate", "No"),
-                      colour = c("chartreuse", "yellow", "orange", "red",
-                                 "gold", "darkgreen",
-                                 "yellow", "orange", "red",
+                      colour = c("purple", "red", "orange", "blue",
+                                 "gold", "#00cc00",
+                                 "red", "orange", "blue",
                                  "deepskyblue",
-                                 "red", "gold", "darkgreen"
+                                 "red", "orange", "#00cc00"
                       ))
 
 # alternative: named vector
@@ -336,33 +336,6 @@ ggsave(
   filename = here("Plots", "Germany temperature over time.png"), width = 22, height = 14,
   bg = "transparent"
 )
-
-png(here("Plots", "Germany temperature over time.png"), width = 1600, height = 1000)
-
-print(
-  #generate plot
-  ggplot(dat.temp,
-         aes(year, y_mean_temp, col = y_mean_temp)) +
-    geom_point(size = 5) +
-    geom_line(size = 2) +
-    geom_smooth(aes(year, y_mean_temp), method = "lm", col = "blue", size = 2, se = FALSE) +
-    labs(x = "Year", y = "Yearly mean temperature [\u00B0C]") +
-    scale_color_gradient(low = "#2F5496", high = "#FF0000") +
-    geom_text(aes(x = 1990, y = 10), label = paste0("r =  ", round(cor.temp[["estimate"]], 2)),
-              col = "gray38", size = 20) +
-    theme(axis.title = element_text(size = 50),
-          axis.text = element_text(size = 50),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
-          legend.position = "none",
-          panel.background = element_blank(),
-          panel.grid.major = element_blank()) )
-
-
-dev.off()
-
 
 
 # Record numbers ----------------------------------------------------------
@@ -1818,7 +1791,7 @@ ggsave(
 
 ggsave(
   slope_plot_save(xlab = "Group", ylab = "Mean shift [days/decade] (\u00B1 95% CI)",
-                  title = "Phenological shifts over time"
+                  title = "Phenological shifts over time",
                   data_points = FALSE, scale_y_10 = TRUE),
   filename = here("Plots", "group_mean_slopes_time_nopts.png"), width = 20, height = 15,
   bg = "transparent"
@@ -3144,9 +3117,9 @@ print(
     scale_color_manual(
       name = "Group",
       aesthetics = c("color", "fill"),
-      values = c("yellow",
+      values = c("red",
                  "orange",
-                 "red",
+                 "blue",
                  "deepskyblue")
     ) +
     labs(x = "Decade",
@@ -3453,7 +3426,7 @@ ggsave(
     labs(
       title = "Group shifts of synchrony",
       x = "Group",
-      y = "Synchrony shift [days/decade] (\u00B1 95% CI)") +
+      y = "Synchrony shift [days/decade]\n(\u00B1 95% CI)") +
     scale_y_continuous(labels = mult_10_format()) +
     theme(
       axis.title = element_text(size = 50),
@@ -3468,8 +3441,7 @@ ggsave(
       panel.spacing = unit(32, "bigpts"),
       strip.background = element_blank(),
       strip.text = element_text(size = 40),
-      panel.grid.major.y = element_blank(),
-      panel.grid.major.x = element_blank(),
+      panel.grid = element_blank(),
       plot.margin = unit(c(256, 32, 0, 32), "bigpts"),
       plot.title = element_text(size = 60, hjust = 0.5, vjust = 18)
     ) +
