@@ -57,11 +57,11 @@ col.grp <- data.frame(group = c("Beetles", "Flies", "Bees", "Butterflies",
                                 "Hoverfly", "Bee", "Butterfly",
                                 "Overall",
                                 "Yes", "Intermediate", "No"),
-                      colour = c("purple", "red", "orange", "blue",
-                                 "gold", "#00cc00",
-                                 "red", "orange", "blue",
+                      colour = c("#9815db", "#f41d0f", "#ffa500", "#4744ff",
+                                 "gold", "#3aae10",
+                                 "#f41d0f", "#ffa500", "#4744ff",
                                  "deepskyblue",
-                                 "red", "orange", "#00cc00"
+                                 "red", "#ffa500", "#3aae10"
                       ))
 
 # alternative: named vector
@@ -326,7 +326,7 @@ ggsave(
           panel.background = element_blank(),
           panel.grid = element_blank(),
           plot.title = element_text(size = 60, hjust = 0.5),
-          plot.margin = unit(c(32, 32, 0, 32), "bigpts")) +
+          plot.margin = unit(c(32, 32, 32, 32), "bigpts")) +
     # special theme for graphical abstract
     theme(
       plot.background = element_rect(fill = "transparent", color = NA),
@@ -3117,11 +3117,7 @@ print(
     scale_color_manual(
       name = "Group",
       aesthetics = c("color", "fill"),
-      values = c("red",
-                 "orange",
-                 "blue",
-                 "deepskyblue")
-    ) +
+      values = col.grp.vec) +
     labs(x = "Decade",
          y = "DOY Pla - Poll\nDifference") +
     coord_cartesian(xlim = c(min(dat.occ.dec$decade), max(dat.occ.dec$decade))) +
