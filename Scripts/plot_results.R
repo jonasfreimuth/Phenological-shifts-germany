@@ -22,9 +22,8 @@ recode.vec <- c(
 )
 
 # make alternative vector for interactions
-recode.vec.alt <- recode.vec
-recode.vec.alt[2:4] <- c("Hoverfly", "Bee", "Butterfly")
-
+recode.vec.int <- recode.vec[2:4]
+recode.vec.int[1:3] <- c("Hoverfly", "Bee", "Butterfly")
 
 
 # translate to trivial names
@@ -46,6 +45,9 @@ col.note <- "gray31"
 
 # annotation text size
 annot_text <- 20
+
+# line types
+lty.sec <- 3
 
 
 # set colour tables -------------------------------------------------------
@@ -110,46 +112,137 @@ col.dec <- data.frame(group = c("1990s and before", "all decades", "1990s on"),
 
 # Functions ---------------------------------------------------------------
 
-#function for generating letter labels to indicate differences between
-#factor levels as determined by a statistical test
-pairdiff <- function(data, formula, test = "Tukey", Letters = LETTERS, threshold = 0.05) {
+# function for generating letter labels to indicate differences between
+# factor levels as determined by a statistical test. When group_order 
+# (character vector of level names) is provided, pairings will be assigned
+# Letters according to their precedence in group_order
+pairdiff <- function(data, formula, test = "Tukey", Letters = LETTERS, threshold = 0.05,
+                     level_order = NULL) {
   
   if (test == "Tukey") {
     
-    #find letters for non differeing factor levels
+    #find letters for non differing factor levels
     pairs <- multcompLetters(
       #extract named row of pvalues from Tukey test
       TukeyHSD(aov(data = data, formula = formula))[[paste(formula[3])]][,4],
       Letters = Letters,
       threshold = threshold)
     
-    # print(TukeyHSD(aov(data = data, formula = formula))[[paste(formula[3])]][,4])
+    # save only Letters and factor levels
+    levels_df <- data.frame(letter = pairs$Letters, level = names(pairs$Letters))
     
-    return(
-      #return only Letters and factor levels
-      data.frame(letter = pairs$Letters, level = names(pairs$Letters))
-    )
     
   } else if (test == "t.test") { 
     
     #perform test
     test <- t.test(formula, data)
     
-    #get results into form accepted by multcomLetters
+    #get results into form accepted by multcompLetters
     spoofvec <- test[["p.value"]]
     names(spoofvec) <- paste(str_extract(names(test[["estimate"]]), "[:alpha:]+$"), collapse = "-")
     
     #find letters for non differeing factor levels
     pairs <- multcompLetters(spoofvec, Letters = Letters,
                              threshold = threshold)
+    # save letters and levels
+    levels_df <- data.frame(letter = pairs$Letters, level = names(pairs$Letters))
     
-    return(
-      #return only Letters and factor levels
-      data.frame(letter = pairs$Letters, level = names(pairs$Letters))
-    )
     
+  } else {
+    
+    stop("Unrecognised test!")
     
   }
+  
+  # check if a sorting vector is provided, if not return what we have so far
+  if (is.null(level_order)) {
+    
+    return(levels_df)
+    
+  }
+  
+  # attempt to filter out level_order values not in data
+  level_order <- level_order[level_order %in% unique(data[[toString(formula[3])]])]
+  
+  # check if the next step is possible 
+  if (nrow(levels_df) != length(level_order)) {
+    stop("Data levels have different length from level_order vector provided!")
+  } 
+  
+  # initialise vector for later
+  ordered_letters <- c()
+  
+  # redistribute letters to reflect order in plot (i.e. A gets assigned to first element)
+  # this is pretty inefficient right now, but i just want it to work and *in theory* this 
+  # should never need to deal with more than 25 letters, also the precedence replacement mechanic
+  # will prbably break with more than 52 levels if digits were used instead of letters 
+  # to denote pairwise differences
+  
+  # first extract letters according to levels of level_order
+  for (level in level_order) {
+    
+    # extract current row
+    level_row <- levels_df[levels_df$level == level, ]
+    
+    # extract letters (split into individual characters)
+    level_letters <- strsplit(level_row$letter, split = NULL)[[1]]
+    
+    # add the letters to overall letters list if they are not there already
+    for (letter in level_letters) {
+      
+      if ( !(letter %in% ordered_letters)) {
+        
+        ordered_letters <- append(ordered_letters, letter)
+        
+      }
+      
+    }
+    
+  }
+  
+  # now turn letters into numbers corresponding to their precedence
+  # this is done in a separrate step from the next to ensure nothing gets overwritten
+  # (if for some reason numbers were used instead of letters, this uses letters for precedence instead.
+  #  if theres a mixture theres a good chance this will break but i cant be asked to think
+  #  for that case) 
+  
+  # detect whether any numbers were used
+  digits_used <- str_detect(paste(Letters, collapse = ""), "[:digit:]")
+  
+  # replace letters with their precedence
+  for (i in seq_along(ordered_letters)) {
+    
+    letter <- ordered_letters[i]
+    
+    # determine replacement
+    if (!digits_used) {
+      replacement <-  toString(i)
+    } else {
+      replacement <- c(LETTERS, letters)[i]
+    }
+    
+    levels_df$letter <- str_replace_all(levels_df$letter, letter, paste(replacement, ",", sep = ""))
+    
+  }
+  
+  # lastly replace precedence with letters again
+  for (i in seq_along(ordered_letters)) {
+    
+    letter <- ordered_letters[i]
+    
+    # determine replacement
+    if (!digits_used) {
+      replacement <-  Letters[i]
+    } else {
+      replacement <-toString(i)
+    }
+    
+    levels_df$letter <- str_replace_all(levels_df$letter, paste(i, ",", sep = ""), replacement)
+    
+  } 
+  
+  
+  return(levels_df)
   
   
 }
@@ -1697,10 +1790,11 @@ slope_plot_save <- function(x = id.grp,
               col = col.note, size = annot_text) +
     #add labels for differing factor levels
     geom_text(
-      data = pairdiff(filter(data,
+      data = pairdiff(data = filter(data,
                              #exclude Hymneoptera, Diptera and the Insects overall group
                              !(id.grp %in% c(excl.group.year, col.grp$group[5]))),
-                      formula(str_glue("{quo_get_expr(y)} ~ {quo_get_expr(x)}"))),
+                      formula(str_glue("{quo_get_expr(y)} ~ {quo_get_expr(x)}")),
+                      level_order = levels(data[[toString(quo_get_expr(x))]])),
       aes(
         x = level,
         y = ypos(metadata$ci.max,
@@ -1738,7 +1832,7 @@ slope_plot_save <- function(x = id.grp,
       axis.text.x = element_text(size = 45,
                                  # angle = 25,
                                  # hjust = 1
-                                 ),
+      ),
       axis.ticks = element_line(colour = col.ax, size = 1.2),
       axis.ticks.length.y.left = unit(8, "bigpts"),
       axis.ticks.length.x.bottom = unit(8, "bigpts"),
@@ -1766,8 +1860,6 @@ slope_plot_save <- function(x = id.grp,
     plot <- plot + 
       theme(plot.margin = unit(c(256, 32, 0, 32), "bigpts"))
   }
-  
-  return(plot)
   
 }
 
@@ -1861,7 +1953,7 @@ print(
                col = col.pt) +
     # lines for means down to axis for time
     geom_segment(aes(x = mean.slope.Year, xend = mean.slope.Year, y = -Inf, yend = mean.slope.Temperature,
-                 col = id.grp),
+                     col = id.grp),
                  data = spec.both.meta.plot,
                  size = 2,
                  alpha = 0.5) +
@@ -2561,6 +2653,7 @@ if (any(c("full", "traits") %in% opts)) {
   
 }
 
+# always do mean flowering month plot
 traitplot("mnflmnt")
 
 #plot mean flowering month plot properly
@@ -2579,7 +2672,7 @@ png(here("Plots", "group_decadal_slopes.png"), width = 1600, height = 1000)
 print(
   ggplot(
     dat.occ.dec %>%
-      mutate(id.grp = recode_factor(id.grp, !!! recode.vec.alt)) %>%
+      mutate(id.grp = recode_factor(id.grp, !!! recode.vec.int)) %>%
       group_by(species) %>%
       #plot only species with records in all decades
       filter(n() >= thr.dec)
@@ -3265,10 +3358,7 @@ for (s in sort(unique(int.spec.dec$poll))) {
 
 # Interactions: Mean Synchrony differences --------------------------------
 
-
-png(here("Plots", "group_mean_doy_differences.png"), width = 1600, height = 1000)
-
-print(
+ggsave(
   ggplot() +
     geom_hline(
       size = 1.5,
@@ -3316,13 +3406,11 @@ print(
     ) +
     #add labels for differing factor levels
     geom_text(
-      data = pairdiff(stat.int.time, synchrony.slope ~ group),
-      aes(
-        x = level,
-        y = ypos(stat.int.time$synchrony.slope, frac = 0.1),
-        label = letter
-      ),
-      size = 15,
+      data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
+      aes(x = level,
+          y = ypos(stat.int.meta$ci.max, 0.25, frac = 0.2), # see above
+          label = letter),
+      size = annot_text,
       col = "gray31"
     ) +
     scale_color_manual(
@@ -3333,13 +3421,14 @@ print(
     # #giving all groups the same shape again
     # scale_shape_manual(name = "Period", values = c(19, 19, 19),
     #                    guide = "none") +
-    labs(x = "Group",
-         y = paste("Change in plant-pollinator synchrony",
-                   "[days/decade] (\u00B1 95% CI)", sep = "\n")) +
+    labs(
+      title = "Group shifts of synchrony",
+      x = "Group",
+      y = "Synchrony shift [days/decade]\n(\u00B1 95% CI)") +
     scale_y_continuous(labels = mult_10_format()) +
     theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
+      axis.title = element_text(size = 50),
+      axis.text = element_text(size = 45),
       axis.ticks = element_line(colour = col.ax, size = 1.2),
       axis.ticks.length.x.bottom = unit(8, "bigpts"),
       axis.line = element_line(colour = col.ax, size = 1.2),
@@ -3350,13 +3439,19 @@ print(
       panel.spacing = unit(32, "bigpts"),
       strip.background = element_blank(),
       strip.text = element_text(size = 40),
-      panel.grid.major.y = element_blank(),
-      panel.grid.major.x = element_blank(),
-      plot.margin = unit(c(128, 0, 0, 0), "bigpts")
-    )
+      panel.grid = element_blank(),
+      plot.margin = unit(c(256, 32, 0, 32), "bigpts"),
+      plot.title = element_text(size = 60, hjust = 0.5, vjust = 18)
+    ) +
+    # special theme for graphical abstract
+    theme(
+      plot.background = element_rect(fill = "transparent", color = NA),
+      legend.background = element_rect(fill = "transparent"), 
+      legend.box.background = element_rect(fill = "transparent") 
+    ),
+  filename = here("Plots", "group_mean_doy_differences.png"), width = 20, height = 15,
+  bg = "transparent"
 )
-
-dev.off()
 
 
 #without raw data
@@ -3403,7 +3498,7 @@ ggsave(
     ) +
     #add labels for differing factor levels
     geom_text(
-      data = pairdiff(stat.int.time, synchrony.slope ~ group),
+      data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
       aes(x = level,
           y = ypos(stat.int.meta$ci.max, 0.25, frac = 0.2), # see above
           label = letter),

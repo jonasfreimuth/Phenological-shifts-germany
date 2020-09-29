@@ -91,13 +91,13 @@ opts <- c()
 
 #define function for species plotting
 specplot <-  function(data, spec) {
-    print(
-      ggplot(filter(data, species == spec),
-             aes(year, mean.doy)) +
-        geom_pointrange(aes(ymin = ci.min.doy, ymax = ci.max.doy)) +
-        geom_smooth(method = "lm") +
-        theme_minimal()
-    )
+  print(
+    ggplot(filter(data, species == spec),
+           aes(year, mean.doy)) +
+      geom_pointrange(aes(ymin = ci.min.doy, ymax = ci.max.doy)) +
+      geom_smooth(method = "lm") +
+      theme_minimal()
+  )
 }
 
 # define function for checking the existence of a directory
@@ -263,84 +263,84 @@ slopes <- function(data, formula = mean.doy ~ year,
   
   #select summary vars according to tax level
   # there's porbably a better way to do this but i can't be asked right now
-    if(taxon == "species") {
-      
-      #make a list of col names
-      sum_vars <- syms(
-        list(
-          "kingdom",
-          "phylum",
-          "order",
-          "id.grp",
-          "family",
-          "genus",
-          "species"
-        )
+  if(taxon == "species") {
+    
+    #make a list of col names
+    sum_vars <- syms(
+      list(
+        "kingdom",
+        "phylum",
+        "order",
+        "id.grp",
+        "family",
+        "genus",
+        "species"
       )
-      
-      
-    } else if (taxon == "genus") {
-      
-     #make a list of col names
-      sum_vars <- syms(
-        list(
-          "kingdom",
-          "phylum",
-          "order",
-          "id.grp",
-          "family",
-          "genus"
-        )
+    )
+    
+    
+  } else if (taxon == "genus") {
+    
+    #make a list of col names
+    sum_vars <- syms(
+      list(
+        "kingdom",
+        "phylum",
+        "order",
+        "id.grp",
+        "family",
+        "genus"
       )
-      
-      #add the additional vars to the list
-      sum_vars <-  c(sum_vars, lapply(add_vars, quo_get_expr))
-      
-    } else if (taxon == "family") {
-      
-       #make a list of col names
-      sum_vars <- syms(
-        list(
-          "kingdom",
-          "phylum",
-          "order",
-          "id.grp",
-          "family"
-        )
+    )
+    
+    #add the additional vars to the list
+    sum_vars <-  c(sum_vars, lapply(add_vars, quo_get_expr))
+    
+  } else if (taxon == "family") {
+    
+    #make a list of col names
+    sum_vars <- syms(
+      list(
+        "kingdom",
+        "phylum",
+        "order",
+        "id.grp",
+        "family"
       )
-      
-    } else if (taxon == "order") {
-       
-      #make a list of col names
-      sum_vars <- syms(
-        list(
-          "kingdom",
-          "phylum",
-          "order",
-          "id.grp"
-        )
+    )
+    
+  } else if (taxon == "order") {
+    
+    #make a list of col names
+    sum_vars <- syms(
+      list(
+        "kingdom",
+        "phylum",
+        "order",
+        "id.grp"
       )
-      
-    } else if (taxon == "phylum") {
-        
-      #make a list of col names
-      sum_vars <- syms(
-        list(
-          "kingdom",
-          "phylum"
-        )
+    )
+    
+  } else if (taxon == "phylum") {
+    
+    #make a list of col names
+    sum_vars <- syms(
+      list(
+        "kingdom",
+        "phylum"
       )
-      
-    } else if (taxon == "kingdom") {
-        
-     #make a list of col names
-      sum_vars <- syms(
-        list(
-          "kingdom"
-        )
+    )
+    
+  } else if (taxon == "kingdom") {
+    
+    #make a list of col names
+    sum_vars <- syms(
+      list(
+        "kingdom"
       )
-      
-    }
+    )
+    
+  }
   
   # add the additional vars to the list
   sum_vars <-  c(sum_vars, lapply(add_vars, quo_get_expr))
@@ -453,16 +453,16 @@ trait <- function(data = dat.occ.plant, var, trait_name, min_spec = 2) {
   #calculate N, mean and sd of slopes 
   stat.traits.meta <- stat.traits %>%
     group_by(trait) %>%
-  summarise(n.slope = length(slope),
-            mean.slope = mean(slope),
-            sd.slope = sd(slope),
-            se.slope = sd(slope)/sqrt(length(slope)),
-            ci.min = ci.min(slope),
-            ci.max = ci.max(slope),
-            adv.frac = sum(slope < 0)/length(slope),
-            var = toString(quo_get_expr(var)),
-            )
- 
+    summarise(n.slope = length(slope),
+              mean.slope = mean(slope),
+              sd.slope = sd(slope),
+              se.slope = sd(slope)/sqrt(length(slope)),
+              ci.min = ci.min(slope),
+              ci.max = ci.max(slope),
+              adv.frac = sum(slope < 0)/length(slope),
+              var = toString(quo_get_expr(var)),
+    )
+  
   ## ANOVA   ----------------------------------------------------
   
   mod.trait <- aov(data = stat.traits, slope ~ trait)
@@ -495,54 +495,54 @@ analyse.trait <- function(trait = Habitat, data = dat.occ.plant) {
   stat.trait.time <- trait(var = year, trait_name = !! trait, data = data) 
   
   stat.trait.temp <- trait(var = y_mean_temp, trait_name = !! trait, data = data)
- 
+  
   #abbreviate trait name from here
   trait <- sym(abbreviate(tolower(quo_get_expr(trait)), 7, strict = TRUE))
   
   trait <- enquo(trait)
   
   print(
-  #plot results for time
-  ggplot() +
-    geom_jitter(data = stat.trait.time$stat,
-                aes(x = !! trait, y = slope),
-                alpha = 0.5, col = "grey", width = 0.2) +
-    geom_errorbar(data = stat.trait.time$meta,
-                  aes(x = !! trait, ymin = ci.min, ymax = ci.max),
-                  col = "#2F5496", size = 1) +
-    geom_point(data = stat.trait.time$meta,
-               aes(x = !! trait, y = mean.slope),
-               col = "#2F5496", size = 2) +
-    geom_text(data = stat.trait.time$meta, 
-              aes(x = !! trait, y = 5, label = paste0("n =  \n", n.slope)),
-              col = "gray32") +
-    labs(x = str_glue("{as.character(quo_get_expr(trait))}"),
-         y = "Mean Slope [days/a] (\u00B1 95% CI)",
-         title = str_glue("Mean slope differences between {as.character(quo_get_expr(trait))}s over time")) +
-    theme_minimal()
+    #plot results for time
+    ggplot() +
+      geom_jitter(data = stat.trait.time$stat,
+                  aes(x = !! trait, y = slope),
+                  alpha = 0.5, col = "grey", width = 0.2) +
+      geom_errorbar(data = stat.trait.time$meta,
+                    aes(x = !! trait, ymin = ci.min, ymax = ci.max),
+                    col = "#2F5496", size = 1) +
+      geom_point(data = stat.trait.time$meta,
+                 aes(x = !! trait, y = mean.slope),
+                 col = "#2F5496", size = 2) +
+      geom_text(data = stat.trait.time$meta, 
+                aes(x = !! trait, y = 5, label = paste0("n =  \n", n.slope)),
+                col = "gray32") +
+      labs(x = str_glue("{as.character(quo_get_expr(trait))}"),
+           y = "Mean Slope [days/a] (\u00B1 95% CI)",
+           title = str_glue("Mean slope differences between {as.character(quo_get_expr(trait))}s over time")) +
+      theme_minimal()
   )
   
   print(
-  #plot results for temp
-  ggplot() +
-    geom_jitter(data = stat.trait.temp$stat,
-                aes(x = !! trait, y = slope),
-                alpha = 0.5, col = "grey", width = 0.2) +
-    geom_errorbar(data = stat.trait.temp$meta,
-                  aes(x = !! trait, ymin = ci.min, ymax = ci.max),
-                  col = "#2F5496", size = 1) +
-    geom_point(data = stat.trait.temp$meta,
-               aes(x = !! trait, y = mean.slope),
-               col = "#2F5496", size = 2) +
-    geom_text(data = stat.trait.temp$meta, 
-              aes(x = !! trait, y = 44, label = paste0("n =  \n", n.slope)),
-              col = "gray32") +
-    labs(x = str_glue("{as.character(quo_get_expr(trait))}"),
-         y = "Mean Slope [days/\u00B0C] (\u00B1 95% CI)",
-         title = str_glue(
-           "Mean slope differences between {as.character(quo_get_expr(trait))}s with temp")
-         ) +
-    theme_minimal())
+    #plot results for temp
+    ggplot() +
+      geom_jitter(data = stat.trait.temp$stat,
+                  aes(x = !! trait, y = slope),
+                  alpha = 0.5, col = "grey", width = 0.2) +
+      geom_errorbar(data = stat.trait.temp$meta,
+                    aes(x = !! trait, ymin = ci.min, ymax = ci.max),
+                    col = "#2F5496", size = 1) +
+      geom_point(data = stat.trait.temp$meta,
+                 aes(x = !! trait, y = mean.slope),
+                 col = "#2F5496", size = 2) +
+      geom_text(data = stat.trait.temp$meta, 
+                aes(x = !! trait, y = 44, label = paste0("n =  \n", n.slope)),
+                col = "gray32") +
+      labs(x = str_glue("{as.character(quo_get_expr(trait))}"),
+           y = "Mean Slope [days/\u00B0C] (\u00B1 95% CI)",
+           title = str_glue(
+             "Mean slope differences between {as.character(quo_get_expr(trait))}s with temp")
+      ) +
+      theme_minimal())
   
   
   cat("\nAnova mean time slope diffferences:\n\n")
@@ -557,11 +557,11 @@ analyse.trait <- function(trait = Habitat, data = dat.occ.plant) {
     filter(`p adj` <= 0.05)
   
   if (nrow(stat.trait.time.posthoc) > 0) {
-  
-  cat("\n\n Differences from Tukey HSD Test:\n\n")
-  
-  print.data.frame(stat.trait.time.posthoc)
-  
+    
+    cat("\n\n Differences from Tukey HSD Test:\n\n")
+    
+    print.data.frame(stat.trait.time.posthoc)
+    
   } else {
     
     cat("\n\n No significant pairwise differences.")
@@ -579,12 +579,12 @@ analyse.trait <- function(trait = Habitat, data = dat.occ.plant) {
     mutate(pairs = unlist(attr(stat.trait.temp.posthoc[["trait"]], "dimnames")[1])) %>%
     filter(`p adj` <= 0.05)
   
-   if (nrow(stat.trait.temp.posthoc) > 0) {
-  
-  cat("\n\n Differences from Tukey HSD Test:\n\n")
-  
-  print.data.frame(stat.trait.temp.posthoc)
-  
+  if (nrow(stat.trait.temp.posthoc) > 0) {
+    
+    cat("\n\n Differences from Tukey HSD Test:\n\n")
+    
+    print.data.frame(stat.trait.temp.posthoc)
+    
   } else {
     
     cat("\n\n No significant pairwise differences.")
@@ -661,7 +661,7 @@ if(run.occ.get |
 
 # check if it is necessary to run the whole script in principle
 if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
-   
+  
   # now check whether there were changes in the data i.e. we had to run the occurrence getting script
   # if not, it should be save to just load the previous data and stop
   if (! run.occ.get) {
@@ -682,8 +682,8 @@ if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
     
   }
   
-   
- }
+  
+}
 
 ```
 
@@ -762,7 +762,7 @@ plot(lm(y_mean_temp ~ year, dat.temp), which = c(1, 2, 5))
 
 
 ## Graphic data exploration
-    
+
 
 ```{r Calculating pla poll slopes, echo=FALSE}
 
@@ -826,7 +826,7 @@ ggplot() +
        x = "Yearly mean Temperature [°C]",
        y = "DOY")
 ```
-  
+
 Correcting for Order differences:  
 
 ```{r Plot Plant Pollinator reaction corrected}
@@ -849,7 +849,7 @@ ggplot(data = dat.occ,
               slope = coef.time[2,1], size = 1.5, col = "#f97970") +
   geom_abline(intercept = (coef.time[1,1] + coef.time[3,1]),
               slope = (coef.time[2,1] + coef.time[4,1]), size = 1.5, col = "#01bec3") +
-   labs(x = "Year", 
+  labs(x = "Year", 
        y = "DOY", 
        title = "Linear model output with raw data") +
   theme_minimal()
@@ -886,9 +886,9 @@ cat("Pollinator Slope: ", round(coef.temp[2,1], 3), " days per degree\n",
     "Plant Slope: ", round(coef.temp[2,1] + coef.temp[4,1], 3), " days per degree\n")
 
 ```
-  
+
 Plot relatioships of Plant orders:  
-  
+
 ```{r echo=FALSE}
 
 #prepare datasets with pvals
@@ -937,9 +937,9 @@ ggplot() +
        title = "Linear Relationship between between year and Collection Day\nfor plant orders")
 
 ```
-  
+
 Plot relatioships of Pollinator orders:  
-  
+
 ```{r echo=FALSE}
 
 #prepare datasets with pvals
@@ -1075,91 +1075,91 @@ gridExtra::grid.arrange(plt.dur.dec, plt.first.dec, plt.last.dec, p.temp +
 stat.spec.dur <- bind_cols(select(slopes(dat.occ.dur.dec, duration ~ decade, time_var = decade),
                                   -rsquared, -fstat),
                            rename_all(select(slopes(dat.occ.dur.dec, min.doy ~ decade, time_var = decade),
-                                  slope, intercept, pval, fdr.pval, df, ci.min, ci.max),
-                                  function(x) str_glue("{x}.first")),
+                                             slope, intercept, pval, fdr.pval, df, ci.min, ci.max),
+                                      function(x) str_glue("{x}.first")),
                            rename_all(select(slopes(dat.occ.dur.dec, max.doy ~ decade, time_var = decade),
-                                  slope, intercept, pval, fdr.pval, df, ci.min, ci.max),
-                                  function(x) str_glue("{x}.last"))) %>%
+                                             slope, intercept, pval, fdr.pval, df, ci.min, ci.max),
+                                      function(x) str_glue("{x}.last"))) %>%
   # also calculate asymetry of slope of last and first doy
   mutate(slope.diff = abs(slope.last) - abs(slope.first))
- 
+
 # calculate meta stats for groups and insects overall
 stat.spec.dur.meta <- stat.spec.dur %>%
-    group_by(id.grp) %>%
-    summarise(n.slope = length(slope),
-              mean.slope = mean(slope),
-              sd.slope = sd(slope),
-              se.slope = sd(slope)/sqrt(length(slope)),
-              ci.min = ci.min(slope),
-              ci.max = ci.max(slope),
-              adv.frac = sum(slope < 0)/length(slope),
-              # for firs day of flight
-              n.slope.first = length(slope.first),
-              mean.slope.first = mean(slope.first),
-              sd.slope.first = sd(slope.first),
-              se.slope.first = sd(slope.first)/sqrt(length(slope.first)),
-              ci.min.first = ci.min(slope.first),
-              ci.max.first = ci.max(slope.first),
-              adv.frac.first = sum(slope.first < 0)/length(slope.first),
-              # for last day of flight
-              n.slope.last = length(slope.last),
-              mean.slope.last = mean(slope.last),
-              sd.slope.last = sd(slope.last),
-              se.slope.last = sd(slope.last)/sqrt(length(slope.last)),
-              ci.min.last = ci.min(slope.last),
-              ci.max.last = ci.max(slope.last),
-              adv.frac.last = sum(slope.last < 0)/length(slope.last),
-              # for slope.diff difference
-              n.slope.diff = length(slope.diff),
-              mean.slope.diff = mean(slope.diff),
-              sd.slope.diff = sd(slope.diff),
-              se.slope.diff = sd(slope.diff)/sqrt(length(slope.diff)),
-              ci.min.diff = ci.min(slope.diff),
-              ci.max.diff = ci.max(slope.diff),
-              adv.frac.diff = sum(slope.diff < 0)/length(slope.diff))
-  
+  group_by(id.grp) %>%
+  summarise(n.slope = length(slope),
+            mean.slope = mean(slope),
+            sd.slope = sd(slope),
+            se.slope = sd(slope)/sqrt(length(slope)),
+            ci.min = ci.min(slope),
+            ci.max = ci.max(slope),
+            adv.frac = sum(slope < 0)/length(slope),
+            # for firs day of flight
+            n.slope.first = length(slope.first),
+            mean.slope.first = mean(slope.first),
+            sd.slope.first = sd(slope.first),
+            se.slope.first = sd(slope.first)/sqrt(length(slope.first)),
+            ci.min.first = ci.min(slope.first),
+            ci.max.first = ci.max(slope.first),
+            adv.frac.first = sum(slope.first < 0)/length(slope.first),
+            # for last day of flight
+            n.slope.last = length(slope.last),
+            mean.slope.last = mean(slope.last),
+            sd.slope.last = sd(slope.last),
+            se.slope.last = sd(slope.last)/sqrt(length(slope.last)),
+            ci.min.last = ci.min(slope.last),
+            ci.max.last = ci.max(slope.last),
+            adv.frac.last = sum(slope.last < 0)/length(slope.last),
+            # for slope.diff difference
+            n.slope.diff = length(slope.diff),
+            mean.slope.diff = mean(slope.diff),
+            sd.slope.diff = sd(slope.diff),
+            se.slope.diff = sd(slope.diff)/sqrt(length(slope.diff)),
+            ci.min.diff = ci.min(slope.diff),
+            ci.max.diff = ci.max(slope.diff),
+            adv.frac.diff = sum(slope.diff < 0)/length(slope.diff))
+
 stat.spec.dur.poll.meta <-  stat.spec.dur %>% 
-    filter(kingdom == "Animalia") %>%
-    mutate(id.grp = "Insects overall") %>% 
-    group_by(id.grp) %>%
-    summarise(n.slope = length(slope),
-              mean.slope = mean(slope),
-              sd.slope = sd(slope),
-              se.slope = sd(slope)/sqrt(length(slope)),
-              ci.min = ci.min(slope),
-              ci.max = ci.max(slope),
-              adv.frac = sum(slope < 0)/length(slope),
-              # for firs day of flight
-              n.slope.first = length(slope.first),
-              mean.slope.first = mean(slope.first),
-              sd.slope.first = sd(slope.first),
-              se.slope.first = sd(slope.first)/sqrt(length(slope.first)),
-              ci.min.first = ci.min(slope.first),
-              ci.max.first = ci.max(slope.first),
-              adv.frac.first = sum(slope.first < 0)/length(slope.first),
-              # for last day of flight
-              n.slope.last = length(slope.last),
-              mean.slope.last = mean(slope.last),
-              sd.slope.last = sd(slope.last),
-              se.slope.last = sd(slope.last)/sqrt(length(slope.last)),
-              ci.min.last = ci.min(slope.last),
-              ci.max.last = ci.max(slope.last),
-              adv.frac.last = sum(slope.last < 0)/length(slope.last),
-              # for slope.diff difference
-              n.slope.diff = length(slope.diff),
-              mean.slope.diff = mean(slope.diff),
-              sd.slope.diff = sd(slope.diff),
-              se.slope.diff = sd(slope.diff)/sqrt(length(slope.diff)),
-              ci.min.diff = ci.min(slope.diff),
-              ci.max.diff = ci.max(slope.diff),
-              adv.frac.diff = sum(slope.diff < 0)/length(slope.diff))
+  filter(kingdom == "Animalia") %>%
+  mutate(id.grp = "Insects overall") %>% 
+  group_by(id.grp) %>%
+  summarise(n.slope = length(slope),
+            mean.slope = mean(slope),
+            sd.slope = sd(slope),
+            se.slope = sd(slope)/sqrt(length(slope)),
+            ci.min = ci.min(slope),
+            ci.max = ci.max(slope),
+            adv.frac = sum(slope < 0)/length(slope),
+            # for firs day of flight
+            n.slope.first = length(slope.first),
+            mean.slope.first = mean(slope.first),
+            sd.slope.first = sd(slope.first),
+            se.slope.first = sd(slope.first)/sqrt(length(slope.first)),
+            ci.min.first = ci.min(slope.first),
+            ci.max.first = ci.max(slope.first),
+            adv.frac.first = sum(slope.first < 0)/length(slope.first),
+            # for last day of flight
+            n.slope.last = length(slope.last),
+            mean.slope.last = mean(slope.last),
+            sd.slope.last = sd(slope.last),
+            se.slope.last = sd(slope.last)/sqrt(length(slope.last)),
+            ci.min.last = ci.min(slope.last),
+            ci.max.last = ci.max(slope.last),
+            adv.frac.last = sum(slope.last < 0)/length(slope.last),
+            # for slope.diff difference
+            n.slope.diff = length(slope.diff),
+            mean.slope.diff = mean(slope.diff),
+            sd.slope.diff = sd(slope.diff),
+            se.slope.diff = sd(slope.diff)/sqrt(length(slope.diff)),
+            ci.min.diff = ci.min(slope.diff),
+            ci.max.diff = ci.max(slope.diff),
+            adv.frac.diff = sum(slope.diff < 0)/length(slope.diff))
 
 # check for difference in asymmetry of duration shift between kingdoms
 ttest.dur <- t.test(slope.diff ~ kingdom, stat.spec.dur)
 
 ttest.dur <- data.frame(plapoll = ttest.dur[["p.value"]]) %>%
   mutate_all(cut, breaks = c(0, 0.001, 0.01, 0.05, 0.1, 1), labels = c("***", "**", "*", ".", "n.s."),
-                      right = FALSE)
+             right = FALSE)
 
 
 ```
@@ -1169,15 +1169,15 @@ ttest.dur <- data.frame(plapoll = ttest.dur[["p.value"]]) %>%
 
 # function for generating plots of duration shift slopes
 dur_slope_plot <- function(x = id.grp,
-                     y = slope,
-                     ymeta = mean.slope,
-                     ymin = ci.min,
-                     ymax = ci.max,
-                     ...,
-                     data = stat.spec.dur,
-                     metadata = stat.spec.dur.meta,
-                     title = NULL, xlab = NULL, ylab = NULL,
-                     ylim = NULL) {
+                           y = slope,
+                           ymeta = mean.slope,
+                           ymin = ci.min,
+                           ymax = ci.max,
+                           ...,
+                           data = stat.spec.dur,
+                           metadata = stat.spec.dur.meta,
+                           title = NULL, xlab = NULL, ylab = NULL,
+                           ylim = NULL) {
   
   x <- enquo(x)
   y <- enquo(y)
@@ -1226,28 +1226,28 @@ dur_slope_plot <- function(x = id.grp,
 }
 
 slope_dec_dur <- dur_slope_plot(xlab = "Group", ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-               title = "Group shift of decadal mean\nduration of activity over time")
+                                title = "Group shift of decadal mean\nduration of activity over time")
 
 slope_dec_first <- dur_slope_plot(y = slope.first,
-               ymeta = mean.slope.first,
-               ymin = ci.min.first,
-               ymax = ci.max.first,
-               xlab = "Group", ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-               title = "Group shift of\ndecadal mean first day of activity over time")
+                                  ymeta = mean.slope.first,
+                                  ymin = ci.min.first,
+                                  ymax = ci.max.first,
+                                  xlab = "Group", ylab = "Mean slope [days/year] (\u00B1 95% CI)",
+                                  title = "Group shift of\ndecadal mean first day of activity over time")
 
 slope_dec_last <- dur_slope_plot(y = slope.last,
-               ymeta = mean.slope.last,
-               ymin = ci.min.last,
-               ymax = ci.max.last,
-               xlab = "Group", ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-               title = "Group shift of\ndecadal mean last day of activity over time")
+                                 ymeta = mean.slope.last,
+                                 ymin = ci.min.last,
+                                 ymax = ci.max.last,
+                                 xlab = "Group", ylab = "Mean slope [days/year] (\u00B1 95% CI)",
+                                 title = "Group shift of\ndecadal mean last day of activity over time")
 
 slope_dec_diff <- dur_slope_plot(y = slope.diff,
-               ymeta = mean.slope.diff,
-               ymin = ci.min.diff,
-               ymax = ci.max.diff,
-               xlab = "Group", ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-               title = "Group differences of shift of decadal mean first\nand last day of activity over time")
+                                 ymeta = mean.slope.diff,
+                                 ymin = ci.min.diff,
+                                 ymax = ci.max.diff,
+                                 xlab = "Group", ylab = "Mean slope [days/year] (\u00B1 95% CI)",
+                                 title = "Group differences of shift of decadal mean first\nand last day of activity over time")
 
 gridExtra::grid.arrange(slope_dec_first, slope_dec_last, slope_dec_diff, slope_dec_dur)
 
@@ -1257,13 +1257,13 @@ gridExtra::grid.arrange(slope_dec_first, slope_dec_last, slope_dec_diff, slope_d
 
 ggplot() +
   geom_point(aes(slope.diff, slope, group = id.grp),
-       data = stat.spec.dur,
-       alpha = 0.5,
-       col = "gray50") +
+             data = stat.spec.dur,
+             alpha = 0.5,
+             col = "gray50") +
   geom_point(aes(mean.slope.diff, mean.slope, col = id.grp),
              data = stat.spec.dur.meta,
              size = 3
-             ) +
+  ) +
   geom_errorbar(aes(x = mean.slope.diff,
                     ymin = ci.min,
                     ymax = ci.max, col = id.grp),
@@ -1292,10 +1292,10 @@ dat.occ.2k <- filter(dat.occ, year >= thr.2k.min & year <= thr.2k.max)
 
 # function for generating plots of duration shift plots
 dur_plot_2k <- function(x = decade,
-                     y = duration,
-                     ...,
-                     data = dat.occ.dur.dec,
-                     title = NULL, xlab = NULL, ylab = NULL) {
+                        y = duration,
+                        ...,
+                        data = dat.occ.dur.dec,
+                        title = NULL, xlab = NULL, ylab = NULL) {
   
   x <- enquo(x)
   y <- enquo(y)
@@ -1318,23 +1318,23 @@ dur_plot_2k <- function(x = decade,
          x = xlab,
          y = ylab) +
     theme_minimal() +
-  theme(legend.position = "bottom")
+    theme(legend.position = "bottom")
   
   return(plot)
   
 }
 
 p.dur <- dur_plot_2k(x = year, y = duration, col = id.grp,
-                  data = dat.occ.2k,
-                  title = str_glue("Duration of activity (last - first doy) over time
+                     data = dat.occ.2k,
+                     title = str_glue("Duration of activity (last - first doy) over time
                                    ({thr.2k.min} - {thr.2k.max})"),
-                  ylab = "Duration [days]")
+                     ylab = "Duration [days]")
 
 p.first <- dur_plot_2k(x = year, y = min.doy, col = id.grp,
-                  data = dat.occ.2k,
-                  title = str_glue("First occurrence DOY over time
+                       data = dat.occ.2k,
+                       title = str_glue("First occurrence DOY over time
                                    ({thr.2k.min} - {thr.2k.max})"),
-                  ylab = "First DOY")
+                       ylab = "First DOY")
 
 p.last <- dur_plot_2k(x = year, y = max.doy, col = id.grp,
                       data = dat.occ.2k,
@@ -1364,138 +1364,138 @@ ggplot(dat.n,
        x = "Year",
        y = "# of records") +
   theme_minimal()
-    
+
 ```
 
 ```{r}
 # get slopes for first, last doy and their difference (duration) into a df
 stat.spec.dur.2k <- bind_cols(select(slopes(dat.occ.2k, duration ~ year, thr = 2),
-                                  -rsquared, -fstat),
-                           rename_all(select(slopes(dat.occ.2k, min.doy ~ year, time_var = year, thr = 2),
-                                  slope, intercept, pval, fdr.pval, df, ci.min, ci.max),
-                                  function(x) str_glue("{x}.first")),
-                           rename_all(select(slopes(dat.occ.2k, max.doy ~ year, time_var = year, thr = 2),
-                                  slope, intercept, pval, fdr.pval, df, ci.min, ci.max),
-                                  function(x) str_glue("{x}.last"))) %>%
+                                     -rsquared, -fstat),
+                              rename_all(select(slopes(dat.occ.2k, min.doy ~ year, time_var = year, thr = 2),
+                                                slope, intercept, pval, fdr.pval, df, ci.min, ci.max),
+                                         function(x) str_glue("{x}.first")),
+                              rename_all(select(slopes(dat.occ.2k, max.doy ~ year, time_var = year, thr = 2),
+                                                slope, intercept, pval, fdr.pval, df, ci.min, ci.max),
+                                         function(x) str_glue("{x}.last"))) %>%
   # also calculate difference of slope of last and first doy
   mutate(slope.diff = abs(slope.last) - abs(slope.first))
- 
+
 # calculate meta stats for groups and insects overall
 stat.spec.dur.2k.meta <- stat.spec.dur.2k %>%
-    group_by(id.grp) %>%
-    summarise(n.slope = length(slope),
-              mean.slope = mean(slope),
-              sd.slope = sd(slope),
-              se.slope = sd(slope)/sqrt(length(slope)),
-              ci.min = ci.min(slope),
-              ci.max = ci.max(slope),
-              adv.frac = sum(slope < 0)/length(slope),
-              # for firs day of flight
-              n.slope.first = length(slope.first),
-              mean.slope.first = mean(slope.first),
-              sd.slope.first = sd(slope.first),
-              se.slope.first = sd(slope.first)/sqrt(length(slope.first)),
-              ci.min.first = ci.min(slope.first),
-              ci.max.first = ci.max(slope.first),
-              adv.frac.first = sum(slope.first < 0)/length(slope.first),
-              # for last day of flight
-              n.slope.last = length(slope.last),
-              mean.slope.last = mean(slope.last),
-              sd.slope.last = sd(slope.last),
-              se.slope.last = sd(slope.last)/sqrt(length(slope.last)),
-              ci.min.last = ci.min(slope.last),
-              ci.max.last = ci.max(slope.last),
-              adv.frac.last = sum(slope.last < 0)/length(slope.last),
-              # for slope.diff difference
-              n.slope.diff = length(slope.diff),
-              mean.slope.diff = mean(slope.diff),
-              sd.slope.diff = sd(slope.diff),
-              se.slope.diff = sd(slope.diff)/sqrt(length(slope.diff)),
-              ci.min.diff = ci.min(slope.diff),
-              ci.max.diff = ci.max(slope.diff),
-              adv.frac.diff = sum(slope.diff < 0)/length(slope.diff))
-  
+  group_by(id.grp) %>%
+  summarise(n.slope = length(slope),
+            mean.slope = mean(slope),
+            sd.slope = sd(slope),
+            se.slope = sd(slope)/sqrt(length(slope)),
+            ci.min = ci.min(slope),
+            ci.max = ci.max(slope),
+            adv.frac = sum(slope < 0)/length(slope),
+            # for firs day of flight
+            n.slope.first = length(slope.first),
+            mean.slope.first = mean(slope.first),
+            sd.slope.first = sd(slope.first),
+            se.slope.first = sd(slope.first)/sqrt(length(slope.first)),
+            ci.min.first = ci.min(slope.first),
+            ci.max.first = ci.max(slope.first),
+            adv.frac.first = sum(slope.first < 0)/length(slope.first),
+            # for last day of flight
+            n.slope.last = length(slope.last),
+            mean.slope.last = mean(slope.last),
+            sd.slope.last = sd(slope.last),
+            se.slope.last = sd(slope.last)/sqrt(length(slope.last)),
+            ci.min.last = ci.min(slope.last),
+            ci.max.last = ci.max(slope.last),
+            adv.frac.last = sum(slope.last < 0)/length(slope.last),
+            # for slope.diff difference
+            n.slope.diff = length(slope.diff),
+            mean.slope.diff = mean(slope.diff),
+            sd.slope.diff = sd(slope.diff),
+            se.slope.diff = sd(slope.diff)/sqrt(length(slope.diff)),
+            ci.min.diff = ci.min(slope.diff),
+            ci.max.diff = ci.max(slope.diff),
+            adv.frac.diff = sum(slope.diff < 0)/length(slope.diff))
+
 stat.spec.dur.2k.poll.meta <-  stat.spec.dur.2k %>% 
-    filter(kingdom == "Animalia") %>%
-    mutate(id.grp = "Insects overall") %>% 
-    group_by(id.grp) %>%
-    summarise(n.slope = length(slope),
-              mean.slope = mean(slope),
-              sd.slope = sd(slope),
-              se.slope = sd(slope)/sqrt(length(slope)),
-              ci.min = ci.min(slope),
-              ci.max = ci.max(slope),
-              adv.frac = sum(slope < 0)/length(slope),
-              # for firs day of flight
-              n.slope.first = length(slope.first),
-              mean.slope.first = mean(slope.first),
-              sd.slope.first = sd(slope.first),
-              se.slope.first = sd(slope.first)/sqrt(length(slope.first)),
-              ci.min.first = ci.min(slope.first),
-              ci.max.first = ci.max(slope.first),
-              adv.frac.first = sum(slope.first < 0)/length(slope.first),
-              # for last day of flight
-              n.slope.last = length(slope.last),
-              mean.slope.last = mean(slope.last),
-              sd.slope.last = sd(slope.last),
-              se.slope.last = sd(slope.last)/sqrt(length(slope.last)),
-              ci.min.last = ci.min(slope.last),
-              ci.max.last = ci.max(slope.last),
-              adv.frac.last = sum(slope.last < 0)/length(slope.last),
-              # for slope.diff difference
-              n.slope.diff = length(slope.diff),
-              mean.slope.diff = mean(slope.diff),
-              sd.slope.diff = sd(slope.diff),
-              se.slope.diff = sd(slope.diff)/sqrt(length(slope.diff)),
-              ci.min.diff = ci.min(slope.diff),
-              ci.max.diff = ci.max(slope.diff),
-              adv.frac.diff = sum(slope.diff < 0)/length(slope.diff))
+  filter(kingdom == "Animalia") %>%
+  mutate(id.grp = "Insects overall") %>% 
+  group_by(id.grp) %>%
+  summarise(n.slope = length(slope),
+            mean.slope = mean(slope),
+            sd.slope = sd(slope),
+            se.slope = sd(slope)/sqrt(length(slope)),
+            ci.min = ci.min(slope),
+            ci.max = ci.max(slope),
+            adv.frac = sum(slope < 0)/length(slope),
+            # for firs day of flight
+            n.slope.first = length(slope.first),
+            mean.slope.first = mean(slope.first),
+            sd.slope.first = sd(slope.first),
+            se.slope.first = sd(slope.first)/sqrt(length(slope.first)),
+            ci.min.first = ci.min(slope.first),
+            ci.max.first = ci.max(slope.first),
+            adv.frac.first = sum(slope.first < 0)/length(slope.first),
+            # for last day of flight
+            n.slope.last = length(slope.last),
+            mean.slope.last = mean(slope.last),
+            sd.slope.last = sd(slope.last),
+            se.slope.last = sd(slope.last)/sqrt(length(slope.last)),
+            ci.min.last = ci.min(slope.last),
+            ci.max.last = ci.max(slope.last),
+            adv.frac.last = sum(slope.last < 0)/length(slope.last),
+            # for slope.diff difference
+            n.slope.diff = length(slope.diff),
+            mean.slope.diff = mean(slope.diff),
+            sd.slope.diff = sd(slope.diff),
+            se.slope.diff = sd(slope.diff)/sqrt(length(slope.diff)),
+            ci.min.diff = ci.min(slope.diff),
+            ci.max.diff = ci.max(slope.diff),
+            adv.frac.diff = sum(slope.diff < 0)/length(slope.diff))
 ```
 
 ```{r, fig.width=10,fig.height=7}
 
 slope_dur <- dur_slope_plot(y = slope,
-               ymeta = mean.slope,
-               ymin = ci.min,
-               ymax = ci.max,
-               data = stat.spec.dur.2k,
-               metadata = stat.spec.dur.2k.meta,
-               xlab = "Group",
-               ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-               title = str_glue("Group shift of yearly mean
+                            ymeta = mean.slope,
+                            ymin = ci.min,
+                            ymax = ci.max,
+                            data = stat.spec.dur.2k,
+                            metadata = stat.spec.dur.2k.meta,
+                            xlab = "Group",
+                            ylab = "Mean slope [days/year] (\u00B1 95% CI)",
+                            title = str_glue("Group shift of yearly mean
                                 duration of flight over time ({thr.2k.min} - {thr.2k.max})"))
 
 slope_first <- dur_slope_plot(y = slope.first,
-               ymeta = mean.slope.first,
-               ymin = ci.min.first,
-               ymax = ci.max.first,
-               data = stat.spec.dur.2k,
-               metadata = stat.spec.dur.2k.meta,
-               xlab = "Group",
-               ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-               title = str_glue("Group shift of yearly mean
+                              ymeta = mean.slope.first,
+                              ymin = ci.min.first,
+                              ymax = ci.max.first,
+                              data = stat.spec.dur.2k,
+                              metadata = stat.spec.dur.2k.meta,
+                              xlab = "Group",
+                              ylab = "Mean slope [days/year] (\u00B1 95% CI)",
+                              title = str_glue("Group shift of yearly mean
                                 first day of flight over time ({thr.2k.min} - {thr.2k.max})"))
 
 slope_last <- dur_slope_plot(y = slope.last,
-               ymeta = mean.slope.last,
-               ymin = ci.min.last,
-               ymax = ci.max.last,
-               data = stat.spec.dur.2k,
-               metadata = stat.spec.dur.2k.meta,
-               xlab = "Group",
-               ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-               title = str_glue("Group shift of yearly mean
+                             ymeta = mean.slope.last,
+                             ymin = ci.min.last,
+                             ymax = ci.max.last,
+                             data = stat.spec.dur.2k,
+                             metadata = stat.spec.dur.2k.meta,
+                             xlab = "Group",
+                             ylab = "Mean slope [days/year] (\u00B1 95% CI)",
+                             title = str_glue("Group shift of yearly mean
                last day of flight over time ({thr.2k.min} - {thr.2k.max})"))
 
 slope_diff <- dur_slope_plot(y = slope.diff,
-               ymeta = mean.slope.diff,
-               ymin = ci.min.diff,
-               ymax = ci.max.diff,
-               data = stat.spec.dur.2k,
-               metadata = stat.spec.dur.2k.meta,
-               xlab = "Group",
-               ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-               title = str_glue("Group differences of shift of yearly mean
+                             ymeta = mean.slope.diff,
+                             ymin = ci.min.diff,
+                             ymax = ci.max.diff,
+                             data = stat.spec.dur.2k,
+                             metadata = stat.spec.dur.2k.meta,
+                             xlab = "Group",
+                             ylab = "Mean slope [days/year] (\u00B1 95% CI)",
+                             title = str_glue("Group differences of shift of yearly mean
                                 first and last day of flight over time ({thr.2k.min} - {thr.2k.max})"))
 
 gridExtra::grid.arrange(slope_first, slope_last, slope_diff, slope_dur)
@@ -1523,16 +1523,16 @@ ggplot(dat.occ) +
               method = method, se = se,
               alpha = alpha, col = "red") +
   geom_point(aes(year, mean.doy, group = species),
-              alpha = alpha, col = "black") +
+             alpha = alpha, col = "black") +
   geom_point(aes(year, min.doy, group = species),
-              alpha = alpha, col = "blue") +
+             alpha = alpha, col = "blue") +
   geom_point(aes(year, max.doy, group = species),
-              alpha = alpha, col = "red") +
+             alpha = alpha, col = "red") +
   facet_wrap(~id.grp) +
   labs(title = "Yearly first, last, and mean DOY") +
   # scale_color_manual(name = "Metric") +
   theme_minimal()
-  
+
 # plot decadal data
 ggplot(dat.occ.dur.dec) +
   geom_smooth(aes(decade, mean.doy, group = species),
@@ -1545,22 +1545,22 @@ ggplot(dat.occ.dur.dec) +
               method = method, se = se,
               alpha = alpha, col = "red") +
   geom_point(aes(decade, mean.doy, group = species),
-              alpha = alpha, col = "black") +
+             alpha = alpha, col = "black") +
   geom_point(aes(decade, min.doy, group = species),
-              alpha = alpha, col = "blue") +
+             alpha = alpha, col = "blue") +
   geom_point(aes(decade, max.doy, group = species),
-              alpha = alpha, col = "red") +
+             alpha = alpha, col = "red") +
   facet_wrap(~id.grp) +
   labs(title = "Decadal first, last, and mean DOY") +
   # scale_color_manual(name = "Metric") +
   theme_minimal()
-  
+
 
 
 ```
 
 ## Analyse differences in phenology trends  
-  
+
 
 ```{r Calculating species slopes, echo=FALSE}
 
@@ -1699,7 +1699,7 @@ ggplot(data = stat.spec.time.polls) +
   geom_pointrange(aes(x = reorder(species, -slope),
                       y = slope, ymin = ci.min, ymax = ci.max,
                       alpha = n,),
-                   size = 0.5, col = "#2F5496", pch = 18) +
+                  size = 0.5, col = "#2F5496", pch = 18) +
   coord_flip() +
   facet_wrap(~ order, scales = "free_y", ncol = 2) +
   geom_hline(yintercept = 0, lty = 2) +
@@ -1718,7 +1718,7 @@ ggplot(data = stat.spec.temp.polls) +
   geom_pointrange(aes(x = reorder(species, -slope),
                       y = slope, ymin = ci.min, ymax = ci.max,
                       alpha = n,),
-                   size = 0.5, col = "#2F5496", pch = 18) +
+                  size = 0.5, col = "#2F5496", pch = 18) +
   coord_flip() +
   facet_wrap(~ order, scales = "free_y", ncol = 2) +
   geom_hline(yintercept = 0, lty = 2) +
@@ -1734,10 +1734,10 @@ ggplot(data = stat.spec.temp.polls) +
 ```
 
 ### Differences in slope: t-test  
-  
+
 
 Number of slopes for each group:  
-  
+
 ```{r Calculate Meta statistics}
 
 stat.spec.time <- bind_rows(stat.spec.time.polls, stat.spec.time.plants)
@@ -1785,10 +1785,10 @@ ggplot(stat.spec.temp, aes(x = kingdom)) +
 
 ```
 
-  
+
 
 And now, carry out the t-test:  
-  
+
 ```{r T-Test, echo=FALSE}
 
 #run time t-test
@@ -1803,12 +1803,12 @@ temp.ttest
 ttest.pvals <- data.frame(time = time.ttest[["p.value"]],
                           temp = temp.ttest[["p.value"]]) %>%
   mutate_all(cut, breaks = c(0, 0.001, 0.01, 0.05, 0.1, 1), labels = c("***", "**", "*", ".", "n.s."),
-                      right = FALSE)
+             right = FALSE)
 
 ```
-  
+
 Results as a Plot:   
-  
+
 ```{r Slope differences Plot}
 
 #for time
@@ -1842,13 +1842,13 @@ ggplot() +
 
 
 ```
-  
+
 
 ```{r}
 stat.spec.meta
 ```
 
-      
+
 
 ### Differences in mean between groups: 
 
@@ -1886,14 +1886,14 @@ stat.group.meta
 ```
 
 Checking distribution of slopes:  
-  
+
 ```{r echo=FALSE}
 
 #plot time regression slopes for all groups
 ggplot(data = stat.group.time.meta) +
   geom_jitter(data = filter(stat.spec.time),
               aes(x = id.grp, y = slope,
-                 alpha = n), 
+                  alpha = n), 
               size = 1.5, width = 0.2, col = "gray38") +
   geom_point(aes(x = id.grp, y = mean.slope), col = "#2F5496",
              size = 2) +
@@ -1909,7 +1909,7 @@ ggplot(data = stat.group.time.meta) +
 ggplot(data = stat.group.temp.meta) +
   geom_jitter(data = filter(stat.spec.temp),
               aes(x = id.grp, y = slope,
-                 alpha = n), 
+                  alpha = n), 
               size = 1.5, width = 0.2, col = "gray38") +
   geom_point(aes(x = id.grp, y = mean.slope), col = "#2F5496",
              size = 2) +
@@ -1923,7 +1923,7 @@ ggplot(data = stat.group.temp.meta) +
 
 
 ```
-   
+
 ```{r Testing Differences among groups}
 
 cat("\n!!! HYMNEOPTERA AND DIPTERA EXCLUDED !!!\n")
@@ -1975,10 +1975,10 @@ stat.spec.both.meta <- stat.group.meta %>%
 cor.tests <- lapply(unique(stat.spec.both$id.grp), function(x, data = stat.spec.both) {
   
   stat.grp <- filter(data, id.grp == x)
-
+  
   # make sure data has enough observations for cor.test
   if (nrow(stat.grp) > 1) {
-
+    
     test <- cor.test(stat.grp$time.slope, stat.grp$temp.slope)
     
     res <- data.frame(
@@ -1992,7 +1992,7 @@ cor.tests <- lapply(unique(stat.spec.both$id.grp), function(x, data = stat.spec.
     return(res)
     
   } else {
-
+    
     res <- data.frame(
       id.grp = x,
       cor = NA,
@@ -2002,7 +2002,7 @@ cor.tests <- lapply(unique(stat.spec.both$id.grp), function(x, data = stat.spec.
       stringsAsFactors = FALSE)
     
     return(res)
-
+    
   }
   
 }
@@ -2011,7 +2011,7 @@ cor.tests <- lapply(unique(stat.spec.both$id.grp), function(x, data = stat.spec.
 # bind_rows was acting up, so do.call(rbind) it is
 cor.tests <- do.call(rbind, cor.tests) %>%
   mutate(pval.sig = cut(pval, breaks = c(0, 0.001, 0.01, 0.05, 0.1, 1), labels = c("***", "**", "*", ".", " "),
-                      right = FALSE)) %>% 
+                        right = FALSE)) %>% 
   mutate(pval.sig = str_replace_na(pval.sig, "-")) %>% 
   # also add group sizes for plotting (slightly hacky)
   left_join(select(stat.spec.both.meta, id.grp, n.slope.Year), by = "id.grp")
@@ -2019,26 +2019,26 @@ cor.tests <- do.call(rbind, cor.tests) %>%
 
 ggplot() +
   geom_point(aes(time.slope, temp.slope, group = id.grp),
-       data = stat.spec.both,
-       alpha = 0.5,
-       col = "gray50") +
+             data = stat.spec.both,
+             alpha = 0.5,
+             col = "gray50") +
   geom_errorbar(aes(x = time.slope,
                     ymin = temp.ci.min,
                     ymax = temp.ci.max),
-       data = stat.spec.both,
-       alpha = 0.5,
-       col = "gray50") +
+                data = stat.spec.both,
+                alpha = 0.5,
+                col = "gray50") +
   geom_errorbarh(aes(y = temp.slope,
                      xmin = time.ci.min,
                      xmax = time.ci.max),
-       data = stat.spec.both,
-       alpha = 0.5,
-       col = "gray50"
-       ) +
+                 data = stat.spec.both,
+                 alpha = 0.5,
+                 col = "gray50"
+  ) +
   geom_point(aes(mean.slope.Year, mean.slope.Temperature, col = id.grp),
              data = stat.spec.both.meta,
              size = 3
-             ) +
+  ) +
   geom_errorbar(aes(x = mean.slope.Year,
                     ymin = ci.min.Temperature,
                     ymax = ci.max.Temperature, col = id.grp),
@@ -2095,7 +2095,7 @@ stat.group.2k.temp.meta <- stat.spec.2k.temp %>%
 ggplot(data = stat.group.2k.time.meta) +
   geom_jitter(data = stat.spec.2k.time,
               aes(x = id.grp, y = slope,
-                 alpha = n), 
+                  alpha = n), 
               size = 1.5, width = 0.2, col = "gray38") +
   geom_point(aes(x = id.grp, y = mean.slope), col = "#2F5496",
              size = 2) +
@@ -2113,7 +2113,7 @@ ggplot(data = stat.group.2k.time.meta) +
 ggplot(data = stat.group.2k.temp.meta) +
   geom_jitter(data = stat.spec.2k.temp,
               aes(x = id.grp, y = slope,
-                 alpha = n), 
+                  alpha = n), 
               size = 1.5, width = 0.2, col = "gray38") +
   geom_point(aes(x = id.grp, y = mean.slope), col = "#2F5496",
              size = 2) +
@@ -2325,7 +2325,7 @@ dat.int.temp <- drop_na(dat.int.temp, diff.slope)
 fwrite(dat.int.temp, here("Data", "pla_poll_interactions_temp.csv"))
 
 ```
-  
+
 ```{r Meta stats interactions}
 
 
@@ -2369,14 +2369,14 @@ dat.int.meta <- rbind(dat.int.meta.time, dat.int.meta.temp)
 dat.int.meta
 
 ```
-  
+
 ```{r Plot interaction results}
 
 #plot results for time
 ggplot() +
   geom_jitter(data = dat.int.time,
               aes(x = group, y = diff.slope,
-                 alpha = sum.year),
+                  alpha = sum.year),
               col = "grey35", width = 0.2) +
   geom_errorbar(data = dat.int.meta.time,
                 aes(x = group, ymin = ci.min, ymax = ci.max),
@@ -2397,7 +2397,7 @@ ggplot() +
 ggplot() +
   geom_jitter(data = dat.int.temp,
               aes(x = group, y = diff.slope,
-                 alpha = sum.year),
+                  alpha = sum.year),
               col = "grey35", width = 0.2) +
   geom_errorbar(data = dat.int.meta.temp,
                 aes(x = group, ymin = ci.min, ymax = ci.max),
@@ -2416,7 +2416,7 @@ ggplot() +
 
 
 ```
-  
+
 ```{r Test slope difference difference}
 
 cat("\nAnova mean time slope diffferences:\n\n")
@@ -2443,9 +2443,9 @@ TukeyHSD(mod.int.temp)
 
 
 ```
-  
+
 Differences between yearly mean DOYs in an Interaction over time, plotted all in one:  
-  
+
 ```{r Prune decadal Data}
 
 dat.occ.dec <- fread(here("data", "occurrences_species_decadal_mean_doy_pruned.csv"), showProgress = FALSE) %>%
@@ -2453,15 +2453,15 @@ dat.occ.dec <- fread(here("data", "occurrences_species_decadal_mean_doy_pruned.c
   filter(species %in% dat.int$poll |
            species %in% dat.int$plant) %>%
   #exclude records from 1980s onward
-filter(decade >= 1980) 
+  filter(decade >= 1980) 
 
 #set threshold for records spanning all decades (should mean all decades atm.)
 thr.dec <- round((max(dat.occ.dec$decade) - min(dat.occ.dec$decade))/10)+1
 
 ```
-  
- Looking at indidivual species reactions over the decades:
- 
+
+Looking at indidivual species reactions over the decades:
+
 ```{r Plots, echo=FALSE}
 
 ggplot(# us
@@ -2486,17 +2486,17 @@ ggplot(# us
     name = "Group",
     aesthetics = c("color", "fill"),
     values = c("yellow",
-    "orange",
-    "red",
-    "darkgreen")
+               "orange",
+               "red",
+               "darkgreen")
   ) +
   facet_wrap( ~ id.grp, nrow = 2) +
   theme_minimal() +
   theme(legend.position = "bottom")
 
 ```
-  And now individual interactions:
-  
+And now individual interactions:
+
 ```{r interaction inspection decadal}
 
 #filter interactions down to interactions with both partners having occurrence records
@@ -2532,7 +2532,7 @@ for (i in seq(1, nrow(int.dec))) {
   int.i <- rbind(filter(dat.occ.dec, species == as.character(int.dec$poll [i])) ,
                  filter(dat.occ.dec, species == as.character(int.dec$plant[i])) )
   
-
+  
   # Summarising -----------------------------------------------------
   
   int.i.mean <- int.i %>%
@@ -2580,8 +2580,8 @@ for (i in seq(1, nrow(int.dec))) {
                                 ) {
                                   FALSE
                                 } else {
-                                    TRUE
-                                  }
+                                  TRUE
+                                }
   )
   
   
@@ -2592,12 +2592,12 @@ for (i in seq(1, nrow(int.dec))) {
   
   #extract model output
   stat.int.i.temp <- data.frame(group = int.dec$Group[i],
-                           poll = int.dec$poll[i],
-                           plant = int.dec$plant[i],
-                           yintercept = as.data.frame(sum.i.temp$coefficients)$Estimate[1],
-                           synchrony.slope = as.data.frame(sum.i.temp$coefficients)$Estimate[2],
-                           pval = as.data.frame(sum.i.temp$coefficients)$`Pr(>|t|)`[2],
-                           decades = "all decades",
+                                poll = int.dec$poll[i],
+                                plant = int.dec$plant[i],
+                                yintercept = as.data.frame(sum.i.temp$coefficients)$Estimate[1],
+                                synchrony.slope = as.data.frame(sum.i.temp$coefficients)$Estimate[2],
+                                pval = as.data.frame(sum.i.temp$coefficients)$`Pr(>|t|)`[2],
+                                decades = "all decades",
                                 # also add info on which is the predominantly early partner
                                 # returns both if equally frequent
                                 pred.early.partner = paste(names(which(
@@ -2609,8 +2609,8 @@ for (i in seq(1, nrow(int.dec))) {
                                 ) {
                                   FALSE
                                 } else {
-                                    TRUE
-                                  }
+                                  TRUE
+                                }
   )
   
   
@@ -2784,7 +2784,7 @@ int.mean.temp <- bind_rows(
 
 ```
 
-  Linear model for changes in difference of mean DOY in an Interaction over time:
+Linear model for changes in difference of mean DOY in an Interaction over time:
 
 ```{r Linear model for decadal DOY difference over time}
 
@@ -2858,7 +2858,7 @@ cat("Plots for overall model: \n\n")
 plot(mod.ind.DOY.all, which = c(1, 2, 5))
 ```
 
-  Linear model for changes in difference of mean DOY in an Interaction over time:
+Linear model for changes in difference of mean DOY in an Interaction over time:
 
 ```{r Linear model for fraction of insect earlier over time}
 
@@ -3014,8 +3014,8 @@ ggplot(int.spec.dec,
     name = "Group",
     aesthetics = c("color", "fill"),
     values = c("yellow",
-    "orange",
-    "red")
+               "orange",
+               "red")
   ) +
   labs(x = "Decade",
        y = "Pla-Poll Synchrony") +
@@ -3037,9 +3037,9 @@ ggplot(int.mean.time,
     name = "Group",
     aesthetics = c("color", "fill"),
     values = c("yellow",
-    "orange",
-    "red",
-    "deepskyblue")
+               "orange",
+               "red",
+               "deepskyblue")
   ) +
   labs(x = "Decade",
        y = "Pla - Poll Synchrony") +
@@ -3070,15 +3070,15 @@ ggplot() +
                  pch = group),
              size = 2) +
   geom_line(data = int.mean.time,
-             aes(decade, mean.synchrony, col = group),
+            aes(decade, mean.synchrony, col = group),
             size = 1.2) +
   scale_color_manual(
     name = "Group",
     aesthetics = c("color", "fill"),
     values = c("orange",
-    "red",
-    "yellow",
-    "deepskyblue")
+               "red",
+               "yellow",
+               "deepskyblue")
   ) +
   scale_shape_manual(name = "Group",
                      values = c(19, 19, 19, 18),
@@ -3087,7 +3087,7 @@ ggplot() +
        y = "Mean Synchrony\n (\u00B1 95% CI)") + 
   theme_minimal() + 
   theme(legend.position = "bottom")
-  
+
 
 # percentages of insect partner earlier
 ggplot(int.mean.time, 
@@ -3099,9 +3099,9 @@ ggplot(int.mean.time,
     name = "Group",
     aesthetics = c("color", "fill"),
     values = c("orange",
-    "red",
-    "yellow",
-    "deepskyblue")
+               "red",
+               "yellow",
+               "deepskyblue")
   ) +
   geom_abline(intercept = 0.5, slope = 0,
               col = "grey31", lty = 2) +
@@ -3110,7 +3110,7 @@ ggplot(int.mean.time,
        y = "Fraction of insect earlier\nthan plant") + 
   theme_minimal() + 
   theme(legend.position = "bottom")
-  
+
 
 ```
 
@@ -3157,8 +3157,8 @@ ggplot(int.spec.dec,
     name = "Group",
     aesthetics = c("color", "fill"),
     values = c("yellow",
-    "orange",
-    "red")
+               "orange",
+               "red")
   ) +
   labs(x = "Decadal mean Temperature [\u00B0C]",
        y = "Pla - Poll Synchrony") +
@@ -3180,9 +3180,9 @@ ggplot(int.mean.temp,
     name = "Group",
     aesthetics = c("color", "fill"),
     values = c("yellow",
-    "orange",
-    "red",
-    "deepskyblue")
+               "orange",
+               "red",
+               "deepskyblue")
   ) +
   labs(x = "Decadal mean Temperature [ [\u00B0C]C]",
        y = "Pla - Poll Synchrony") +
@@ -3213,15 +3213,15 @@ ggplot() +
                  pch = group),
              size = 2) +
   geom_line(data = int.mean.temp,
-             aes(y_mean_temp, mean.synchrony, col = group),
+            aes(y_mean_temp, mean.synchrony, col = group),
             size = 1.2) +
   scale_color_manual(
     name = "Group",
     aesthetics = c("color", "fill"),
     values = c("orange",
-    "red",
-    "yellow",
-    "deepskyblue")
+               "red",
+               "yellow",
+               "deepskyblue")
   ) +
   scale_shape_manual(name = "Group",
                      values = c(19, 19, 19, 18),
@@ -3256,11 +3256,11 @@ ggplot(int.mean.temp,
 ```
 
 
-  
 
 
-  
-  Distributions of Slopes of decadal mean Synchrony between groups:  
+
+
+Distributions of Slopes of decadal mean Synchrony between groups:  
 
 
 
@@ -3271,7 +3271,7 @@ palette <- colorRampPalette(c("green", "blue", "red", "magenta"))
 
 ggplot(data = int.spec.dec) +
   geom_point(aes(x = group, y = synchrony, col = decade),
-                 position = position_jitter(width = .4),
+             position = position_jitter(width = .4),
              alpha = .3) +
   scale_color_gradientn(colors = palette(100)) +
   labs(x = "Group", y = "Synchrony") +
@@ -3279,10 +3279,10 @@ ggplot(data = int.spec.dec) +
 
 ```
 
-  
-  Differences between the group means of the decadal mean DOY difference slopes, once over all decades, once  
-  only for the decades before 1990 and only 1990 and after:  
-  
+
+Differences between the group means of the decadal mean DOY difference slopes, once over all decades, once  
+only for the decades before 1990 and only 1990 and after:  
+
 ```{r Plot DOY Difference slope differences between groups}
 
 ggplot() +
@@ -3291,7 +3291,7 @@ ggplot() +
              col = "grey", alpha = 0.3,
              position = "jitter"
              # position = position_jitterdodge(jitter.width = .15, dodge.width = 0.9)
-             ) +
+  ) +
   geom_errorbar(data = stat.int.meta,
                 aes(x = group, ymin = ci.min, ymax = ci.max, col = group),
                 size = 1, width = 0.5, position = position_dodge(width = .9)) +
@@ -3309,8 +3309,8 @@ ggplot() +
 
 ```
 
-  Analysis of difference between groups:
-  
+Analysis of difference between groups:
+
 ```{r Analysis of Difference between groups, eval=FALSE, include=FALSE}
 
 cat("\nAnova Mean Slope of Difference of DOYs (Bees):\n\n")
@@ -3348,9 +3348,9 @@ cat("\n\n Tukey HSD Test: \n")
 TukeyHSD(mod.int.hoverfly)
 
 ```
-  
-  Analysis of Difference between decades:
-  
+
+Analysis of Difference between decades:
+
 ```{r Analysis of Difference between decades}
 cat("\nAnova Mean Slope of Synchrony (all decades):\n\n")
 
@@ -3388,9 +3388,9 @@ TukeyHSD(mod.int.all)
 ```
 
 
-  
+
 # Checking influences in overall dataset  
-  
+
 ```{r Checking influences in overall dataset}
 
 #run lmm
@@ -3417,8 +3417,8 @@ corvif <- function(data) {
 }
 
 vars <- c("year", "y_mean_temp",
-"kingdom")
- 
+          "kingdom")
+
 corvif(dat.occ[,vars])
 
 
@@ -3457,9 +3457,9 @@ ggplot() +
 
 ```
 
-  
+
 ### Checking additional influences on DOY for plants  
-  
+
 ```{r}
 #run linear mixed model
 lmm.doy.pla <- lmer(data = dat.occ.plant, mean.doy ~ year * y_mean_temp + (1|species))
@@ -3481,9 +3481,9 @@ qqnorm(resid(lmm.doy.pla))
 qqline(resid(lmm.doy.pla)) 
 
 ```
-  
+
 ### Checking additional influences on DOY for Pollinators  
-  
+
 ```{r}
 
 #run linear mixed model
@@ -3511,12 +3511,12 @@ qqline(resid(lmm.doy.poll))
 # Analysing differences between Pollinator dependence
 
 ## Linear model for pollinator dependencies  
-  
+
 ```{r Lm for PollDeps}
 #generate subset with pollination mode data
 dat.occ.polldep <- dat.occ %>%
   filter(PollDep != ""
-         ) %>%
+  ) %>%
   #turn all character vectors to factor
   mutate_if(is.character, as.factor)
 
@@ -3534,15 +3534,15 @@ cat("\nANOVA table for LM: \n\n")
 
 anova(lm.doy.polldep)
 ```
-  
+
 ### Plot diagnostics  
-  
+
 ```{r Plot diagonsitcs PollDep lm}
 
 plot(lm.doy.polldep, which = c(1, 2, 5))
 
 ```
-    
+
 ### Analyse differences in mean DOY
 
 ```{r Mean DOY PollDep}
@@ -3563,7 +3563,7 @@ stat.polldep.mdoy.meta <- polldep.spec.mean.doy %>%
             se.mean.doy = sd(mean.doy)/sqrt(length(mean.doy)),
             ci.min = ci.min(mean.doy),
             ci.max = ci.max(mean.doy),
-    )
+  )
 
 # diplay meta stats table
 stat.polldep.mdoy.meta
@@ -3583,7 +3583,7 @@ TukeyHSD(mod.polldep)
 ggplot(polldep.spec.mean.doy, aes(PollDep, mean.doy, group = PollDep,
                                   col = PollDep)) +
   geom_jitter(alpha = .2,
-    col = "gray31") +
+              col = "gray31") +
   stat_summary(
     size = 3,
     fun = mean,
@@ -3659,9 +3659,9 @@ stat.PollDep.meta
 
 ```
 
-  
-  Reactions of each Group:  
-  
+
+Reactions of each Group:  
+
 
 ```{r Plot group reactions}
 
@@ -3685,10 +3685,10 @@ ggplot(data = dat.occ.polldep, aes(x = y_mean_temp, y = mean.doy, group = PollDe
        y = "DOY")
 
 ```
-    
-  Slopes of each species by dependence level:  
-  
-    
+
+Slopes of each species by dependence level:  
+
+
 ```{r PollDep Forest slopes}
 
 #for time
@@ -3700,16 +3700,16 @@ ggplot(data = stat.spec.time.PollDep,
   coord_flip() +
   xlab("Species") + ylab("Slope  [Days/a] (\u00B1 95% CI)") +
   theme(
-  axis.title = element_text(size = 20),
-      axis.text = element_text(size = 15),
-      axis.text.y = element_blank(),
-      axis.ticks = element_blank(),
-      panel.background = element_blank(),
-      panel.spacing = unit(32, "bigpts"),
-      strip.background = element_blank(),
-      strip.text = element_text(size = 15),
-      panel.grid.major.y = element_blank(),
-      panel.grid.major.x = element_line(colour = "gray90")
+    axis.title = element_text(size = 20),
+    axis.text = element_text(size = 15),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    panel.background = element_blank(),
+    panel.spacing = unit(32, "bigpts"),
+    strip.background = element_blank(),
+    strip.text = element_text(size = 15),
+    panel.grid.major.y = element_blank(),
+    panel.grid.major.x = element_line(colour = "gray90")
   )
 
 #for temp
@@ -3733,9 +3733,9 @@ ggplot(data = stat.spec.temp.PollDep,
 
 
 ```
-  
-  Differences in mean slopes between dependence levels:  
-  
+
+Differences in mean slopes between dependence levels:  
+
 ```{r Plot slope distributions for poll dependece}
 
 # #plot time regression slopes for both groups
@@ -3789,10 +3789,10 @@ ggplot() +
 
 
 ```
-  
-  
-  Analysis of differences in mean slope between dependence levels:  
-  
+
+
+Analysis of differences in mean slope between dependence levels:  
+
 
 ```{r Check on pollinator dependence alone}
 cat("\nAnova mean time slope:\n\n")
@@ -3829,7 +3829,7 @@ print.data.frame(stat.spec.temp.PollDep.posthoc)
 
 ```
 
-    
+
 ## Analysing differences between trait levels:  
 
 ```{r Analyse traits}
@@ -3844,10 +3844,10 @@ if (any(c("full", "traits") %in% opts)){
     
     # first convert trait to symbol
     pl_trait <- sym(pl_trait)
-
+    
     # now make a quosure so
     pl_trait <- enquo(pl_trait)
-
+    
     analyse.trait(!! pl_trait)
     
   }
