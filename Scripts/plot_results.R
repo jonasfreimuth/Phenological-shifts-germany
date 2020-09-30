@@ -1722,6 +1722,7 @@ stat.all.temp <- bind_rows(stat.spec.temp,
   filter(!(id.grp %in% excl.trivial.year))
 
 # function for generating plots of shift slopes
+# this is now annoyingly hacked apart for the graphical abstract
 slope_plot_save <- function(x = id.grp,
                             y = slope,
                             ymeta = mean.slope,
@@ -1731,7 +1732,7 @@ slope_plot_save <- function(x = id.grp,
                             data = stat.all.time,
                             metadata = all.time.meta,
                             xlab = NULL, ylab = NULL,
-                            ylim = NULL,
+                            ylim = NULL, # currently does nothing (graphical abstract)
                             title = NULL,
                             data_points = TRUE,
                             scale_y_10 = TRUE) {
@@ -1785,6 +1786,7 @@ slope_plot_save <- function(x = id.grp,
                   size = 2) +
     geom_text(aes(x = !! x, y = ypos(metadata$ci.max,
                                      if (data_points == TRUE) {data$slope},
+                                     3, # make sure its at least at three (thirty after scaling)
                                      frac = 0.6),
                   label = paste0("N =  ", n.slope)),
               col = col.note, size = annot_text) +
@@ -1799,6 +1801,7 @@ slope_plot_save <- function(x = id.grp,
         x = level,
         y = ypos(metadata$ci.max,
                  if (data_points == TRUE) {data$slope},
+                 3, # see above
                  frac = 0.3),
         label = letter
       ),
@@ -1817,7 +1820,9 @@ slope_plot_save <- function(x = id.grp,
   
   
   # if no data points are plotted, ignore ylimits
-  if (data_points == TRUE) {
+  # currently always ignored
+  if (FALSE) {
+  # if (data_points == TRUE) {
     plot <- plot + coord_cartesian(ylim = ylim)
   }
   
@@ -1853,7 +1858,9 @@ slope_plot_save <- function(x = id.grp,
     )
   
   # change margin size depending on whether its a raw data plot
-  if (data_points == TRUE) {
+  # currently knocked out
+  if (FALSE) {
+  # if (data_points == TRUE) {
     plot <- plot + 
       theme(plot.margin = unit(c(128, 32, 0, 32), "bigpts"))
   }  else { 
@@ -1865,6 +1872,7 @@ slope_plot_save <- function(x = id.grp,
 
 ggsave(
   slope_plot_save(xlab = "Group", ylab = "Mean shift [days/decade] (\u00B1 95% CI)",
+                  title = "Phenological shifts over time",
                   data_points = TRUE, scale_y_10 = TRUE),
   filename = here("Plots", "group_mean_slopes_time.png"), width = 20, height = 15,
   bg = "transparent"
@@ -3374,8 +3382,8 @@ ggsave(
       size = 3,
       alpha = 0.3,
       col = "gray40",
-      position = "jitter"
-      # position = position_jitterdodge(jitter.width = 0.3, dodge.width = 1)
+      # position = "jitter"
+      position = position_jitter(width = 0.2)
     ) +
     geom_errorbar(
       data = stat.int.meta,
@@ -3398,17 +3406,17 @@ ggsave(
       data = stat.int.meta,
       aes(
         x = group,
-        y = ypos(stat.int.time$synchrony.slope),
+        y = ypos(stat.int.time$synchrony.slope, frac = 0.4),
         label = paste0("n = ", N.synchrony.slope)
       ),
-      size = 15,
+      size = annot_text,
       col = "gray31"
     ) +
     #add labels for differing factor levels
     geom_text(
       data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
       aes(x = level,
-          y = ypos(stat.int.meta$ci.max, 0.25, frac = 0.2), # see above
+          y = ypos(c(stat.int.meta$ci.max, stat.int.time$synchrony.slope), frac = 0.15), # see above
           label = letter),
       size = annot_text,
       col = "gray31"
