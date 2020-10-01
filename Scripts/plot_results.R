@@ -3430,9 +3430,13 @@ ggsave(
     # scale_shape_manual(name = "Period", values = c(19, 19, 19),
     #                    guide = "none") +
     labs(
-      title = "Group shifts of synchrony",
+      title = paste("Shifts of asynchrony",
+                    "of plants and insect pollinators",
+                    sep = "\n"),
       x = "Group",
-      y = "Synchrony shift [days/decade]\n(\u00B1 95% CI)") +
+      y = paste("Asynchrony shift [days/decade]\n(\u00B1 95% CI)",
+                "<- Greater synchrony",
+                sep = "\n")) +
     scale_y_continuous(labels = mult_10_format()) +
     theme(
       axis.title = element_text(size = 50),
@@ -3523,9 +3527,13 @@ ggsave(
       values = col.int$colour
     ) +
     labs(
-      title = "Group shifts of synchrony",
+      title = paste("Shifts of asynchrony",
+                    "of plants and insect pollinators",
+                    sep = "\n"),
       x = "Group",
-      y = "Synchrony shift [days/decade]\n(\u00B1 95% CI)") +
+      y = paste("Asynchrony shift [days/decade]\n(\u00B1 95% CI)",
+                "<- Greater synchrony",
+                sep = "\n")) +
     scale_y_continuous(labels = mult_10_format()) +
     theme(
       axis.title = element_text(size = 50),
