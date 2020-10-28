@@ -23,7 +23,7 @@ recode.vec <- c(
 
 # make alternative vector for interactions
 recode.vec.int <- recode.vec[2:4]
-recode.vec.int[1:3] <- c("Hoverfly", "Bee", "Butterfly")
+recode.vec.int[1:3] <- c("Hoverfly - Plant", "Bee - Plant", "Butterfly - Plant")
 
 
 # translate to trivial names
@@ -49,6 +49,19 @@ annot_text <- 20
 # line types
 lty.sec <- 3
 
+# line size
+hline_size_large <- 2
+line_size_large <- 2.5
+
+# text size
+text_size_large <- 50
+legend_text_size_large <- 40
+
+# axis parameters
+axis_size_large <- 2
+axis_ticks_size_large <- 2
+axis_ticks_length_large <- 16
+
 
 # set colour tables -------------------------------------------------------
 
@@ -56,9 +69,10 @@ lty.sec <- 3
 # DO NOT CHANGE ORDER, only append
 col.grp <- data.frame(group = c("Beetles", "Flies", "Bees", "Butterflies",
                                 "Insects overall", "Plants",
-                                "Hoverfly", "Bee", "Butterfly",
+                                "Hoverfly - Plant", "Bee - Plant",
+                                "Butterfly - Plant",
                                 "Overall",
-                                "Yes", "Intermediate", "No"),
+                                "Insect dependent", "Intermediate", "Insect independent"),
                       colour = c("#9815db", "#f41d0f", "#ffa500", "#4744ff",
                                  "gold", "#3aae10",
                                  "#f41d0f", "#ffa500", "#4744ff",
@@ -288,30 +302,32 @@ traitplot <- function(abb_trait) {
     geom_hline(yintercept = 0, lty = 3, col = col.line) + 
     geom_errorbar(data = stat.trait.time$meta,
                   aes(x = !! abb_trait, ymin = ci.min, ymax = ci.max),
-                  col = "gray10", size = 2) +
+                  col = "gray10", size = 2,
+                  width = 0.6) +
     geom_point(data = stat.trait.time$meta,
                aes(x = !! abb_trait, y = mean.slope),
-               col = "gray10", size = 5) +
-    geom_text(data = stat.trait.time$meta, 
-              aes(x = !! abb_trait, y = ypos(stat.trait.time$stat$slope, frac = 0.5),
-                  label = paste0("n = \n", n.slope)),
-              size = 13, col = "gray31") +
-    #add labels for differing factor levels
-    geom_text(
-      data = pairdiff(stat.trait.time$stat, pd.form),
-      aes(
-        x = level,
-        y = ypos(stat.trait.time$stat$slope, frac = 0.1),
-        label = letter
-      ),
-      size = 13,
-      col = "gray31"
-    ) +
+               col = "gray10", size = 8) +
+    # geom_text(data = stat.trait.time$meta, 
+    #           aes(x = !! abb_trait, y = ypos(stat.trait.time$stat$slope, frac = 0.5),
+    #               label = paste0("n = \n", n.slope)),
+    #           size = 13, col = "gray31") +
+    # #add labels for differing factor levels
+    # geom_text(
+    #   data = pairdiff(stat.trait.time$stat, pd.form,
+    #                   level_order = sort(unique(stat.trait.time$stat[[quo_get_expr(abb_trait)]]))),
+    #   aes(
+    #     x = level,
+    #     y = ypos(stat.trait.time$stat$slope, frac = 0.1),
+    #     label = letter
+    #   ),
+    #   size = 13,
+    #   col = "gray31"
+    # ) +
     labs(x = as.character(quo_get_expr(abb_trait)),
-         y = "Mean Slope [days/decade] (\u00B1 95% CI)") +
+         y = "Temporal change [days/decade]") +
     scale_y_continuous(labels = mult_10_format()) +
     theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 30),
+          axis.text = element_text(size = 40),
           axis.ticks = element_line(colour = col.ax, size = 1.2),
           axis.ticks.length.x.bottom = unit(8, "bigpts"),
           axis.line = element_line(colour = col.ax, size = 1.2),
@@ -333,29 +349,31 @@ traitplot <- function(abb_trait) {
     geom_hline(yintercept = 0, lty = 3, col = col.line) + 
     geom_errorbar(data = stat.trait.temp$meta,
                   aes(x = !! abb_trait, ymin = ci.min, ymax = ci.max),
-                  col = "gray10", size = 2) +
+                  col = "gray10", size = 2,
+                  width = 0.6) +
     geom_point(data = stat.trait.temp$meta,
                aes(x = !! abb_trait, y = mean.slope),
-               col = "gray10", size = 5) +
-    geom_text(data = stat.trait.temp$meta, 
-              aes(x = !! abb_trait, y = ypos(stat.trait.temp$stat$slope, frac = 0.5),
-                  label = paste0("n = \n", n.slope)),
-              size = 13, col = "gray31") +
-    #add labels for differing factor levels
-    geom_text(
-      data = pairdiff(stat.trait.temp$stat, pd.form),
-      aes(
-        x = level,
-        y = ypos(stat.trait.temp$stat$slope, frac = 0.1),
-        label = letter
-      ),
-      size = 13,
-      col = "gray31"
-    ) +
+               col = "gray10", size = 8) +
+    # geom_text(data = stat.trait.temp$meta, 
+    #           aes(x = !! abb_trait, y = ypos(stat.trait.temp$stat$slope, frac = 0.5),
+    #               label = paste0("n = \n", n.slope)),
+    #           size = 13, col = "gray31") +
+    # #add labels for differing factor levels
+    # geom_text(
+    #   data = pairdiff(stat.trait.temp$stat, pd.form,
+    #                   level_order = sort(unique(stat.trait.time$stat[[quo_get_expr(abb_trait)]]))),
+    #   aes(
+    #     x = level,
+    #     y = ypos(stat.trait.temp$stat$slope, frac = 0.1),
+    #     label = letter
+    #   ),
+    #   size = 13,
+    #   col = "gray31"
+    # ) +
     labs(x = as.character(quo_get_expr(abb_trait)),
-         y = "Mean Slope [days/\u00B0C] (\u00B1 95% CI)") +
+         y = "Climate sensitivity [days/\u00B0C]") +
     theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 30),
+          axis.text = element_text(size = 40),
           axis.ticks = element_line(colour = col.ax, size = 1.2),
           axis.ticks.length.x.bottom = unit(8, "bigpts"),
           axis.line = element_line(colour = col.ax, size = 1.2),
@@ -393,6 +411,17 @@ traitplot <- function(abb_trait) {
 # define a format that transforms labels to 10x
 mult_10_format <- function() {
   function(x) format(10 * x, digits = 2) 
+}
+
+# define a format that adds an "s" to a number
+# this is used for decades labeling
+decade_format <- function() {
+  function(x) paste(format(x), "s", sep = "")
+}
+
+# define format to convert decimal to percent
+decimal_to_percent_format <- function() {
+  function(x) format(100 * x)
 }
 
 # It's getting hot in Germany ---------------------------------------------
@@ -433,13 +462,11 @@ ggsave(
 
 # Record numbers ----------------------------------------------------------
 
-png(here("Plots", "group_record_numbers_time.png"), width = 1600, height = 1600)
-
-print(
+ggsave(
   ggplot(dat.n  %>% 
            mutate(id.grp = recode_factor(id.grp, !!! recode.vec, .ordered = FALSE)),
          aes(year, n.rec, col = id.grp)) +
-    geom_point(size = 5) + 
+    geom_col(size = 5, position = "dodge", width = 0.8, orientation = "x") + 
     # geom_smooth(size = 1.5,
     #             col = col.line) + 
     facet_wrap(~id.grp, ncol = 2,
@@ -451,257 +478,250 @@ print(
                        aesthetics = c("color", "fill"),
                        labels = col.group.stc$group, 
                        values = col.group.stc$colour) +
-    theme(legend.position = "none",
-          axis.title = element_text(size = 40),
-          axis.text = element_text(size = 40),
-          axis.text.x.bottom = element_text(size = 40, angle = 30,
-                                            hjust = 1),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
-          legend.text = element_text(size = 40),
-          legend.title = element_text(size = 40),
+    theme(axis.title = element_text(size = size_text_large),
+          axis.text = element_text(size = size_text_large),
+          axis.text.x =  element_text(hjust = 1, angle = text_size_large),
+          axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
+          axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
+          axis.line = element_line(colour = col.ax, size = axis_size_large),
+          legend.position = "none",
           panel.background = element_blank(),
           panel.grid.major = element_blank(),
-          panel.spacing = unit(64, "bigpts"),
+          panel.spacing = unit(64, "bigpts"), 
           strip.background = element_blank(),
-          strip.text = element_text(size = 40),
-          plot.margin = unit(c(0, 64, 0, 0), "bigpts"))
-  
+          strip.text = element_text(size = size_text_large, color = col.note),
+          plot.margin = unit(c(0, 64, 0, 0), "bigpts")
+          ),
+  filename = here("Plots", "group_record_numbers_time.png"),
+  width = 20, height = 20
 )
 
 
 dev.off()
 
 # Plot 1: group trends over time ------------------------------------------
-
-# dat.occ$kingdom <- as.character(dat.occ$kingdom) %>%
-#   fct_relevel("Plantae")
-
-png(here("Plots", "group_trends_time.png"), width = 1600, height = 1000)
-
-print(
-  #plot trends of collection day in relation to year by group
-  ggplot(data = dat.occ, aes(x = year, y = mean.doy, group = as.factor(kingdom), col = kingdom)) +
-    geom_point(size = 3, alpha = 0.7,
-               position = position_dodge(width = 0.5)) +
-    geom_smooth(aes(col = kingdom),
-                method = lm, se = T, size = 2.5) +
-    labs(x = "Year",
-         y = "Yearly mean DOY") +
-    scale_color_manual(name = "Group",
-                       labels = col.plapoll$group, 
-                       values = col.plapoll$colour) +
-    # scale_shape_manual(name = "Group", labels = c("Pollinators", "Plants"), 
-    #                    values = c(1, 19)) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 30),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
-          legend.position = "bottom",
-          legend.text = element_text(size = 40),
-          legend.title = element_text(size = 40),
-          panel.background = element_blank(),
-          panel.grid.major = element_blank()) )
-
-
-dev.off()
-
-png(here("Plots", "group_trends_temp.png"), width = 1600, height = 1000)
-
-print(
-  #plot trends of collection day in relation to temp by group
-  ggplot(data = dat.occ, aes(x = y_mean_temp, y = mean.doy, group = as.factor(kingdom), col = kingdom)) +
-    geom_point(size = 3, alpha = 0.5) +
-    geom_smooth(aes(col = kingdom),
-                method = lm, se = T, size = 2.5) +
-    labs(x = "Yearly mean Temperature [\u00B0C]",
-         y = "Yearly mean DOY") +
-    scale_color_manual(name = "Group",
-                       labels = col.plapoll$label, 
-                       values = col.plapoll$colour) +
-    # scale_shape_manual(name = "Group", labels = c("Pollinators", "Plants"), 
-    #                    values = c(1, 19)) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 30),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
-          legend.position = "bottom",
-          legend.text = element_text(size = 40),
-          legend.title = element_text(size = 40),
-          panel.background = element_blank(),
-          panel.grid.major = element_blank(),
-    ) )
-
-dev.off()
+# 
+# png(here("Plots", "group_trends_time.png"), width = 1600, height = 1000)
+# 
+# print(
+#   #plot trends of collection day in relation to year by group
+#   ggplot(data = dat.occ, aes(x = year, y = mean.doy, group = as.factor(kingdom), col = kingdom)) +
+#     geom_point(size = 3, alpha = 0.7,
+#                position = position_dodge(width = 0.5)) +
+#     geom_smooth(aes(col = kingdom),
+#                 method = lm, se = T, size = 2.5) +
+#     labs(x = "Year",
+#          y = "Yearly mean DOY") +
+#     scale_color_manual(name = "Group",
+#                        labels = col.plapoll$group, 
+#                        values = col.plapoll$colour) +
+#     # scale_shape_manual(name = "Group", labels = c("Pollinators", "Plants"), 
+#     #                    values = c(1, 19)) +
+#     theme(axis.title = element_text(size = 40),
+#           axis.text = element_text(size = 30),
+#           axis.ticks = element_line(colour = col.ax, size = 1.2),
+#           axis.ticks.length.y.left = unit(8, "bigpts"),
+#           axis.ticks.length.x.bottom = unit(8, "bigpts"),
+#           axis.line = element_line(colour = col.ax, size = 1.2),
+#           legend.position = "bottom",
+#           legend.text = element_text(size = 40),
+#           legend.title = element_text(size = 40),
+#           panel.background = element_blank(),
+#           panel.grid.major = element_blank()) )
+# 
+# 
+# dev.off()
+# 
+# png(here("Plots", "group_trends_temp.png"), width = 1600, height = 1000)
+# 
+# print(
+#   #plot trends of collection day in relation to temp by group
+#   ggplot(data = dat.occ, aes(x = y_mean_temp, y = mean.doy, group = as.factor(kingdom), col = kingdom)) +
+#     geom_point(size = 3, alpha = 0.5) +
+#     geom_smooth(aes(col = kingdom),
+#                 method = lm, se = T, size = 2.5) +
+#     labs(x = "Yearly mean Temperature [\u00B0C]",
+#          y = "Yearly mean DOY") +
+#     scale_color_manual(name = "Group",
+#                        labels = col.plapoll$label, 
+#                        values = col.plapoll$colour) +
+#     # scale_shape_manual(name = "Group", labels = c("Pollinators", "Plants"), 
+#     #                    values = c(1, 19)) +
+#     theme(axis.title = element_text(size = 40),
+#           axis.text = element_text(size = 30),
+#           axis.ticks = element_line(colour = col.ax, size = 1.2),
+#           axis.ticks.length.y.left = unit(8, "bigpts"),
+#           axis.ticks.length.x.bottom = unit(8, "bigpts"),
+#           axis.line = element_line(colour = col.ax, size = 1.2),
+#           legend.position = "bottom",
+#           legend.text = element_text(size = 40),
+#           legend.title = element_text(size = 40),
+#           panel.background = element_blank(),
+#           panel.grid.major = element_blank(),
+#     ) )
+# 
+# dev.off()
 
 #same as above, but with PollOrders
-# this plot has been modified for the graphical abstract
-# it is somewhat hacky, as points are still drawn, but invisibly
-# also the y limit excludes some of the raw data, but since they are not of interest
-# for this purpose it should be
-
-png(here("Plots", "group_trends_time_orders.png"), width = 1600, height = 1000)
-
-print(
+ggsave(
   ggplot() +
     geom_point(data = dat.occ,
                aes(x = year, y = mean.doy,
                    col = id.grp),
-               size = 2, alpha = 0,
-               position = position_dodge(width = 0.5)) +
-    # # plot the regression lines faintly in gray at first so they separate from the dots
-    # geom_abline(aes(intercept = intercept, slope = slope),
-    #             data = lm.res.plapoll.time,
-    #             size = 5,
-    #             col = "gray31", alpha = .5,
-    #             show.legend = FALSE) +
+               size = 2, alpha = 0.3,
+               position = position_dodge(width = 0.3)) +
+    # plot the regression lines faintly in gray at first so they separate from the dots
+    geom_abline(aes(intercept = intercept, slope = slope),
+                data = lm.res.plapoll.time,
+                size = line_size_large * 1.5,
+                col = col.line, alpha = 0.5) +
     geom_abline(aes(intercept = intercept, slope = slope, lty = breaks, col = id.grp),
                 lm.res.plapoll.time,
-                size = 2, show.legend = FALSE) +
+                size = line_size_large) +
     # geom_smooth(data = dat.occ, 
     #             aes(x = year, y = mean.doy,
     #                 col = id.grp), 
     #             method = lm, size = 2, linetype = 1,
     #             alpha = 0.7) +
-    labs(x = "Year",
-         y = "Yearly mean DOY") +
-    ylim(c(0, 250)) +
-    scale_color_manual(name = "Group",
-                       labels = col.group.stc$group, 
-                       values = col.group.stc$colour) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 30),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
-          legend.position = "none",
-          legend.text = element_text(size = 40),
-          legend.title = element_text(size = 40),
+    labs(x = NULL,
+         y = "Peak flowering/activity [DOY]") +
+    scale_color_manual(name = "Group", 
+                       values = col.group.stc$colour,
+                       labels = col.group.stc$group) +
+    scale_linetype(name = "Significance") +
+    theme(axis.title = element_text(size = text_size_large),
+          axis.text = element_text(size = text_size_large),
+          axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
+          axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
+          axis.line = element_line(colour = col.ax, size = axis_size_large),
+          legend.position = "bottom",
+          legend.box = "vertical",
+          legend.text = element_text(size = legend_text_size_large),
+          legend.title = element_text(size = legend_text_size_large),
           panel.background = element_blank(),
-          panel.grid.major = element_blank() )
-  
+          panel.grid.major = element_blank(),
+          panel.spacing = unit(64, "bigpts"), 
+          strip.background = element_blank(),
+          strip.text = element_text(size = text_size_large, color = col.note),
+          plot.margin = unit(c(0, 64, 0, 0), "bigpts")
+    ),
+  filename = here("Plots", "group_trends_time_orders.png"), width = 20, height = 12.5
 )
 
-dev.off()
-
-png(here("Plots", "group_trends_temp_orders.png"), width = 1600, height = 1000)
-
-print(
+ggsave(
   ggplot() +
     geom_point(data = dat.occ,
                aes(x = y_mean_temp, y = mean.doy,
                    col = id.grp), 
-               size = 3, alpha = 0.5) +
+               size = 3, alpha = 0.5,
+               position = position_dodge(width = 0.05)) +
     # plot the regression lines faintly in gray at first so they separate from the dots
     geom_abline(aes(intercept = intercept, slope = slope),
                 lm.res.plapoll.temp,
-                size = 5,
-                col = "gray31", alpha = .5,
-                show.legend = FALSE) +
+                size = line_size_large * 1.5,
+                col = col.line, alpha = 0.5) +
     geom_abline(aes(intercept = intercept, slope = slope, lty = breaks, col = id.grp),
                 lm.res.plapoll.temp,
-                size = 2, show.legend = FALSE) +
+                size = line_size_large) +
     # geom_smooth(data = dat.occ, 
     #             aes(x = y_mean_temp, y = mean.doy, 
     #                 col = id.grp), 
     #             method = lm, se = T, size = 2.5, linetype = 1,
     #             alpha = 0.7) +
-    labs(x = "Yearly mean Temperature [°C]",
-         y = "Yearly mean DOY") +
-    scale_color_manual(name = "Group",
-                       labels = col.group.stc$group, 
-                       values = col.group.stc$colour) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 30),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
-          legend.position = "none",
-          legend.text = element_text(size = 40),
-          legend.title = element_text(size = 40),
-          panel.background = element_blank(),
-          panel.grid.major = element_blank() )
-  
-)
-
-dev.off()
-
-# same again but controling for orders
-
-png(here("Plots", "group_trends_time_orders_cont.png"), width = 1600, height = 1000)
-
-print(
-  ggplot(data = dat.occ, 
-         aes(x = year, y = mean.doy, col = kingdom)) +
-    geom_point(size = 3, alpha = 0.4) +
-    geom_abline(intercept = coef.time[1,1],
-                slope = coef.time[2,1], size = 2.5,
-                col = col.plapoll$colour[1]) +
-    geom_abline(intercept = (coef.time[1,1] + coef.time[3,1]),
-                slope = (coef.time[2,1] + coef.time[4,1]), size = 2.5,
-                col = col.plapoll$colour[2]) +
-    labs(x = "Year", 
-         y = "Yearly mean DOY") +
-    scale_color_manual(name = "Group",
-                       labels = col.plapoll$group, 
-                       values = col.plapoll$colour) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 35),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
+    labs(x = "Annual mean Temperature [°C]",
+         y = "Peak flowering/activity [DOY]") +
+    scale_color_manual(name = "Group", 
+                       values = col.group.stc$colour,
+                       labels = col.group.stc$group) +
+    scale_linetype(name = "Significance") +
+    theme(axis.title = element_text(size = text_size_large),
+          axis.text = element_text(size = text_size_large),
+          axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
+          axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
+          axis.line = element_line(colour = col.ax, size = axis_size_large),
           legend.position = "bottom",
-          legend.text = element_text(size = 40),
-          legend.title = element_text(size = 40),
+          legend.box = "vertical",
+          legend.text = element_text(size = legend_text_size_large),
+          legend.title = element_text(size = legend_text_size_large),
           panel.background = element_blank(),
-          panel.grid.major = element_blank() )
+          panel.grid.major = element_blank(),
+          panel.spacing = unit(64, "bigpts"), 
+          strip.background = element_blank(),
+          strip.text = element_text(size = text_size_large, color = col.note),
+          plot.margin = unit(c(0, 64, 0, 0), "bigpts")
+    ),
+  filename = here("Plots", "group_trends_temp_orders.png"), width = 20, height = 12.5
   
 )
 
-dev.off()
-
-
-png(here("Plots", "group_trends_temp_orders_cont.png"), width = 1600, height = 1000)
-
-print(
-  ggplot(data = dat.occ, 
-         aes(x = y_mean_temp, y = mean.doy, col = kingdom)) +
-    geom_point(size = 3, alpha = 0.5) +
-    geom_abline(intercept = coef.temp[1,1],
-                slope = coef.temp[2,1], size = 2.5,
-                col = col.plapoll$colour[1]) +
-    geom_abline(intercept = (coef.temp[1,1] + coef.temp[3,1]),
-                slope = (coef.temp[2,1] + coef.temp[4,1]), size = 2.5,
-                col = col.plapoll$colour[2]) +
-    labs(x = "Year", 
-         y = "Yearly mean DOY") +
-    scale_color_manual(name = "Group",
-                       labels = col.plapoll$group, 
-                       values = col.plapoll$colour) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 35),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
-          legend.position = "bottom",
-          legend.text = element_text(size = 40),
-          legend.title = element_text(size = 40),
-          panel.background = element_blank(),
-          panel.grid.major = element_blank() )
-  
-)
-
-dev.off()
+# # same again but controling for orders
+# 
+# png(here("Plots", "group_trends_time_orders_cont.png"), width = 1600, height = 1000)
+# 
+# print(
+#   ggplot(data = dat.occ, 
+#          aes(x = year, y = mean.doy, col = kingdom)) +
+#     geom_point(size = 3, alpha = 0.4) +
+#     geom_abline(intercept = coef.time[1,1],
+#                 slope = coef.time[2,1], size = 2.5,
+#                 col = col.plapoll$colour[1]) +
+#     geom_abline(intercept = (coef.time[1,1] + coef.time[3,1]),
+#                 slope = (coef.time[2,1] + coef.time[4,1]), size = 2.5,
+#                 col = col.plapoll$colour[2]) +
+#     labs(x = "Year", 
+#          y = "Yearly mean DOY") +
+#     scale_color_manual(name = "Group",
+#                        labels = col.plapoll$group, 
+#                        values = col.plapoll$colour) +
+#     theme(axis.title = element_text(size = 40),
+#           axis.text = element_text(size = 35),
+#           axis.ticks = element_line(colour = col.ax, size = 1.2),
+#           axis.ticks.length.y.left = unit(8, "bigpts"),
+#           axis.ticks.length.x.bottom = unit(8, "bigpts"),
+#           axis.line = element_line(colour = col.ax, size = 1.2),
+#           legend.position = "bottom",
+#           legend.text = element_text(size = 40),
+#           legend.title = element_text(size = 40),
+#           panel.background = element_blank(),
+#           panel.grid.major = element_blank() )
+#   
+# )
+# 
+# dev.off()
+# 
+# 
+# png(here("Plots", "group_trends_temp_orders_cont.png"), width = 1600, height = 1000)
+# 
+# print(
+#   ggplot(data = dat.occ, 
+#          aes(x = y_mean_temp, y = mean.doy, col = kingdom)) +
+#     geom_point(size = 3, alpha = 0.5) +
+#     geom_abline(intercept = coef.temp[1,1],
+#                 slope = coef.temp[2,1], size = 2.5,
+#                 col = col.plapoll$colour[1]) +
+#     geom_abline(intercept = (coef.temp[1,1] + coef.temp[3,1]),
+#                 slope = (coef.temp[2,1] + coef.temp[4,1]), size = 2.5,
+#                 col = col.plapoll$colour[2]) +
+#     labs(x = "Year", 
+#          y = "Yearly mean DOY") +
+#     scale_color_manual(name = "Group",
+#                        labels = col.plapoll$group, 
+#                        values = col.plapoll$colour) +
+#     theme(axis.title = element_text(size = 40),
+#           axis.text = element_text(size = 35),
+#           axis.ticks = element_line(colour = col.ax, size = 1.2),
+#           axis.ticks.length.y.left = unit(8, "bigpts"),
+#           axis.ticks.length.x.bottom = unit(8, "bigpts"),
+#           axis.line = element_line(colour = col.ax, size = 1.2),
+#           legend.position = "bottom",
+#           legend.text = element_text(size = 40),
+#           legend.title = element_text(size = 40),
+#           panel.background = element_blank(),
+#           panel.grid.major = element_blank() )
+#   
+# )
+# 
+# dev.off()
 
 # Plant order trends over time --------------------------------------------
 
@@ -1923,10 +1943,7 @@ cor.tests.plot <- cor.tests %>%
   filter(!(id.grp %in% excl.group.year)) %>%
   mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
 
-
-png(here("Plots", "slopes_correlation.png"), width = 1600, height = 1600)
-
-print(
+ggsave(
   
   ggplot() +
     # zero axis (data arguments necessary, else it's acting up when trying to apply facets)
@@ -1987,16 +2004,16 @@ print(
                size = 16,
                pch = 18
     ) +
-    # correltation coefficients and significance indication
-    geom_text(data = cor.tests.plot,
-              aes(x = mean(c(min(stat.spec.both.plot$time.ci.min), max(stat.spec.both.plot$time.ci.max))),
-                  y = ypos(stat.spec.both.plot$temp.ci.max),
-                  label = str_glue("n = {n.slope.Year}, r =  {round(cor, 2)}\n{pval.sig}")),
-              col = "gray38",
-              size = 14) +
-    facet_wrap( ~ id.grp, ncol = 2) +
-    labs(x = "Shift over time\n[days/decade] (\u00B1 95% CI)",
-         y = "Sensitivity to\ntemperature\n[days/\u00B0C] (\u00B1 95% CI)") +
+    # # correltation coefficients and significance indication
+    # geom_text(data = cor.tests.plot,
+    #           aes(x = mean(c(min(stat.spec.both.plot$time.ci.min), max(stat.spec.both.plot$time.ci.max))),
+    #               y = ypos(stat.spec.both.plot$temp.ci.max),
+    #               label = str_glue("n = {n.slope.Year}, r =  {round(cor, 2)}\n{pval.sig}")),
+    #           col = "gray38",
+    #           size = 14) +
+    facet_wrap( ~ id.grp) +
+    labs(x = "Temporal trends [days / decade]",
+         y = "Climate sensitivity [days / \u00B0C]") +
     scale_x_continuous(labels = mult_10_format()) +
     scale_color_manual(name = "Group",
                        values = col.grp.vec) +
@@ -2008,7 +2025,7 @@ print(
           axis.ticks.length.y.left = unit(8, "bigpts"),
           axis.ticks.length.x.bottom = unit(8, "bigpts"),
           axis.line = element_line(colour = col.ax, size = 1.2),
-          legend.position = "bottom",
+          legend.position = "none",
           legend.text = element_text(size = 50),
           legend.title = element_text(size = 50),
           panel.background = element_blank(),
@@ -2016,27 +2033,27 @@ print(
           panel.spacing.y = unit(128, "bigpts"),
           strip.background = element_blank(),
           strip.text = element_text(size = 50),
-          plot.margin = unit(c(128, 0, 0, 0), "bigpts")
-    )
-  
+          plot.margin = unit(c(200, 0, 0, 0), "bigpts")
+    ), filename = here("Plots", "slopes_correlation.png"), width = 20, height = 12.5
 )
-
-dev.off()
 
 # PollDeps reaction  -------------------------------------------------------
 
+# make sure factor levels are in order
+dat.occ.polldep$PollDep <- fct_relevel(dat.occ.polldep$PollDep,
+                                       "Yes",
+                                       "Intermediate",
+                                       "No")
+
 # get linear model results for plotting
 lm.res.polldep <- lm.sum(dat.occ.polldep, PollDep) %>%
-  mutate(breaks = cut(pval, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05"),
+  mutate(breaks = cut(pval, breaks = c(0, 0.001, 1), labels = c("p < 0.001", "p > 0.001"),
                       right = FALSE),
-         PollDep = fct_relevel(PollDep, col.PollDep$group))
+         PollDep = fct_relevel(PollDep, c("Yes",
+                                          "Intermediate",
+                                          "No")))
 
-dat.occ.polldep$PollDep <- fct_relevel(dat.occ.polldep$PollDep, "Yes", "Intermediate", "No") 
-
-png(here("Plots", "PollDep overall trends over time.png"), width = 1600, height = 1000)
-
-print(
-  #plot trends of collection day in relation to year by group
+ggsave(
   ggplot(data = dat.occ.polldep, aes(
     x = year,
     y = mean.doy,
@@ -2047,38 +2064,36 @@ print(
                position = position_dodge(width = 0.5)) +
     geom_abline(aes(intercept = intercept, slope = slope, lty = breaks, col = PollDep),
                 lm.res.polldep,
-                size = 2,
-                show.legend = FALSE
+                size = 2
     ) +
     # geom_smooth(method = lm, se = T, size = 2.5) +
-    # labs(x = "Year",
-    #      y = "DOY") +
+    labs(x = NULL,
+         y = "Peak flowering [DOY]") +
     scale_color_manual(
       name = "Group",
       labels = col.PollDep$group,
       values = col.PollDep$colour
     ) +
-    theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
-      axis.text.x = element_text(
-        size = 40,
-        angle = 30,
-        hjust = 1
-      ),
-      axis.ticks = element_line(colour = col.ax, size = 1.2),
-      axis.ticks.length.y.left = unit(8, "bigpts"),
-      axis.ticks.length.x.bottom = unit(8, "bigpts"),
-      axis.line = element_line(colour = col.ax, size = 1.2),
-      legend.position = "bottom",
-      legend.text = element_text(size = 40),
-      legend.title = element_text(size = 40),
-      panel.background = element_blank(),
-      panel.grid.major = element_blank()
-    )
+    scale_linetype(name = "Significance") +
+    theme(axis.title = element_text(size = text_size_large),
+          axis.text = element_text(size = text_size_large),
+          axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
+          axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
+          axis.line = element_line(colour = col.ax, size = axis_size_large),
+          legend.position = "bottom",
+          legend.box = "vertical",
+          legend.text = element_text(size = legend_text_size_large),
+          legend.title = element_text(size = legend_text_size_large),
+          panel.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.spacing = unit(64, "bigpts"), 
+          strip.background = element_blank(),
+          strip.text = element_text(size = text_size_large, color = col.note),
+          plot.margin = unit(c(0, 64, 0, 0), "bigpts")
+    ),
+  filename = here("Plots", "PollDep overall trends over time.png"), width = 20, height = 12.5,
+  bg = "transparent"
 )
-
-dev.off()
 
 
 png(here("Plots", "PollDep overall trends over temp.png"), width = 1600, height = 1000)
@@ -3019,59 +3034,64 @@ dev.off()
 # make sure the subdirectory exists
 dir.check(here("plots/interactions/doy_diff"))
 
-png(here("Plots", "mean_doy_differences_overspec.png"), width = 1600, height = 1000)
+# make lookup vector for converting interaction names
+recode_vec_int_long <- c(`Flies` = "Hoverfly - Plant",
+                         `Bees` = "Bee - Plant",
+                         `Butterflies` = "Butterfly - Plant")
 
-print(
-  #all interaction plots in one
-  ggplot(int.spec.dec, aes(
-    x = decade,
-    y = synchrony,
-    group = id,
-    col = group
-  )) +
-    geom_line(size = 1.5, alpha = 0.1) +
-    geom_point(size = 4, alpha = 0.2) +
-    geom_smooth(
-      aes(
-        x = decade,
-        y = synchrony,
-        group = group,
-        col = group,
-        size = 1.5
-      ),
-      method = "lm",
-      se = FALSE,
-      size = 2
-    ) +
-    geom_hline(yintercept = 0, lty = 3, size = 1.5, col = col.line) +
-    scale_color_manual(
-      name = "Group",
-      labels = col.int$group,
-      values = col.int$colour
-    ) +
-    labs(x = "Decade",
-         y = "Asynchrony") +
-    coord_cartesian(xlim = c(
-      min(dat.occ.dec$decade), max(dat.occ.dec$decade)
-    )) +
-    theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
-      axis.text.x = element_text(angle = 30, hjust = 1),
-      axis.ticks = element_line(colour = col.ax, size = 1.2),
-      axis.ticks.length.y.left = unit(8, "bigpts"),
-      axis.ticks.length.x.bottom = unit(8, "bigpts"),
-      axis.line = element_line(colour = col.ax, size = 1.2),
-      plot.title = element_text(size = 40, hjust = 0.5),
-      legend.text = element_text(size = 40),
-      legend.title = element_text(size = 40),
-      legend.position = "bottom",
-      panel.background = element_rect(fill = "white"),
-      panel.grid.major = element_blank()
-    )
-)
-
-dev.off()
+# png(here("Plots", "mean_doy_differences_overspec.png"), width = 1600, height = 1000)
+# 
+# print(
+#   #all interaction plots in one
+#   ggplot(int.spec.dec, aes(
+#     x = decade,
+#     y = synchrony,
+#     group = id,
+#     col = group
+#   )) +
+#     geom_line(size = 1.5, alpha = 0.1) +
+#     geom_point(size = 4, alpha = 0.2) +
+#     geom_smooth(
+#       aes(
+#         x = decade,
+#         y = synchrony,
+#         group = group,
+#         col = group,
+#         size = 1.5
+#       ),
+#       method = "lm",
+#       se = FALSE,
+#       size = 2
+#     ) +
+#     geom_hline(yintercept = 0, lty = 3, size = 1.5, col = col.line) +
+#     scale_color_manual(
+#       name = "Group",
+#       labels = col.int$group,
+#       values = col.int$colour
+#     ) +
+#     labs(x = "Decade",
+#          y = "Asynchrony") +
+#     coord_cartesian(xlim = c(
+#       min(dat.occ.dec$decade), max(dat.occ.dec$decade)
+#     )) +
+#     theme(
+#       axis.title = element_text(size = 40),
+#       axis.text = element_text(size = 40),
+#       axis.text.x = element_text(angle = 30, hjust = 1),
+#       axis.ticks = element_line(colour = col.ax, size = 1.2),
+#       axis.ticks.length.y.left = unit(8, "bigpts"),
+#       axis.ticks.length.x.bottom = unit(8, "bigpts"),
+#       axis.line = element_line(colour = col.ax, size = 1.2),
+#       plot.title = element_text(size = 40, hjust = 0.5),
+#       legend.text = element_text(size = 40),
+#       legend.title = element_text(size = 40),
+#       legend.position = "bottom",
+#       panel.background = element_rect(fill = "white"),
+#       panel.grid.major = element_blank()
+#     )
+# )
+# 
+# dev.off()
 
 
 #now faceted by groups
@@ -3080,12 +3100,10 @@ dev.off()
 lm.res.int <- lm.sum(int.spec.dec, group, synchrony ~ decade) %>%
   mutate(breaks = cut(pval, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE),
-         group = fct_relevel(group, col.int$group))
+         group = fct_relevel(group, c("Hoverfly", "Bee", "Butterfly")))
 
 
-png(here("Plots", "mean_doy_differences_overall_facet.png"), height = 1000, width = 800)
-
-print(
+ggsave(
   ggplot(int.spec.dec,
          aes(
            x = decade,
@@ -3093,12 +3111,14 @@ print(
            group = id,
            # col = group
          ),
-         col = "gray31") +
+         col = col.pt) +
     # geom_hline(yintercept = 0, size = 1.5, lty = 3, col = col.line) +
     geom_line(size = 1.5, alpha = 0.1,
-              col = "gray31") +
+              col = col.line,
+              show.legend = FALSE) +
     geom_point(size = 4, alpha = 0.3,
-               col = "gray31") +
+               col = col.pt,
+               show.legend = FALSE) +
     stat_summary(
       data = int.spec.dec,
       aes(
@@ -3107,19 +3127,20 @@ print(
         group = group,
         col = group
       ),
-      size = 1.5,
+      size = 4,
       pch = 18,
       fun = mean,
       fun.max = ci.max,
       fun.min = ci.min,
-      # col = "gray31"
+      # col = "gray31",
+      show.legend = FALSE
     ) +
     geom_abline(aes(intercept = intercept, slope = slope, lty = breaks, col = group),
                 lm.res.int,
                 # col = "gray31",
-                size = 2,
-                show.legend = FALSE
+                size = line_size_large
     ) +
+    scale_x_continuous(labels = decade_format()) +
     scale_color_manual(
       name = "Group",
       aesthetics = c("color", "fill"),
@@ -3127,25 +3148,29 @@ print(
       labels = col.int$group
     ) +
     scale_linetype_manual(values = c("p < 0.05" = 1, "p > 0.05" = 2)) +
-    labs(x = "Decade",
+    labs(x = NULL,
          y = "Mean Plant-Pollinator asynchrony [days]") +
     coord_cartesian(xlim = c(min(dat.occ.dec$decade), max(dat.occ.dec$decade))) +
-    facet_wrap( ~ group, nrow = 3) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 40),
-          axis.text.x =  element_text(hjust = 1, angle = 40),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
+    facet_wrap( ~ group, nrow = 3, 
+                labeller = as_labeller(c(`Flies` = "Hoverfly - Plant",
+                                         `Bees` = "Bee - Plant",
+                                         `Butterflies` = "Butterfly - Plant"))) +
+    theme(axis.title = element_text(size = size_text_large),
+          axis.text = element_text(size = size_text_large),
+          # axis.text.x =  element_text(hjust = 1, angle = 30),
+          axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
+          axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
+          axis.line = element_line(colour = col.ax, size = axis_size_large),
           legend.position = "none",
+          legend.text = element_text(size = legend_text_size_large),
+          legend.title = element_text(size = legend_text_size_large),
           panel.background = element_blank(),
           panel.grid.major = element_blank(),
           strip.background = element_blank(),
-          strip.text = element_text(size = 40, color = "gray31"))
+          strip.text = element_text(size = size_text_large, color = col.note)
+          ),
+  filename = here("Plots", "mean_doy_differences_overall_facet.png"), height = 20, width = 16
 )
-
-dev.off()
 
 # plot fractions of interactions with insect earlier than plant
 
@@ -3153,156 +3178,161 @@ dev.off()
 lm.res.ins.earl <- lm.sum(int.mean.time.grp, group, ins.early.frac ~ decade) %>%
   mutate(breaks = cut(pval, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE),
-         group = fct_relevel(group, col.int$group))
-
-png(here("plots", "frac_ins_earlier_time.png"), height = 1000, width = 800)
+         group = fct_relevel(group, c("Hoverfly", "Bee", "Butterfly")))
 
 # percentages of insect partner earlier (excluding overall data)
-print(
+ggsave(
   ggplot(filter(int.mean.time, group != "Overall"), 
          aes(decade, ins.early.frac, col = group)) + 
-    geom_point(size = 8) +
+    geom_hline(yintercept = 0.5, linetype = 3,
+               size = hline_size_large, col = "gray31") +
+    geom_point(size = 8, show.legend = FALSE) +
     # geom_smooth(method = "lm", size = 2) +
     geom_abline(aes(intercept = intercept, slope = slope, lty = breaks, col = group),
                 lm.res.ins.earl,
                 col = "gray31",
-                size = 2,
-                show.legend = FALSE
+                size = 2
     ) +
-    facet_wrap(~group, nrow = 3) +
+    facet_wrap(~group, nrow = 3,
+               labeller = as_labeller(c(`Flies` = "Hoverfly - Plant",
+                                        `Bees` = "Bee - Plant",
+                                        `Butterflies` = "Butterfly - Plant"))) +
     scale_color_manual(
       name = "Group",
       aesthetics = c("color", "fill"),
       labels = col.int$group,
       values = col.int$colour
     ) +
-    scale_linetype_manual(values = c("p < 0.05" = 1, "p > 0.05" = 2)) +
-    geom_hline(yintercept = 0.5, linetype = 3,
-               size = 1.5, col = "gray31") +
-    labs(x = "Decade",
-         y = "Fraction of interactions with\ninsect earlier than plant") + 
+    scale_linetype_manual(name = "Significance",
+                          values = c("p < 0.05" = 1, "p > 0.05" = 2)) +
+    scale_x_continuous(labels = decade_format()) +
+    scale_y_continuous(labels = decimal_to_percent_format()) +
+    labs(x = NULL,
+         y = "\u0025 of interactions with earlier activity of insects") + 
     coord_cartesian(ylim = c(0, 1)) +
-    theme(axis.title = element_text(size = 40),
-          axis.text = element_text(size = 40),
-          axis.text.x =  element_text(hjust = 1, angle = 40),
-          axis.ticks = element_line(colour = col.ax, size = 1.2),
-          axis.ticks.length.y.left = unit(8, "bigpts"),
-          axis.ticks.length.x.bottom = unit(8, "bigpts"),
-          axis.line = element_line(colour = col.ax, size = 1.2),
+    theme(axis.title = element_text(size = size_text_large),
+          axis.text = element_text(size = size_text_large),
+          # axis.text.x =  element_text(hjust = 1, angle = 30),
+          axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
+          axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
+          axis.line = element_line(colour = col.ax, size = axis_size_large),
           legend.position = "none",
+          legend.text = element_text(size = legend_text_size_large),
+          legend.title = element_text(size = legend_text_size_large),
           panel.background = element_blank(),
           panel.grid.major = element_blank(),
           strip.background = element_blank(),
-          strip.text = element_text(size = 40, color = "gray31"))
+          strip.text = element_text(size = size_text_large, color = col.note)
+          ),
+  filename = here("plots", "frac_ins_earlier_time.png"), height = 20, width = 16
 )
 
-dev.off()
-
-png(here("Plots", "mean_doy_differences_overall_decade_means.png"), height = 1000, width = 1600)
-
-print(
-  #group means of interactions
-  ggplot(int.mean.time,
-         aes(
-           x = decade,
-           y = mean.synchrony,
-           col = group
-         )) +
-    geom_line(size = 2, alpha = 0.6, lty = 3) +
-    geom_errorbar(aes(ymin = ci.min.synchrony, ymax = ci.max.synchrony),
-                  size = 1.5,
-                  width = 4,
-                  alpha = 0.7) +
-    geom_point(size = 5) +
-    geom_smooth(method = "lm", size = 2 , se = FALSE) +
-    scale_color_manual(
-      name = "Group",
-      aesthetics = c("color", "fill"),
-      values = col.grp.vec) +
-    labs(x = "Decade",
-         y = "DOY Pla - Poll\nDifference") +
-    coord_cartesian(xlim = c(min(dat.occ.dec$decade), max(dat.occ.dec$decade))) +
-    # facet_wrap( ~ group, nrow = 3) +
-    theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
-      axis.ticks = element_line(colour = col.ax, size = 1.2),
-      axis.ticks.length.x.bottom = unit(8, "bigpts"),
-      axis.line = element_line(colour = col.ax, size = 1.2),
-      legend.position = "bottom",
-      legend.text = element_text(size = 40),
-      legend.title = element_text(size = 40),
-      panel.background = element_blank(),
-      panel.spacing = unit(32, "bigpts"),
-      strip.background = element_blank(),
-      strip.text = element_text(size = 40),
-      panel.grid.major.y = element_blank(),
-      panel.grid.major.x = element_blank()
-    )
-)
-
-dev.off()
-
-
-png(here("Plots", "mean_doy_differences_overall_all_in_one.png"), width = 1600, height = 1000)
-
-print(
-  #both together
-  ggplot() +
-    geom_point(data = int.spec.dec,
-               aes(decade, synchrony,
-                   col = group),
-               size = 2,
-               alpha = 0.1) +
-    geom_line(data = int.spec.dec,
-              aes(decade, synchrony, group = id,
-                  col = group),
-              size = 1.5,
-              alpha = 0.05,
-              lty = 3) +
-    geom_hline(yintercept = 0, linetype = 3,
-               col = "gray31", size = 2) +
-    geom_errorbar(data = int.mean.time,
-                  aes(decade, ymin = ci.min.synchrony,
-                      ymax = ci.max.synchrony,
-                      col = group),
-                  size = 1.2) +
-    geom_point(data = int.mean.time,
-               aes(decade, mean.synchrony, col = group),
-               size = 8) +
-    geom_line(data = int.mean.time,
-              aes(decade, mean.synchrony, col = group),
-              size = 1.2) +
-    # geom_vline(data = eqs.synchrony, aes(xintercept = xintercept, col = group), lty = 2) +
-    scale_color_manual(
-      name = "Group",
-      aesthetics = c("color", "fill"),
-      values = arrange(col.int2, group)$colour
-    ) +
-    scale_shape_manual(name = "Group",
-                       values = c(19, 19, 19, 18)
-    ) +
-    labs(x = "Decade",
-         y = "Mean Asynchrony\n (\u00B1 95% CI)") + 
-    theme(
-      axis.title = element_text(size = 40),
-      axis.text = element_text(size = 40),
-      axis.ticks = element_line(colour = col.ax, size = 1.2),
-      axis.ticks.length.x.bottom = unit(8, "bigpts"),
-      axis.line = element_line(colour = col.ax, size = 1.2),
-      legend.position = "bottom",
-      legend.text = element_text(size = 40),
-      legend.title = element_text(size = 40),
-      panel.background = element_blank(),
-      panel.spacing = unit(32, "bigpts"),
-      strip.background = element_blank(),
-      strip.text = element_text(size = 40),
-      panel.grid.major.y = element_blank(),
-      panel.grid.major.x = element_blank()
-    )
-)
-
-dev.off()
+# 
+# png(here("Plots", "mean_doy_differences_overall_decade_means.png"), height = 1000, width = 1600)
+# 
+# print(
+#   #group means of interactions
+#   ggplot(int.mean.time,
+#          aes(
+#            x = decade,
+#            y = mean.synchrony,
+#            col = group
+#          )) +
+#     geom_line(size = 2, alpha = 0.6, lty = 3) +
+#     geom_errorbar(aes(ymin = ci.min.synchrony, ymax = ci.max.synchrony),
+#                   size = 1.5,
+#                   width = 4,
+#                   alpha = 0.7) +
+#     geom_point(size = 5) +
+#     geom_smooth(method = "lm", size = 2 , se = FALSE) +
+#     scale_color_manual(
+#       name = "Group",
+#       aesthetics = c("color", "fill"),
+#       values = col.grp.vec) +
+#     labs(x = "Decade",
+#          y = "DOY Pla - Poll\nDifference") +
+#     coord_cartesian(xlim = c(min(dat.occ.dec$decade), max(dat.occ.dec$decade))) +
+#     # facet_wrap( ~ group, nrow = 3) +
+#     theme(
+#       axis.title = element_text(size = 40),
+#       axis.text = element_text(size = 40),
+#       axis.ticks = element_line(colour = col.ax, size = 1.2),
+#       axis.ticks.length.x.bottom = unit(8, "bigpts"),
+#       axis.line = element_line(colour = col.ax, size = 1.2),
+#       legend.position = "bottom",
+#       legend.text = element_text(size = 40),
+#       legend.title = element_text(size = 40),
+#       panel.background = element_blank(),
+#       panel.spacing = unit(32, "bigpts"),
+#       strip.background = element_blank(),
+#       strip.text = element_text(size = 40),
+#       panel.grid.major.y = element_blank(),
+#       panel.grid.major.x = element_blank()
+#     )
+# )
+# 
+# dev.off()
+# 
+# 
+# png(here("Plots", "mean_doy_differences_overall_all_in_one.png"), width = 1600, height = 1000)
+# 
+# print(
+#   #both together
+#   ggplot() +
+#     geom_point(data = int.spec.dec,
+#                aes(decade, synchrony,
+#                    col = group),
+#                size = 2,
+#                alpha = 0.1) +
+#     geom_line(data = int.spec.dec,
+#               aes(decade, synchrony, group = id,
+#                   col = group),
+#               size = 1.5,
+#               alpha = 0.05,
+#               lty = 3) +
+#     geom_hline(yintercept = 0, linetype = 3,
+#                col = "gray31", size = 2) +
+#     geom_errorbar(data = int.mean.time,
+#                   aes(decade, ymin = ci.min.synchrony,
+#                       ymax = ci.max.synchrony,
+#                       col = group),
+#                   size = 1.2) +
+#     geom_point(data = int.mean.time,
+#                aes(decade, mean.synchrony, col = group),
+#                size = 8) +
+#     geom_line(data = int.mean.time,
+#               aes(decade, mean.synchrony, col = group),
+#               size = 1.2) +
+#     # geom_vline(data = eqs.synchrony, aes(xintercept = xintercept, col = group), lty = 2) +
+#     scale_color_manual(
+#       name = "Group",
+#       aesthetics = c("color", "fill"),
+#       values = arrange(col.int2, group)$colour
+#     ) +
+#     scale_shape_manual(name = "Group",
+#                        values = c(19, 19, 19, 18)
+#     ) +
+#     labs(x = "Decade",
+#          y = "Mean Asynchrony\n (\u00B1 95% CI)") + 
+#     theme(
+#       axis.title = element_text(size = 40),
+#       axis.text = element_text(size = 40),
+#       axis.ticks = element_line(colour = col.ax, size = 1.2),
+#       axis.ticks.length.x.bottom = unit(8, "bigpts"),
+#       axis.line = element_line(colour = col.ax, size = 1.2),
+#       legend.position = "bottom",
+#       legend.text = element_text(size = 40),
+#       legend.title = element_text(size = 40),
+#       panel.background = element_blank(),
+#       panel.spacing = unit(32, "bigpts"),
+#       strip.background = element_blank(),
+#       strip.text = element_text(size = 40),
+#       panel.grid.major.y = element_blank(),
+#       panel.grid.major.x = element_blank()
+#     )
+# )
+# 
+# dev.off()
 
 
 #plots by insect species
@@ -3412,15 +3442,15 @@ ggsave(
       size = annot_text,
       col = "gray31"
     ) +
-    #add labels for differing factor levels
-    geom_text(
-      data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
-      aes(x = level,
-          y = ypos(c(stat.int.meta$ci.max, stat.int.time$synchrony.slope), frac = 0.15), # see above
-          label = letter),
-      size = annot_text,
-      col = "gray31"
-    ) +
+    # #add labels for differing factor levels
+    # geom_text(
+    #   data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
+    #   aes(x = level,
+    #       y = ypos(c(stat.int.meta$ci.max, stat.int.time$synchrony.slope), frac = 0.15), # see above
+    #       label = letter),
+    #   size = annot_text,
+    #   col = "gray31"
+    # ) +
     scale_color_manual(
       name = "Group",
       labels = col.int$group,

@@ -750,6 +750,12 @@ res.figures <- append.df(name = "nSlopeLepLast",
                          value = stat.spec.dur.meta$n.slope.last[4])
 
 
+# Additional stuff --------------------------------------------------------
+
+# fraction of Coleoptera delaying peak activity
+res.figures <- append.df(name = "retfracColTime",
+                         value = 1 - stat.group.meta$adv.frac[1],
+                         multiplier = 100)
 
 # Save data to csv --------------------------------------------------------
 
