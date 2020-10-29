@@ -110,6 +110,10 @@ col.group2 <- bind_rows(col.poll, col.plapoll)
 #set colours for PollDep comparisons
 col.PollDep <- col.grp[11:13,]
 
+# interaction colours with standard names
+col.int.stc <- col.grp[7:9,]
+col.int.stc$group <- c("Hoverfly", "Bee", "Butterfly")
+
 #set colours for Interaction comparisions
 col.int <- col.grp[7:9,]
 
@@ -478,8 +482,8 @@ ggsave(
                        aesthetics = c("color", "fill"),
                        labels = col.group.stc$group, 
                        values = col.group.stc$colour) +
-    theme(axis.title = element_text(size = size_text_large),
-          axis.text = element_text(size = size_text_large),
+    theme(axis.title = element_text(size = text_size_large),
+          axis.text = element_text(size = text_size_large),
           axis.text.x =  element_text(hjust = 1, angle = text_size_large),
           axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
           axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
@@ -489,7 +493,7 @@ ggsave(
           panel.grid.major = element_blank(),
           panel.spacing = unit(64, "bigpts"), 
           strip.background = element_blank(),
-          strip.text = element_text(size = size_text_large, color = col.note),
+          strip.text = element_text(size = text_size_large, color = col.note),
           plot.margin = unit(c(0, 64, 0, 0), "bigpts")
           ),
   filename = here("Plots", "group_record_numbers_time.png"),
@@ -497,7 +501,6 @@ ggsave(
 )
 
 
-dev.off()
 
 # Plot 1: group trends over time ------------------------------------------
 # 
@@ -946,12 +949,12 @@ dur_mikado_plot <- function(data, filename = NULL, width = 1500, height = 1000,
       # geom_line(aes(year, mean.doy, group = species),
       #           stat = "smooth", method = "lm", se = FALSE,
       #           col = "gray31", alpha = raw.alpha, size = 1.5) +
-      geom_line(aes(!! x, !! min, group = species),
-                stat = "smooth", method = "lm", se = FALSE,
-                col = "cyan", alpha = raw.alpha, size = 1.5) +
-      geom_line(aes(!! x, !! max, group = species),
-                stat = "smooth", method = "lm", se = FALSE,
-                col = "orange", alpha = raw.alpha, size = 1.5) +
+      # geom_line(aes(!! x, !! min, group = species),
+      #           stat = "smooth", method = "lm", se = FALSE,
+      #           col = "cyan", alpha = raw.alpha, size = 1.5) +
+      # geom_line(aes(!! x, !! max, group = species),
+      #           stat = "smooth", method = "lm", se = FALSE,
+      #           col = "orange", alpha = raw.alpha, size = 1.5) +
       # overall regressions
       geom_line(aes(!! x, !! mean, group = id.grp),
                 stat = "smooth", method = "lm", se = TRUE,
@@ -1197,8 +1200,10 @@ print(
     coord_flip(ylim = c(min(stat.spec.time$ci.min), max(stat.spec.time$ci.max))) +
     labs(
       x = ("Species"),
-      y = ("Slope  [Days/year] (\u00B1 95% CI)")
+      y = ("Temporal trends [days/decade]")
     ) +
+    scale_y_continuous(labels = mult_10_format()) +
+    facet_wrap(~ id.grp, scales = "free_y", ncol = 1) +
     theme(
       axis.title = element_text(size = 40),
       axis.text = element_text(size = 40),
@@ -1210,7 +1215,9 @@ print(
       axis.line = element_line(colour = col.ax, size = 1.2),
       panel.background = element_blank(),
       panel.grid.major.y = element_blank(),
-      panel.grid.major.x = element_blank()
+      panel.grid.major.x = element_blank(),
+      strip.background = element_blank(),
+      strip.text = element_text(size = 30, color = "gray31")
     )
 )
 
@@ -1238,8 +1245,9 @@ print(
     coord_flip(ylim = c(min(stat.spec.temp$ci.min), max(stat.spec.temp$ci.max))) +
     labs(
       x = ("Species"),
-      y = ("Slope [Days/\u00B0C] (\u00B1 95% CI)")
+      y = ("Climate sensitivity [Days/\u00B0C]")
     ) +
+    facet_wrap(~ id.grp, scales = "free_y", ncol = 1) +
     theme(
       axis.title = element_text(size = 40),
       axis.text = element_text(size = 40),
@@ -1251,9 +1259,12 @@ print(
       axis.line = element_line(colour = col.ax, size = 1.2),
       panel.background = element_blank(),
       panel.grid.major.y = element_blank(),
-      panel.grid.major.x = element_blank()
+      panel.grid.major.x = element_blank(),
+      strip.background = element_blank(),
+      strip.text = element_text(size = 30, color = "gray31")
     )
 )
+
 
 dev.off()
 
@@ -1285,10 +1296,11 @@ print(
     ) +
     labs(
       x = ("Species"),
-      y = ("Slope [Days/year] (\u00B1 95% CI)")
+      y = ("Temporal trends [days/decade]")
     ) +
+    scale_y_continuous(labels = mult_10_format()) +
     coord_flip(ylim = c(min(stat.spec.time$ci.min), max(stat.spec.time$ci.max))) +
-    facet_wrap(~ order, scales = "free_y", ncol = 1) +
+    facet_wrap(~ id.grp, scales = "free_y", ncol = 1) +
     geom_hline(yintercept = 0, lty = 3, col = col.line) +
     theme(
       axis.title = element_text(size = 40),
@@ -1324,9 +1336,9 @@ print(
         ymax = ci.max,
         col = id.grp
       ),
-      alpha = 0.5,
+      # alpha = 0.5,
       pch = 18,
-      size = 1
+      size = 2
     ) +
     scale_color_manual(
       name = "Group",
@@ -1335,10 +1347,10 @@ print(
     ) +
     labs(
       x = ("Species"),
-      y = ("Slope [Days/\u00B0C] (\u00B1 95% CI)")
+      y = ("Climate sensitivity [Days/\u00B0C]")
     ) +
     coord_flip(ylim = c(min(stat.spec.temp$ci.min), max(stat.spec.temp$ci.max))) +
-    facet_wrap( ~ order, scales = "free_y", ncol = 1) +
+    facet_wrap(~ id.grp, scales = "free_y", ncol = 1) +
     geom_hline(yintercept = 0, lty = 3, col = col.line) +
     theme(
       axis.title = element_text(size = 40),
@@ -2690,6 +2702,8 @@ dev.off()
 
 # Interactions: Indidividual slopes ---------------------------------------
 
+
+
 png(here("Plots", "group_decadal_slopes.png"), width = 1600, height = 1000)
 
 print(
@@ -3034,10 +3048,9 @@ dev.off()
 # make sure the subdirectory exists
 dir.check(here("plots/interactions/doy_diff"))
 
-# make lookup vector for converting interaction names
-recode_vec_int_long <- c(`Flies` = "Hoverfly - Plant",
-                         `Bees` = "Bee - Plant",
-                         `Butterflies` = "Butterfly - Plant")
+recode_vec_int_long <- c("Hoverfly" = "Hoverfly - Plant", "Bee" = "Bee - Plant",
+                         "Butterfly" = "Butterfly - Plant")
+
 
 # png(here("Plots", "mean_doy_differences_overspec.png"), width = 1600, height = 1000)
 # 
@@ -3100,11 +3113,16 @@ recode_vec_int_long <- c(`Flies` = "Hoverfly - Plant",
 lm.res.int <- lm.sum(int.spec.dec, group, synchrony ~ decade) %>%
   mutate(breaks = cut(pval, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE),
-         group = fct_relevel(group, c("Hoverfly", "Bee", "Butterfly")))
+         group = fct_relevel(group, c("Hoverfly", "Bee", "Butterfly"))) %>% 
+  mutate(group = recode_factor(group, !!! recode_vec_int_long))
+
+# generate data frame for plotting
+int.spec.dec.plot <- int.spec.dec %>% 
+  mutate(group = recode_factor(group, !!! recode_vec_int_long))
 
 
 ggsave(
-  ggplot(int.spec.dec,
+  ggplot(int.spec.dec.plot,
          aes(
            x = decade,
            y = synchrony,
@@ -3120,7 +3138,7 @@ ggsave(
                col = col.pt,
                show.legend = FALSE) +
     stat_summary(
-      data = int.spec.dec,
+      data = int.spec.dec.plot,
       aes(
         x = decade,
         y = synchrony,
@@ -3151,12 +3169,9 @@ ggsave(
     labs(x = NULL,
          y = "Mean Plant-Pollinator asynchrony [days]") +
     coord_cartesian(xlim = c(min(dat.occ.dec$decade), max(dat.occ.dec$decade))) +
-    facet_wrap( ~ group, nrow = 3, 
-                labeller = as_labeller(c(`Flies` = "Hoverfly - Plant",
-                                         `Bees` = "Bee - Plant",
-                                         `Butterflies` = "Butterfly - Plant"))) +
-    theme(axis.title = element_text(size = size_text_large),
-          axis.text = element_text(size = size_text_large),
+    facet_wrap( ~ group, nrow = 3) +
+    theme(axis.title = element_text(size = text_size_large),
+          axis.text = element_text(size = text_size_large),
           # axis.text.x =  element_text(hjust = 1, angle = 30),
           axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
           axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
@@ -3167,7 +3182,8 @@ ggsave(
           panel.background = element_blank(),
           panel.grid.major = element_blank(),
           strip.background = element_blank(),
-          strip.text = element_text(size = size_text_large, color = col.note)
+          strip.text = element_text(size = text_size_large, color = col.note),
+          plot.margin = unit(c(0,64,0,0), "bigpts")
           ),
   filename = here("Plots", "mean_doy_differences_overall_facet.png"), height = 20, width = 16
 )
@@ -3178,11 +3194,16 @@ ggsave(
 lm.res.ins.earl <- lm.sum(int.mean.time.grp, group, ins.early.frac ~ decade) %>%
   mutate(breaks = cut(pval, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE),
-         group = fct_relevel(group, c("Hoverfly", "Bee", "Butterfly")))
+         # group = fct_relevel(group, col.int)
+         ) %>% 
+  mutate(group = recode_factor(group, !!! recode_vec_int_long))
+
+int.mean.time.plot <- int.mean.time  %>% 
+  mutate(group = recode_factor(group, !!! recode_vec_int_long))
 
 # percentages of insect partner earlier (excluding overall data)
 ggsave(
-  ggplot(filter(int.mean.time, group != "Overall"), 
+  ggplot(filter(int.mean.time.plot, group != "Overall"), 
          aes(decade, ins.early.frac, col = group)) + 
     geom_hline(yintercept = 0.5, linetype = 3,
                size = hline_size_large, col = "gray31") +
@@ -3193,10 +3214,7 @@ ggsave(
                 col = "gray31",
                 size = 2
     ) +
-    facet_wrap(~group, nrow = 3,
-               labeller = as_labeller(c(`Flies` = "Hoverfly - Plant",
-                                        `Bees` = "Bee - Plant",
-                                        `Butterflies` = "Butterfly - Plant"))) +
+    facet_wrap(~group, nrow = 3) +
     scale_color_manual(
       name = "Group",
       aesthetics = c("color", "fill"),
@@ -3210,8 +3228,8 @@ ggsave(
     labs(x = NULL,
          y = "\u0025 of interactions with earlier activity of insects") + 
     coord_cartesian(ylim = c(0, 1)) +
-    theme(axis.title = element_text(size = size_text_large),
-          axis.text = element_text(size = size_text_large),
+    theme(axis.title = element_text(size = text_size_large),
+          axis.text = element_text(size = text_size_large),
           # axis.text.x =  element_text(hjust = 1, angle = 30),
           axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
           axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
@@ -3222,7 +3240,8 @@ ggsave(
           panel.background = element_blank(),
           panel.grid.major = element_blank(),
           strip.background = element_blank(),
-          strip.text = element_text(size = size_text_large, color = col.note)
+          strip.text = element_text(size = text_size_large, color = col.note),
+          plot.margin = unit(c(0,64,0,0), "bigpts")
           ),
   filename = here("plots", "frac_ins_earlier_time.png"), height = 20, width = 16
 )
@@ -3373,7 +3392,7 @@ for (s in sort(unique(int.spec.dec$poll))) {
            y = "DOY Pla - Poll Difference") +
       scale_color_manual(
         name = "Group",
-        values = filter(col.int, group == int.s.dec$group[1])$colour
+        values = filter(col.int.stc, group == int.s.dec$group[1])$colour
       ) +
       coord_cartesian(ylim = c(1.1 * max(int.spec.dec$synchrony),
                                1.1 * min(int.spec.dec$synchrony)))+
@@ -3395,6 +3414,97 @@ for (s in sort(unique(int.spec.dec$poll))) {
 }
 
 # Interactions: Mean Synchrony differences --------------------------------
+
+# for main publication
+ggsave(
+  ggplot() +
+    geom_hline(
+      size = 1.5,
+      yintercept = 0,
+      lty = 2,
+      col = "gray31"
+    ) +
+    geom_point(
+      data = stat.int.time,
+      aes(x = group, y = synchrony.slope, 
+          # shape = decades
+      ),
+      size = 3,
+      alpha = 0.3,
+      col = "gray40",
+      # position = "jitter"
+      position = position_jitter(width = 0.2)
+    ) +
+    geom_errorbar(
+      data = stat.int.meta,
+      aes(
+        x = group,
+        ymin = ci.min,
+        ymax = ci.max,
+        col = group
+      ),
+      size = 2,
+      position = position_dodge(width = 1)
+    ) +
+    geom_point(
+      data = stat.int.meta,
+      aes(x = group, y = mean.synchrony.slope, col = group),
+      size = 8,
+      position = position_dodge(width = 1)
+    ) +
+    # geom_text(
+    #   data = stat.int.meta,
+    #   aes(
+    #     x = group,
+    #     y = ypos(stat.int.time$synchrony.slope, frac = 0.4),
+    #     label = paste0("n = ", N.synchrony.slope)
+    #   ),
+    #   size = annot_text,
+    #   col = "gray31"
+    # ) +
+    # #add labels for differing factor levels
+    # geom_text(
+    #   data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
+    #   aes(x = level,
+    #       y = ypos(c(stat.int.meta$ci.max, stat.int.time$synchrony.slope), frac = 0.15), # see above
+    #       label = letter),
+    #   size = annot_text,
+    #   col = "gray31"
+    # ) +
+    scale_color_manual(
+      name = "Group",
+      labels = col.int$group,
+      values = col.int$colour
+    ) +
+    # #giving all groups the same shape again
+    # scale_shape_manual(name = "Period", values = c(19, 19, 19),
+    #                    guide = "none") +
+    labs(
+      x = NULL,
+      y = "Change in synchrony\n[days/decade") +
+    scale_x_discrete(labels = recode_vec_int_long) +
+    scale_y_continuous(labels = mult_10_format()) +
+    theme(
+      axis.title = element_text(size = text_size_large),
+      axis.text = element_text(size = text_size_large),
+      axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
+      axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
+      axis.line = element_line(colour = col.ax, size = axis_size_large),
+      legend.position = "none",
+      legend.text = element_text(size = text_size_large),
+      legend.title = element_text(size = text_size_large),
+      panel.background = element_blank(),
+      panel.spacing = unit(32, "bigpts"),
+      strip.background = element_blank(),
+      strip.text = element_text(size = text_size_large),
+      panel.grid = element_blank(),
+      plot.margin = unit(c(150, 32, 0, 32), "bigpts")
+    ),
+  filename = here("Plots", "group_mean_doy_differences.png"), width = 20, height = 12.5,
+  bg = "transparent"
+)
+
+# for graphical abstract
 
 ggsave(
   ggplot() +
@@ -3442,15 +3552,15 @@ ggsave(
       size = annot_text,
       col = "gray31"
     ) +
-    # #add labels for differing factor levels
-    # geom_text(
-    #   data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
-    #   aes(x = level,
-    #       y = ypos(c(stat.int.meta$ci.max, stat.int.time$synchrony.slope), frac = 0.15), # see above
-    #       label = letter),
-    #   size = annot_text,
-    #   col = "gray31"
-    # ) +
+    #add labels for differing factor levels
+    geom_text(
+      data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
+      aes(x = level,
+          y = ypos(c(stat.int.meta$ci.max, stat.int.time$synchrony.slope), frac = 0.15), # see above
+          label = letter),
+      size = annot_text,
+      col = "gray31"
+    ) +
     scale_color_manual(
       name = "Group",
       labels = col.int$group,
@@ -3463,10 +3573,11 @@ ggsave(
       title = paste("Shifts of asynchrony",
                     "of plants and insect pollinators",
                     sep = "\n"),
-      x = "Group",
+      x = NULL,
       y = paste("Asynchrony shift [days/decade]\n(\u00B1 95% CI)",
                 "<- Greater synchrony",
                 sep = "\n")) +
+    scale_x_discrete(labels = recode_vec_int_long) +
     scale_y_continuous(labels = mult_10_format()) +
     theme(
       axis.title = element_text(size = 50),
@@ -3491,7 +3602,7 @@ ggsave(
       legend.background = element_rect(fill = "transparent"), 
       legend.box.background = element_rect(fill = "transparent") 
     ),
-  filename = here("Plots", "group_mean_doy_differences.png"), width = 20, height = 15,
+  filename = here("Plots", "group_mean_doy_differences_abstract.png"), width = 20, height = 15,
   bg = "transparent"
 )
 
@@ -3560,10 +3671,11 @@ ggsave(
       title = paste("Shifts of asynchrony",
                     "of plants and insect pollinators",
                     sep = "\n"),
-      x = "Group",
+      x = NULL,
       y = paste("Asynchrony shift [days/decade]\n(\u00B1 95% CI)",
                 "<- Greater synchrony",
                 sep = "\n")) +
+    scale_x_discrete(labels = recode_vec_int_long) +
     scale_y_continuous(labels = mult_10_format()) +
     theme(
       axis.title = element_text(size = 50),
