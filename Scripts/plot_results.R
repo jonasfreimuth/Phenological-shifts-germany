@@ -3542,25 +3542,25 @@ ggsave(
       size = 8,
       position = position_dodge(width = 1)
     ) +
-    geom_text(
-      data = stat.int.meta,
-      aes(
-        x = group,
-        y = ypos(stat.int.time$synchrony.slope, frac = 0.4),
-        label = paste0("n = ", N.synchrony.slope)
-      ),
-      size = annot_text,
-      col = "gray31"
-    ) +
-    #add labels for differing factor levels
-    geom_text(
-      data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
-      aes(x = level,
-          y = ypos(c(stat.int.meta$ci.max, stat.int.time$synchrony.slope), frac = 0.15), # see above
-          label = letter),
-      size = annot_text,
-      col = "gray31"
-    ) +
+    # geom_text(
+    #   data = stat.int.meta,
+    #   aes(
+    #     x = group,
+    #     y = ypos(stat.int.time$synchrony.slope, frac = 0.4),
+    #     label = paste0("n = ", N.synchrony.slope)
+    #   ),
+    #   size = annot_text,
+    #   col = "gray31"
+    # ) +
+    # #add labels for differing factor levels
+    # geom_text(
+    #   data = pairdiff(stat.int.time, synchrony.slope ~ group, level_order = levels(stat.int.time$group)),
+    #   aes(x = level,
+    #       y = ypos(c(stat.int.meta$ci.max, stat.int.time$synchrony.slope), frac = 0.15), # see above
+    #       label = letter),
+    #   size = annot_text,
+    #   col = "gray31"
+    # ) +
     scale_color_manual(
       name = "Group",
       labels = col.int$group,
@@ -3570,31 +3570,33 @@ ggsave(
     # scale_shape_manual(name = "Period", values = c(19, 19, 19),
     #                    guide = "none") +
     labs(
-      title = paste("Shifts of asynchrony",
-                    "of plants and insect pollinators",
+      title = paste("Climate change shifts synchrony",
+                    "of plant-pollinator interactions",
                     sep = "\n"),
       x = NULL,
-      y = paste("Asynchrony shift [days/decade]\n(\u00B1 95% CI)",
-                "<- Greater synchrony",
+      y = paste("Changes in synchrony", "[days/decade], axis cut",
                 sep = "\n")) +
     scale_x_discrete(labels = recode_vec_int_long) +
-    scale_y_continuous(labels = mult_10_format()) +
+    scale_y_continuous(labels = mult_10_format(),
+                       # limits = c(-2, 2)
+                       ) +
     theme(
-      axis.title = element_text(size = 50),
-      axis.text = element_text(size = 45),
-      axis.ticks = element_line(colour = col.ax, size = 1.2),
-      axis.ticks.length.x.bottom = unit(8, "bigpts"),
-      axis.line = element_line(colour = col.ax, size = 1.2),
+      axis.title = element_text(size = text_size_large),
+      axis.text = element_text(size = text_size_large),
+      axis.ticks = element_line(colour = col.ax, size = axis_ticks_size_large),
+      axis.ticks.length = unit(axis_ticks_length_large, "bigpts"),
+      axis.line = element_line(colour = col.ax, size = axis_size_large),
       legend.position = "none",
-      legend.text = element_text(size = 40),
-      legend.title = element_text(size = 40),
+      legend.text = element_text(size = text_size_large),
+      legend.title = element_text(size = text_size_large),
       panel.background = element_blank(),
       panel.spacing = unit(32, "bigpts"),
       strip.background = element_blank(),
-      strip.text = element_text(size = 40),
+      strip.text = element_text(size = text_size_large),
       panel.grid = element_blank(),
-      plot.margin = unit(c(256, 32, 0, 32), "bigpts"),
-      plot.title = element_text(size = 60, hjust = 0.5, vjust = 18)
+      plot.title = element_text(size = text_size_large,
+                                hjust = 0.5, vjust = 18),
+      plot.margin = unit(c(256, 32, 0, 32), "bigpts")
     ) +
     # special theme for graphical abstract
     theme(
