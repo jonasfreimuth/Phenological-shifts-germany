@@ -759,7 +759,8 @@ res.figures <- append.df(name = "retfracColTime",
 
 # fraction of original records with coordinates
 res.figures <- append.df(name = "fracRecGeoref",
-                         value = plapoll.count.pruned$fracGeoref[1])
+                         value = plapoll.count.pruned$fracGeoref[1],
+                         multiplier = 100)
 
 # Save data to csv --------------------------------------------------------
 
