@@ -631,7 +631,7 @@ ggsave(
     #                 col = id.grp), 
     #             method = lm, se = T, size = 2.5, linetype = 1,
     #             alpha = 0.7) +
-    labs(x = "Annual mean Temperature [°C]",
+    labs(x = "Annual mean temperature [°C]",
          y = "Peak flowering/activity [DOY]") +
     scale_color_manual(name = "Group", 
                        values = col.group.stc$colour,
@@ -1245,7 +1245,7 @@ print(
     coord_flip(ylim = c(min(stat.spec.temp$ci.min), max(stat.spec.temp$ci.max))) +
     labs(
       x = ("Species"),
-      y = ("Climate sensitivity [Days/\u00B0C]")
+      y = ("Climate sensitivity [days/\u00B0C]")
     ) +
     facet_wrap(~ id.grp, scales = "free_y", ncol = 1) +
     theme(
@@ -1347,7 +1347,7 @@ print(
     ) +
     labs(
       x = ("Species"),
-      y = ("Climate sensitivity [Days/\u00B0C]")
+      y = ("Climate sensitivity [days/\u00B0C]")
     ) +
     coord_flip(ylim = c(min(stat.spec.temp$ci.min), max(stat.spec.temp$ci.max))) +
     facet_wrap(~ id.grp, scales = "free_y", ncol = 1) +
@@ -2042,7 +2042,7 @@ ggsave(
           legend.title = element_text(size = 50),
           panel.background = element_blank(),
           panel.grid.major = element_blank(),
-          panel.spacing.y = unit(128, "bigpts"),
+          panel.spacing.x = unit(64, "bigpts"),
           strip.background = element_blank(),
           strip.text = element_text(size = 50),
           plot.margin = unit(c(200, 0, 0, 0), "bigpts")
@@ -2696,7 +2696,7 @@ png(here("Plots/traits",
          "Mean_CI_mnflmnt_time.png"), width = 1600, height = 1000)
 
 plots_mnflmnt[[1]] +
-  xlab("Mean month of flowering")
+  xlab("Peak month of flowering")
 
 dev.off()
 
@@ -3167,7 +3167,7 @@ ggsave(
     ) +
     scale_linetype_manual(values = c("p < 0.05" = 1, "p > 0.05" = 2)) +
     labs(x = NULL,
-         y = "Mean Plant-Pollinator asynchrony [days]") +
+         y = "Mean plant-pollinator asynchrony [days]") +
     coord_cartesian(xlim = c(min(dat.occ.dec$decade), max(dat.occ.dec$decade))) +
     facet_wrap( ~ group, nrow = 3) +
     theme(axis.title = element_text(size = text_size_large),
@@ -3578,7 +3578,7 @@ ggsave(
                 sep = "\n")) +
     scale_x_discrete(labels = recode_vec_int_long) +
     scale_y_continuous(labels = mult_10_format(),
-                       # limits = c(-2, 2)
+                       limits = c(-2, 2)
                        ) +
     theme(
       axis.title = element_text(size = text_size_large),

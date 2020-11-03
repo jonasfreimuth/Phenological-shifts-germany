@@ -304,7 +304,7 @@ if (run.pruning |
   
   ## Add climate data and save
   
-  #join overall climate data  and plant trait data to raw observational data
+  #join overall climate data and plant trait data to raw observational data
   dat.occ <- left_join(dat.occ,
                        read.csv(here("static_data", "overall_mean_temperature.csv")),
                        by = c("year")) %>% 
@@ -320,7 +320,8 @@ if (run.pruning |
   data.frame(
     nRow = nrow(dat.occ),
     nPlants = as.numeric(count(dat.occ, kingdom)[2,2]),
-    nInsects = as.numeric(count(dat.occ, kingdom)[1,2])
+    nInsects = as.numeric(count(dat.occ, kingdom)[1,2]),
+    fracGeoref = sum(!is.na(dat.occ$decimalLatitude))/nrow(dat.occ)
   ) %>%
     fwrite(here("Data", "occurrence_full_meta.csv"))
   
