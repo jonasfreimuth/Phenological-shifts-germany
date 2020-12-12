@@ -1035,7 +1035,8 @@ dur_slope_plot_save <- function(x = id.grp,
                                 data = stat.all.dur,
                                 metadata = stat.all.dur.meta,
                                 xlab = NULL, ylab = NULL,
-                                ylim = NULL) {
+                                ylim = NULL,
+                                y_ax_explanation = NULL) {
   
   x <- enquo(x)
   y <- enquo(y)
@@ -1092,8 +1093,11 @@ dur_slope_plot_save <- function(x = id.grp,
     ) +
     labs(x = xlab,
          y = ylab) +
-    coord_cartesian(ylim = ylim) +
-    scale_y_continuous(labels = mult_10_format()) +
+    coord_cartesian(ylim = ylim,
+                    xlim = c(1, nrow(metadata) + 1)) +
+    scale_y_continuous(labels = mult_10_format(),
+                      
+    ) +
     scale_color_manual(name = "Group",
                        labels = col.group.stc$group,
                        values = col.group.stc$colour) +
@@ -1113,10 +1117,8 @@ dur_slope_plot_save <- function(x = id.grp,
       panel.spacing = unit(32, "bigpts"),
       strip.background = element_blank(),
       strip.text = element_text(size = 40),
-      plot.margin = unit(c(128, 0, 0, 0), "bigpts")
+      plot.margin = unit(c(128, 128, 0, 0), "bigpts")
     )
-  
-  return(plot)
   
 }
 
@@ -1159,21 +1161,26 @@ print(
 dev.off()
 
 
-png(here("Plots", "group_shifts_diff_occurrence.png"), width = 1600, height = 1000)
-
-print(
-  dur_slope_plot_save(y = slope.diff,
-                      ymeta = mean.slope.diff,
-                      ymin = ci.min.diff,
-                      ymax = ci.max.diff,
-                      xlab = "Group", ylab = paste("Mean asymmetry of shifts of first and last DOY",
-                                                   "[days/decade] (\u00B1 95% CI)",
-                                                   "<-- First stronger | Last stronger -->",
-                                                   sep = "\n"),
-                      ylim = c(-5.5, 4.5))
+ggsave(
+  filename = here("Plots", "group_shifts_diff_occurrence.png"),
+  plot = dur_slope_plot_save(
+    y = slope.diff,
+    ymeta = mean.slope.diff,
+    ymin = ci.min.diff,
+    ymax = ci.max.diff,
+    xlab = "Group",
+    ylab = paste(
+      "Asymmetry of shifts first vs last DOY",
+      "[days/decade] (\u00B1 95% CI)",
+      sep = "\n"
+    ),
+    ylim = c(-5.5, 4.5),
+    y_ax_explanation = "<-- First stronger | Last stronger -->"
+  ),
+  width = 20,
+  height = 12
 )
 
-dev.off()
 
 
 # Dirty Forest Plot Plants ------------------------------------------------
