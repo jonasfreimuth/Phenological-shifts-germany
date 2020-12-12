@@ -17,4 +17,4 @@ It might not work with less than 8 GB of RAM
 
 ## The Code
 
-Everything necessary for obtaining the results from the paper is done from within ``Analysis_main.Rmd``.We also included the scripts we used to obtain plant trait data (``get_bioflor_traits.R``), the climate data for Germany (``get_german_climate_data.R``) and the script used to compile that data from GBIF (``start_gbif_downloads.R``). They are located in the ``Scripts`` folder, along with additional scripts run from within the main analysis notebook.
+Everything necessary for obtaining the results from the paper is done from within ``Analysis_main.Rmd``. Some data, for example the averaged climate datasets and the dataset keys for the gbif datasets used, is already provided in the ``static_data`` folder. We also included the scripts we used to obtain plant trait data (``get_bioflor_traits.R``), the climate data for Germany (``get_german_climate_data.R``) and the script used to compile that data from GBIF (``start_gbif_downloads.R``). They are located in the ``Scripts`` folder, along with additional scripts run from within the main analysis notebook. 
