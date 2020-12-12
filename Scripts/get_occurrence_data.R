@@ -8,7 +8,7 @@
 # make sure data folder exists
 dir.check(here("data"))
 
-# Setup: Aditional Data ---------------------------------------------------
+# Setup: Additional Data ---------------------------------------------------
 
 # check if bioflor trait data is available
 # if not run script for obtaining it

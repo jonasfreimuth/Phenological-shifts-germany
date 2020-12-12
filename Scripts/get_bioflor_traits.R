@@ -8,25 +8,11 @@ library("taxize")
 library("rgbif")
 library("beepr")
 
-#function for getting traits by their regex string
-get_traits <- function(text, traits, patterns) {
-  
-  #initiate data frame
-  traits_out <- setNames(data.frame(
-    matrix(ncol = length(traits),
-           nrow = 1)),
-    traits)
-  
-  #start for loop to extract each trait value
-  for (i in seq(1, length(traits), 1)) {
-    
-    traits_out[1, i] <- paste(unlist(stringr::str_extract_all(text, patterns[i])), collapse = ", ")
-    
-  }
-  
-  return(traits_out)
-  
-}
+
+# Functions ---------------------------------------------------------------
+
+# just to be save, run functions script
+source(here('scripts', 'functions.R'))
 
 # Compile list of plant species with their traits from BioFlor ------------
 

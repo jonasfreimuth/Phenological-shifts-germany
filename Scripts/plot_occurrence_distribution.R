@@ -330,7 +330,7 @@ dir.check("plots/additional/species_doy_dist")
 
 # Butterfly species
 # I tried lapply instead of the common for loop here 
-# in the hopes that it migh be faster but i haven't 
+# in the hopes that it might be faster but i haven't 
 # actually checked whether actually it is. Also 
 # invisible is necessary to not show a list of "null device" from dev.off()
 invisible(

@@ -16,38 +16,10 @@ options(stringsAsFactors = FALSE)
 # set threshold below which p.values are abbreviated
 thr.pval = 0.001
 
-# initialise data.frame
+# initialize data.frame
 res.figures <- data.frame(name = NA, value = NA, formattedValue = NA)
 
-# define function to write name and value into the next row of the data frame
-# also optionally transform the value and save it to extra column or alternatively provide
-# formatted Value directly (one excludes the other)
-append.df <- function(name, value, multiplier = NULL, formattedValue = NULL,  target = res.figures) {
-  
-  # throw error if both mulitplier and formattedValue are given
-  # this shouldnt happen because i want to write both into the same
-  # column
-  if (!is.null(multiplier) & !is.null(formattedValue)) {
-    
-    stop("Provided both multiplier and formattedValue.")
-    
-  } else if (is.null(multiplier) & is.null(formattedValue)){
-    
-    formattedValue <- NA
-    
-  } else if (!is.null(multiplier)) {
-    
-    formattedValue <- value * multiplier
-    
-  } 
-  
-  target[nrow(target) + 1, ] <- data.frame(name = name,
-                                           value = value,
-                                           formattedValue = formattedValue)
-  
-  return(target)
-  
-}
+
 
 # Original numbers for methods --------------------------------------------
 
