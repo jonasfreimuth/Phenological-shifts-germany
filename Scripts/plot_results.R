@@ -3053,9 +3053,9 @@ ggsave(
       data = stat.int.meta,
       aes(
         x = group,
-        # including the 0.x ensures we're at leat at x heightwise
+        # including the 0.x ensures we're at least at x heightwise
         # (0.x because of the 10x scaling)
-        y = ypos(stat.int.meta$ci.max, 0.25, frac = 0.6), 
+        y = ypos(stat.int.meta$ci.max, 0.25, frac = 0.8), 
         label = paste0("n = ", N.synchrony.slope)
       ),
       size = annot_text,
