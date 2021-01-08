@@ -1032,7 +1032,8 @@ dur_slope_plot_save <- function(x = id.grp,
                                 metadata = stat.all.dur.meta,
                                 xlab = NULL, ylab = NULL,
                                 ylim = NULL,
-                                y_ax_explanation = NULL) {
+                                y_ax_explanation = NULL # currently unused
+                                ) {
   
   x <- enquo(x)
   y <- enquo(y)
@@ -1074,7 +1075,7 @@ dur_slope_plot_save <- function(x = id.grp,
     #add labels for differing factor levels
     geom_text(
       data = pairdiff(filter(data,
-                             #exclude Hymneoptera, Diptera and the Insects overall group
+                             #exclude Hymenoptera, Diptera and the Insects overall group
                              !(id.grp %in% c(excl.group.year, col.grp$group[5]))),
                       formula(str_glue("{quo_get_expr(y)} ~ {quo_get_expr(x)}"))),
       aes(
@@ -1090,7 +1091,8 @@ dur_slope_plot_save <- function(x = id.grp,
     labs(x = xlab,
          y = ylab) +
     coord_cartesian(ylim = ylim,
-                    xlim = c(1, nrow(metadata) + 1)) +
+                    # xlim = c(1, nrow(metadata) + 1) # extends plot to the right
+                    ) +
     scale_y_continuous(labels = mult_10_format(),
                        
     ) +
@@ -1113,7 +1115,7 @@ dur_slope_plot_save <- function(x = id.grp,
       panel.spacing = unit(32, "bigpts"),
       strip.background = element_blank(),
       strip.text = element_text(size = 40),
-      plot.margin = unit(c(128, 128, 0, 0), "bigpts")
+      plot.margin = unit(c(128, 20, 0, 0), "bigpts")
     )
   
 }

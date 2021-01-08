@@ -48,7 +48,7 @@ cutoff.dec <- 1980
 
 # force running of the entire script regardless of no new changes in the data?
 # if FALSE, workspace data from previous run will be loaded
-force.main <- TRUE
+force.main <- FALSE
 
 # force pruning? (necessary after changing earliest year cutoff)
 force.pruning <- FALSE

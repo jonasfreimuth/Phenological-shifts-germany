@@ -18,7 +18,7 @@ recode.vec <- c(
   "Coleoptera" = "Beetles",
   "Diptera" = "Flies",
   "Hymenoptera" = "Bees",
-  "Lepidoptera" = "Butterflies"
+  "Lepidoptera" = "Butterflies+\nMoths"
 )
 
 # make alternative vector for interactions
@@ -67,7 +67,7 @@ axis_ticks_length_large <- 16
 
 # define colours
 # DO NOT CHANGE ORDER, only append
-col.grp <- data.frame(group = c("Beetles", "Flies", "Bees", "Butterflies",
+col.grp <- data.frame(group = c("Beetles", "Flies", "Bees", "Butterflies+\nMoths",
                                 "Insects overall", "Plants",
                                 "Hoverfly - Plant", "Bee - Plant",
                                 "Butterfly - Plant",
@@ -712,6 +712,7 @@ print(
 dev.off()
 
 
+
 ggsave(
   filename = here("Plots", "group_shifts_diff_occurrence.png"),
   plot = dur_slope_plot_save(
@@ -723,13 +724,13 @@ ggsave(
     ylab = paste(
       "Asymmetry of shifts first vs last DOY",
       "[days/decade] (\u00B1 95% CI)",
+      "<-- First stronger | Last stronger -->",
       sep = "\n"
     ),
-    ylim = c(-5.5, 4.5),
-    y_ax_explanation = "<-- First stronger | Last stronger -->"
+    ylim = c(-5.5, 4.5)
   ),
-  width = 20,
-  height = 12
+width = 20,
+height = 12
 )
 
 
