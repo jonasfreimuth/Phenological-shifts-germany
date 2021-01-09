@@ -15,7 +15,7 @@ It might not work with less than 8 GB of RAM
 * renv should be automatically installing
 * to install all necessary packages, simply call ``renv::restore() ``
 * To run the analysis some additional data sets need to be downloaded and placed in the ``static_data`` folder:
-  * Plant pollinator interaction data set from: https://doi.org/10.5285/6d8d5cb5-bd54-4da7-903a-15bd4bbd531b
+  * Plant pollinator interaction data set from: https://doi.org/10.5285/6d8d5cb5-bd54-4da7-903a-15bd4bbd531b (login required, account creation should be possible for everyone)
   * Plant trait data from bioflor. This should be done automatically, but the script attempts to resolve the current accepted name
     for each species. Therefore running this script at a later date might result in different species being included in the analysis. The original
     data set used in the analysis is available on request.
