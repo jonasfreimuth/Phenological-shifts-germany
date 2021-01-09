@@ -1,0 +1,9 @@
+All temperature data herein was obtained from the Deutscher Wetterdienst CDC:
+DWD Climate Data Center (CDC): Historische monatliche Stationsbeobachtungen (Temperatur, Druck,Niederschlag, Sonnenscheindauer, etc.) für Deutschland, Version v007, 201
+
+Plant trait information used in this analysis were obtained from
+Klotz, S., Kühn, I. & Durka, W. [Hrsg.] (2002): BIOLFLOR - Eine Datenbank zu biologisch-ökologischen Merkmalen der Gefäßpflanzen in Deutschland. - Schriftenreihe für Vegetationskunde 38. Bonn: Bundesamt für Naturschutz.
+
+Plant pollinator interaction data can be downloaded here:
+https://doi.org/10.5285/6d8d5cb5-bd54-4da7-903a-15bd4bbd531b
+(Redhead, J. W., Woodcock, B. A., Pocock, M. J., Pywell, R. F., Vanbergen, A. J., & Oliver, T. H. (2018). Potential landscape‐scale pollinator networks across Great Britain: structure, stability and influence of agricultural land cover. Ecology letters, 21(12), 1821-1832.)
