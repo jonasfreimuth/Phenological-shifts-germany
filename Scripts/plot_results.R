@@ -2910,7 +2910,7 @@ ggsave(
       panel.grid = element_blank(),
       plot.margin = unit(c(150, 32, 0, 32), "bigpts")
     ),
-  filename = here("Plots", "group_mean_doy_differences.png"), width = 20, height = 12.5,
+  filename = here("Plots", "group_mean_doy_differences.png"), width = 20, height = 12,
   bg = "transparent"
 )
 
