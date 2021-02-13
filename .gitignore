@@ -9,5 +9,8 @@ analysis_main.nb.html
 gadm36_DEU_1_sp.rds
 
 # ignore possibly copyright protected material
-bioflor_traits.csv
-plant_pollinator_interactions_2018.csv
+static_data/bioflor_traits.csv
+static_data/plant_pollinator_interactions_for_potential_networks_2018.csv
+
+# sync files
+**/*sync*
