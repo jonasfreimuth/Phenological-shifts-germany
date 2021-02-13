@@ -7,3 +7,7 @@ Download
 Plots
 analysis_main.nb.html
 gadm36_DEU_1_sp.rds
+
+# ignore possibly copyright protected material
+bioflor_traits.csv
+plant_pollinator_interactions_2018.csv
