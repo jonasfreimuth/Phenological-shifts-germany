@@ -1592,7 +1592,7 @@ ggplot(data = stat.group.2k.temp.meta) +
 
 #load interaction data
 dat.int <-
-  read.csv(here("static_data", "plant_pollinator_interactions_2018.csv"),
+  read.csv(here("static_data", "plant_pollinator_interactions_for_potential_networks_2018.csv"),
            stringsAsFactors = FALSE) %>%
   rename(poll = POLLINATOR_NAME, plant = PLANT_NAME) %>%
   
