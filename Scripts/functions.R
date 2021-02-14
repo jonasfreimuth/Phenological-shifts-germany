@@ -512,6 +512,12 @@ analyse.trait <- function(trait = Habitat, data = dat.occ.plant) {
   assign(str_glue("stat.{abb_trait}.time"), stat.trait.time, pos = 1)
   assign(str_glue("stat.{abb_trait}.temp"), stat.trait.temp, pos = 1)
   
+  # save trait data to disk
+  write.csv(x = stat.trait.time$stat,
+            file = here('data', str_glue("trait_{abb_trait}_time.csv")))
+  write.csv(x = stat.trait.temp$stat,
+            file = here('data', str_glue("trait_{abb_trait}_temp.csv")))
+  
 }
 
 # function for generating plots of duration shift plots
