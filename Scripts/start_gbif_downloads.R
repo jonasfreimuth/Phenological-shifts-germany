@@ -1,84 +1,87 @@
-stop("This script was used to compile the gbif data sets used in the analysis.
-      Running it requires setting your GBIF credentials in some way (usually in .Renviron).
-      See help('Startup') or the rgbif documentation, especially rgbif::occ_download.
-      Running this script again will generate different downloads as there would have been changes in the 
-      data on GBIF since its been last run.")
+stop(paste(
+  c(
+    "This script was used to compile the gbif data sets used in the",
+    "analysis. Running it requires setting your GBIF credentials in some way",
+    "(usually in .Renviron). See help('Startup') or the rgbif documentation, ",
+    "especially rgbif::occ_download. Running this script again will generate ",
+    "different downloads as there would have been changes in the  data on GBIF ",
+    "since it has been last run."
+  )
+))
 
 
 # Setup -------------------------------------------------------------------
 
 #load libraries
-library("here")
+library('data.table')
 library("beepr")
 library("rgbif")
 library("taxize")
 library("tidyverse")
 
 
-#load pollinator taxa
-polltax <- read.delim(here("Data", "pollinator_taxa_all.txt"), header = FALSE) %>%
-  transmute(taxon = as.character(V1))
+# Get GBIF taxon keys -----------------------------------------------------
 
-#get taxon keys from species list
-keys.poll <- taxize::get_gbifid(polltax$taxon, ask = FALSE,  messages = FALSE, phylum = "Arthropoda",
+# read file with pollinator taxa of interest, file was previously compiled
+polltax <- read_lines('static_data/pollinator_taxa_all.txt')
+
+# get taxon keys for pollinator taxa
+# WARNING: Taxa without keys will be dropped without a warning
+keys.poll <- taxize::get_gbifid(polltax, ask = FALSE,  messages = FALSE,
+                                phylum = "Arthropoda",
                                 rows = 1) %>%
   as.data.frame() %>%
   drop_na() %>%
-  select(ids) %>%
-  unlist() %>%
-  paste(collapse = ",")
+  select(ids)
+  # %>%
+  # unlist() %>%
+  # paste(collapse = ",")
 
-#count number of keys returned
-n.keys.poll <- str_count(keys.poll, ",") + 1
- 
-# Select plant species ---------------------------------
+# count number of keys returned
+n.keys.poll <- nrow(keys.poll)
 
-#load plant traits data set
-plant_traits <- read.csv(here("Data", "bioflor_traits.csv")) %>%
-  mutate(species = as.character(species),
-         SciName = as.character(AccName)) 
+# get plant taxon keys from species list
+keys.plant <- fread('static_data/bioflor_traits.csv', select = c('GbifKey'))
 
-#get taxon keys from species list
-keys.plant <- plant_traits %>%
-  select(GbifKey) %>%
-  drop_na(GbifKey)
-
-#count number of keys returned
+# count number of keys returned
 n.keys.plant <- nrow(keys.plant)
 
-# break up occurrence requests, as requests have a character limit --------
+# breaking gbif requests up -----------------------------------------------
 
-#max characters in one substring
-str.max <- 2500
+# as we are dealing with a lot of plant taxon keys we are going over the gbif
+# APIs character limit, so we need to break the request up into smaller bits
 
-#median length of keys
-key.length <- median(str_length(keys.plant$GbifKey))
+# max characters in one substring
+str.max <- 3000
 
-#number of keys in one substring
-key.n <- floor(str.max/key.length)
+# length of a key
+# WARNING: This does not check if all keys have the same length, it is just
+# assumed as these keys all come from plant species
+key.length <- str_length(keys.plant$GbifKey[1])
 
-#final length of substrings
+# number of keys in one substring, adding one to the key length for the commas
+# and adding one to the maximum string size to account for the last key, which
+# won't have a comma
+key.n <- floor((str.max + 1)/(key.length + 1))
+
+# final length of substrings
 str.length <- key.n * key.length
 
-#break up plant keys
-for (i in seq(0, ceiling(n.keys.plant/key.n)-1)) {
+# number of substrings we'll need
+str.n <- ceiling(n.keys.plant/key.n)
+
+# initialize list for holding keys
+keys <- list()
+
+# break up plant keys, loop starts from 0
+for (i in seq(0, str.n - 1)) {
   
   #take only current segment of all keys
-  keys.i <- paste0(unlist(keys.plant$GbifKey[((i*key.n)+1):((i+1)*key.n)]), collapse = ",") %>%
-    str_extract("[[:blank:][:punct:][:digit:]]+") %>%
-    gsub(x = ., pattern = "\\, $", replacement = "")
-  
-  
-  #write keys into an object
-  assign(paste("keys",
-               #pad leading zeroes
-               formatC(
-                 i + 1,
-                 #determine the number of digits will be necessary
-                 width = str_length(ceiling(n.keys.plant / key.n)),
-                 flag = 0
-               ), sep = ""), keys.i)
-  
+  keys[i] <- paste0(
+    unlist(keys.plant$GbifKey[((i * key.n) + 1):((i + 1) * key.n)]
+    ),
+    collapse = ",") 
+
 }
 
 #write poll keys into an object
