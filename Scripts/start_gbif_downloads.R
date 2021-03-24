@@ -51,18 +51,12 @@ n.keys.plant <- nrow(keys.plant)
 # ~max characters in one substring, can be +- a key legnth
 str.max <- 10000
 
-# length of a key
-# WARNING: This does not check if all keys have the same length, it is just
-# assumed as these keys all come from plant species
-key.length <- str_length(keys.plant$GbifKey[1])
+avg_key_length <- mean(str_length(keys.plant$GbifKey))
 
-# number of keys in one substring, adding one to the key length for the commas
-# and adding one to the maximum string size to account for the last key, which
-# won't have a comma
-key.n <- floor((str.max + 1)/(key.length + 1))
-
-# final length of substrings
-str.length <- (key.n * (key.length + 1)) - 1
+# number of keys in one substring, adding one to the mean key length for the
+# commas and adding one to the maximum string size to account for the last key,
+# which won't have a comma
+key.n <- floor((str.max + 1)/(avg_key_length + 1))
 
 # number of substrings we'll need
 str.n <- ceiling(n.keys.plant/key.n)
@@ -75,12 +69,12 @@ for (i in seq(0, str.n - 1)) {
   
   #take only current segment of all keys
   keys.i <- keys.plant$GbifKey[((i * key.n) + 1):((i + 1) * key.n)]
-  keys[i] <- keys.i[!is.na(keys.i)]
+  keys[[i + 1]] <- keys.i[!is.na(keys.i)]
   
 }
 
 #write poll keys into an object
-keys[i+1] <- paste0(keys.poll$ids, collapse = ",")
+keys[[i + 2]] <- keys.poll$ids
 # assign(paste("keys", i+2, sep = ""), keys.poll)
 
 #specify basis of record:
@@ -102,7 +96,7 @@ for (i in 1:length(keys)) {
   dpreps[[i]] <- occ_download_prep(
     pred('country', 'DE'),
     pred_in('basisOfRecord', record.base),
-    pred_in('taxonKey', keys[i]))
+    pred_in('taxonKey', keys[[i]]))
 }
 
 # kickoff queue, i.e. do the actual downloads
