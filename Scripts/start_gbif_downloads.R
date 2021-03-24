@@ -33,9 +33,6 @@ keys.poll <- taxize::get_gbifid(polltax, ask = FALSE,  messages = FALSE,
   as.data.frame() %>%
   drop_na() %>%
   select(ids)
-  # %>%
-  # unlist() %>%
-  # paste(collapse = ",")
 
 # count number of keys returned
 n.keys.poll <- nrow(keys.poll)
@@ -51,8 +48,8 @@ n.keys.plant <- nrow(keys.plant)
 # as we are dealing with a lot of plant taxon keys we are going over the gbif
 # APIs character limit, so we need to break the request up into smaller bits
 
-# max characters in one substring
-str.max <- 3000
+# ~max characters in one substring, can be +- a key legnth
+str.max <- 10000
 
 # length of a key
 # WARNING: This does not check if all keys have the same length, it is just
@@ -65,7 +62,7 @@ key.length <- str_length(keys.plant$GbifKey[1])
 key.n <- floor((str.max + 1)/(key.length + 1))
 
 # final length of substrings
-str.length <- key.n * key.length
+str.length <- (key.n * (key.length + 1)) - 1
 
 # number of substrings we'll need
 str.n <- ceiling(n.keys.plant/key.n)
@@ -77,49 +74,44 @@ keys <- list()
 for (i in seq(0, str.n - 1)) {
   
   #take only current segment of all keys
-  keys[i] <- paste0(
-    unlist(keys.plant$GbifKey[((i * key.n) + 1):((i + 1) * key.n)]
-    ),
-    collapse = ",") 
-
+  keys.i <- keys.plant$GbifKey[((i * key.n) + 1):((i + 1) * key.n)]
+  keys[i] <- keys.i[!is.na(keys.i)]
+  
 }
 
 #write poll keys into an object
-assign(paste("keys", i+2, sep = ""), keys.poll)
+keys[i+1] <- paste0(keys.poll$ids, collapse = ",")
+# assign(paste("keys", i+2, sep = ""), keys.poll)
 
 #specify basis of record:
-record.base <- ("HUMAN_OBSERVATION, PRESERVED_SPECIMEN, LIVING_SPECIMEN, OBSERVATION")
+record.base <- c("HUMAN_OBSERVATION",
+                 "PRESERVED_SPECIMEN",
+                 "LIVING_SPECIMEN",
+                 "OBSERVATION")
 
-#initialize counting var
-j <- 1 
+# initialize list for occ downloads
+dpreps <- list()
 
 #construct calls for occ dl queue
-for (i in ls(pattern = "keys[[:alnum:]]+")) {
+for (i in 1:length(keys)) {
   
-  assign(
-    #use same number as in keys
-    paste("dprep", str_extract(i, "[:digit:]+"), sep = ""),
-    call(
-      "occ_download",
-      paste("basisOfRecord = ", record.base),
-      "country = DE",
-      paste("taxonKey = ", eval(as.name(
-        ls(pattern = "keys[[:alnum:]]+")[j]
-      )))
-    )
-  )
-  
-  j <- j + 1
-  
+  # dpreps[[i]] <- call("occ_download",
+  #                     "pred('country', 'DE')",
+  #                     "pred_in('basisOfRecord', record.base)",
+  #                     "pred_in('taxonKey', keys[i])")
+  dpreps[[i]] <- occ_download_prep(
+    pred('country', 'DE'),
+    pred_in('basisOfRecord', record.base),
+    pred_in('taxonKey', keys[i]))
 }
 
-#construct queue call
-dpreps <- lapply(lapply(ls(pattern = "dprep[[:digit:]]+"), as.name), eval)
-do.call(occ_download_queue, dpreps)
+# kickoff queue, i.e. do the actual downloads
+# do.call(occ_download_queue, dpreps)
+res <- occ_download_queue(.list = dpreps)
 
 #write last keys into file
-write.csv(occ_download_list(limit = ceiling(n.keys.plant / key.n) + 1)[["results"]]$key,
-          here("Data", "last_keys.txt"), row.names = FALSE)
+writeLines(text = occ_download_list(limit = length(keys))[["results"]]$key,
+           con = './static_data/last_keys.txt')
 
 #beep for being done
 beep()
