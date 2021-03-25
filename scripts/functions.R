@@ -808,7 +808,7 @@ pairdiff <- function(data, formula, test = "Tukey", Letters = LETTERS, threshold
 traitplot <- function(abb_trait) {
   
   # make sure directory exits
-  dir.check(here("Plots/traits"))
+  dir.check(here("plots/traits"))
   
   # find the time  and temp stat list
   stat.trait.time <- eval(as.name(str_glue("stat.{abb_trait}.time"))) 
@@ -933,7 +933,7 @@ traitplot <- function(abb_trait) {
   
   # print plots
   
-  png(here("Plots/traits",
+  png(here("plots/traits",
            str_glue("Mean_CI_{as.character(quo_get_expr(abb_trait))}_time.png")), width = 1600, height = 1000)
   
   print(plt.time)
@@ -941,7 +941,7 @@ traitplot <- function(abb_trait) {
   dev.off()
   
   
-  png(here("Plots/traits",
+  png(here("plots/traits",
            str_glue("Mean_CI_{as.character(quo_get_expr(abb_trait))}_temp.png")), width = 1600, height = 1000)
   
   print(plt.temp)
