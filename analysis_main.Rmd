@@ -60,10 +60,12 @@ force.pruning <- FALSE
 force.averaging <- FALSE
 
 # keep raw occurrence files from download? 
-# enabling this will retain the huge files downloaded from gbif containing raw occurrence data
-# useful when working on that part of the get_occurrence_data script, so you don't have to download
-# everything again. All the files take up about 22 GB when kept.
-delete.occ.download <- TRUE
+# enabling this will retain the huge files downloaded from gbif containing 
+# raw occurrence data
+# useful when working on that part of the get_occurrence_data script, so you 
+# don't have to download everything again. All the files take up 
+# about 22 GB when kept.
+delete.occ.download <- FALSE
 
 # give level of additional plots
 # full -> do everything
@@ -71,17 +73,20 @@ delete.occ.download <- TRUE
 # or a vector of desired options
 # one of 
 # - spec.int.slopes: plots interactions on species level (mean.doy vs time/temp)
-# - traits: analyses all plant traits and their influence on response over time and temp
+# - traits: analyses all plant traits and their influence on response over time
+#           and temp
 # - all.spec: plots all species reaction to time in one plot
-# - int.spec.dec: same as spec int slope but on the level of difference of doy and in decades
-# - data.quality.assessment: plots all occurrence records of plants and pollinators in one each
+# - int.spec.dec: same as spec int slope but on the level of difference 
+#                 of doy and in decades
+# - data.quality.assessment: plots all occurrence records of 
+#                           plants and pollinators in one each
 #                           (not included in full, requires more than 8 GB of RAM 
 #                           (right now at least))
 # - additional:   * spatial occurrence distributions by institution
 #                 * spatial occurrence distribution overall
 #                 * decadal spatial occurrence distribution
-#                 * doy distribution over the year for (for now only) all Butterfly species 
-#                   (to estimate the degree of multivoltism)
+#                 * doy distribution over the year for (for now only)
+#                   all Butterfly species (to estimate the degree of multivoltism)
 # - species: plots yearly mean doys and regression for each species
 opts <- c()
 
@@ -92,7 +97,7 @@ opts <- c()
 
 # Functions --------------------------------------------
 
-source(here('Scripts', 'functions.R'))
+source(here('scripts', 'functions.R'))
 
 ```
 
@@ -103,6 +108,7 @@ source(here('Scripts', 'functions.R'))
 # - any of the output files are out of date (older than their
 #   source material)
 if (all(file.exists(
+  here("data", "occurrences_full.csv"),
   here("data", "occurrences_full_refined.csv"),
   here("data", "occurrences_full_pruned.csv"),
   here("data", "occurrences_species_yearly_mean_doy_pruned.csv"),
@@ -111,9 +117,14 @@ if (all(file.exists(
   
   # files exist, now check for other conditions
   if (
-    # check if last keys is younger than the file created after downloading occurrences
+    # check if last keys is younger than the file created after 
+    # downloading occurrences
     file.mtime(here("static_data", "last_keys.txt")) >
     file.mtime(here("data", "download_ran.txt")) |
+    
+    # check if full unrefined occurrence file is older than refined occurrences
+    file.mtime(here("data", "occurrences_full.csv")) >
+    file.mtime(here("data", "occurrences_full_refined.csv")) |
     
     # check if pruned occurrences are older than output from compiled downloads
     file.mtime(here("data", "occurrences_full_refined.csv")) >
@@ -154,13 +165,14 @@ if(run.occ.get |
 ```{r control running of the rest}
 
 # check if it is necessary to run the whole script in principle
-if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
+if (file.exists(here("data", "workspace_save.RData")) & force.main == FALSE) {
   
-  # now check whether there were changes in the data i.e. we had to run the occurrence getting script
+  # now check whether there were changes in the data i.e. we had to run the 
+  # occurrence getting script
   # if not, it should be save to just load the previous data and stop
   if (! run.occ.get) {
     
-    load(here("Data", "workspace_save.RData"))
+    load(here("data", "workspace_save.RData"))
     
     # beep to notify we've stopped
     beep()
@@ -185,7 +197,7 @@ if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
 
 ```{r Load data, echo=FALSE}
 # load yearly mean data
-dat.occ <- fread(here("Data", "occurrences_species_yearly_mean_doy_pruned.csv")) 
+dat.occ <- fread(here("data", "occurrences_species_yearly_mean_doy_pruned.csv")) 
 
 # make sure there are records for a certain fraction of years
 thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
@@ -278,10 +290,12 @@ Plot relatioships of Plants and Pollinators occurences:
 
 # generate lm results for groups to get significances of slopes
 lm.res.plapoll.time <- lm.sum(dat.occ, id.grp, mean.doy ~ year) %>%
-  mutate(breaks = cut(pval, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05"),
+  mutate(breaks = cut(pval, breaks = c(0, 0.05, 1),
+                      labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE))
 lm.res.plapoll.temp <- lm.sum(dat.occ, id.grp, mean.doy ~ y_mean_temp) %>%
-  mutate(breaks = cut(pval, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05"),
+  mutate(breaks = cut(pval, breaks = c(0, 0.05, 1),
+                      labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE))
 
 #plot trends of collection day in realtion to year by group
@@ -298,7 +312,8 @@ ggplot() +
   #             method = lm, se = T, size = 1.5, linetype = 1,
   #             alpha = .7) +
   theme_minimal() +
-  labs(title = "Linear Relationship Between between year and\nCollection Day for each Group",
+  labs(title = paste("Linear Relationship Between between year and",
+                     "Collection Day for each Group", sep = '\n'),
        x = "Year",
        y = "DOY")
 
@@ -317,7 +332,8 @@ ggplot() +
   #             method = lm, se = T, size = 1.5, linetype = 1,
   #             alpha = .7) +
   theme_minimal() +
-  labs(title = "Linear Relationship Between between temperature and\nCollection Day for each Group",
+  labs(title = paste("Linear Relationship Between between temperature and",
+                     "Collection Day for each Group", sep = '\n'),
        x = "Yearly mean Temperature [°C]",
        y = "DOY")
 ```
@@ -343,7 +359,8 @@ ggplot(data = dat.occ,
   geom_abline(intercept = coef.time[1,1],
               slope = coef.time[2,1], size = 1.5, col = "#f97970") +
   geom_abline(intercept = (coef.time[1,1] + coef.time[3,1]),
-              slope = (coef.time[2,1] + coef.time[4,1]), size = 1.5, col = "#01bec3") +
+              slope = (coef.time[2,1] + coef.time[4,1]),
+              size = 1.5, col = "#01bec3") +
   labs(x = "Year", 
        y = "DOY", 
        title = "Linear model output with raw data") +
@@ -367,9 +384,11 @@ coef.temp <- as.data.frame(summary(lmm.doy.temp)[["coefficients"]])
 ggplot(data = dat.occ, 
        aes(x = y_mean_temp, y = mean.doy, col = kingdom)) +
   geom_point(aes(alpha = n.rec)) +
-  geom_abline(intercept = coef.temp[1,1], slope = coef.temp[2,1], size = 1.5, col = "#f97970") +
+  geom_abline(intercept = coef.temp[1,1],
+              slope = coef.temp[2,1], size = 1.5, col = "#f97970") +
   geom_abline(intercept = (coef.temp[1,1] + coef.temp[3,1]),
-              slope = (coef.temp[2,1] + coef.temp[4,1]), size = 1.5, col = "#01bec3") +
+              slope = (coef.temp[2,1] + coef.temp[4,1]),
+              size = 1.5, col = "#01bec3") +
   labs(x = "Temperature [\u00B0C]", 
        y = "DOY", 
        title = "Linear model output with raw data") +
@@ -413,7 +432,8 @@ ggplot() +
   theme_minimal() +
   theme(legend.position = "none")+
   labs(x = "Year", y = "DOY",
-       title = "Linear Relationship between between year and Collection Day\nfor plant orders")
+       title = paste("Linear Relationship between between year and Collection Day",
+                     "for plant orders", sep = '\n'))
 
 #plot trends of collection day in realtion to mean temperature
 ggplot() +
@@ -429,7 +449,8 @@ ggplot() +
   theme_minimal() +
   theme(legend.position = "none")+
   labs(x = "Yearly mean Temperature [°C]", y = "DOY",
-       title = "Linear Relationship between between year and Collection Day\nfor plant orders")
+       title = paste("Linear Relationship between between year and Collection Day",
+                     "for plant orders", '\n'))
 
 ```
 
@@ -465,7 +486,8 @@ ggplot() +
   theme_minimal() +
   theme(legend.position = "none") +
   labs(x = "Year", y = "DOY",
-       title = "Linear Relationship Between between year and Collection Day\nfor pollinator order")
+       title = paste("Linear Relationship Between between year and Collection Day",
+       "for pollinator order", sep = '\n'))
 
 #plot trends of collection day in realtion to mean temperature
 ggplot() +
@@ -481,7 +503,8 @@ ggplot() +
   theme_minimal() +
   theme(legend.position = "none")+
   labs(x = "Yearly mean Temperature [°C]", y = "DOY",
-       title = "Linear Relationship between between year and Collection Day\nfor pollinator order")
+       title = paste("Linear Relationship between between year and Collection Day",
+       "for pollinator order", sep = '\n'))
 ```
 
 ## Exploration of shifts of duration
@@ -1093,7 +1116,8 @@ ggplot(data = stat.spec.time.plants) +
   coord_flip() +
   geom_hline(yintercept = 0, lty = 2) +
   xlab("Species") + ylab("Slope (95% CI)") +
-  labs(title = "Estimated phenology shift slopes over time\nof plants with 95% CIs") +
+  labs(
+    title = "Estimated phenology shift slopes over time\nof plants with 95% CIs") +
   theme(
     axis.text.y = element_blank(),
     axis.ticks = element_blank(),
@@ -1695,7 +1719,7 @@ for (i in seq(1, nrow(dat.int.year))) {
 dat.int.time <- drop_na(dat.int.time, diff.slope)
 
 #save interaction data
-write.csv(dat.int.time, here("Data", "pla_poll_interactions_time.csv"), row.names = FALSE)
+write.csv(dat.int.time, here("data", "pla_poll_interactions_time.csv"), row.names = FALSE)
 
 
 
@@ -1779,7 +1803,7 @@ for (i in seq(1, nrow(dat.int.year))) {
 dat.int.temp <- drop_na(dat.int.temp, diff.slope)
 
 #save interaction data
-fwrite(dat.int.temp, here("Data", "pla_poll_interactions_temp.csv"))
+fwrite(dat.int.temp, here("data", "pla_poll_interactions_temp.csv"))
 
 ```
 
@@ -3315,17 +3339,17 @@ analyse.trait(data = mutate(dat.occ.plant, meanFlMonth = floor((FlStart + FlEnd)
 ```{r Run Plot saving Script}
 
 #run script to save plots with different graphic parameters for publication
-source(here("Scripts", "plot_results.R"))
+source(here("scripts", "plot_results.R"))
 
 if (any(c("full", "all.spec") %in% opts)){
   
-  source(here("Scripts", "plot_all_species_in_one.R"))
+  source(here("scripts", "plot_all_species_in_one.R"))
   
 }
 
 if (any(c("full", "adiitional") %in% opts)){
   
-  source(here("Scripts", "plot_occurrence_distribution.R.R"))
+  source(here("scripts", "plot_occurrence_distribution.R"))
   
 }
 
@@ -3334,23 +3358,23 @@ if (any(c("full", "adiitional") %in% opts)){
 ```{r Save stat tables}
 
 #save species over time table
-write.csv(stat.spec.time, here("Data", "species_reaction_over_time.csv"),
+write.csv(stat.spec.time, here("data", "species_reaction_over_time.csv"),
           row.names = FALSE)
 
 #save species with temperature table
-write.csv(stat.spec.temp, here("Data", "species_reaction_with_temp.csv"),
+write.csv(stat.spec.temp, here("data", "species_reaction_with_temp.csv"),
           row.names = FALSE)
 
 #save group meta stat table
-write.csv(stat.group.meta, here("Data", "group_mean_slopes.csv"),
+write.csv(stat.group.meta, here("data", "group_mean_slopes.csv"),
           row.names = FALSE)
 
 #time interactions
-write.csv(dat.int.time, here("Data", "pla_poll_interacions_time.csv"),
+write.csv(dat.int.time, here("data", "pla_poll_interacions_time.csv"),
           row.names = FALSE)
 
 #temp interactions
-write.csv(dat.int.temp, here("Data", "pla_poll_interacions_temp.csv"),
+write.csv(dat.int.temp, here("data", "pla_poll_interacions_temp.csv"),
           row.names = FALSE)
 
 # save all results to csv
