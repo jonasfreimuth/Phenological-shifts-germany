@@ -19,7 +19,8 @@ if ( !(file.exists(here("static_data", "bioflor_traits.csv")))) {
 }
 
 #load bioflor traits
-bioflor_traits <- fread(here("static_data", "bioflor_traits.csv"), showProgress = FALSE) %>%
+bioflor_traits <- fread(here("static_data", "bioflor_traits.csv"),
+                        showProgress = FALSE) %>%
   mutate(species = as.character(species)) 
 
 
@@ -34,7 +35,6 @@ if (!(file.exists(here("static_data", "overall_mean_temperature.csv")) &
 }
 
 # Download and refinement -------------------------------------------------
-
 
 # check if download has already run with current gbif dataset
 if(file.exists(here("data", "occurrences_full.csv")) &
@@ -75,9 +75,8 @@ if (run.occ.refine) {
   # make sure directory exists
   dir.check(here("download"))
   
-  #set keys (uids of my datasets used, order is pollinators, plants)
-  # keys <- occ_download_list(limit = 13)[["results"]][["key"]]
-  keys <- read.delim(here("static_data", "last_keys.txt"), sep = " ", stringsAsFactors = FALSE)[,1]
+  # set keys (uids of the datasets used, order is plants, last one is polls)
+  keys <- readLines('static_data/last_keys.txt')
   
   # create file for storing occurrences in (overwrites previous file)
   file.create(here("data", "occurrences_full.csv"))
@@ -87,18 +86,23 @@ if (run.occ.refine) {
     
     # check if we already have an extracted occurrence file
     # if not then download + extract + delete zip
-    if (! file.exists(here("Download",  paste0("occurrence_", k, ".txt")))) {
-      
+    if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
+    # if (TRUE) {
       # retrieve compiled dataset
-      occ_download_get(k, here("Download"), overwrite = TRUE)
+      occ_download_get(k, here("download"), overwrite = TRUE)
       
-      # extract occurence.txt
-      unzip(here("Download", paste0(k, ".zip")),
-            file = "occurrence.txt", exdir = here("Download"), overwrite = TRUE)
+      # extract occurrence.txt
+      unzip(here("download", paste0(k, ".zip")),
+            file = "occurrence.txt", exdir = here("download"), overwrite = TRUE,
+            # if an error occurs, try commenting out the line below
+            # it seems the internal unzip can't deal with too large files
+            # i hope this option works across platforms
+            unzip = getOption('unzip')
+            )
       
       # give the extracted file the name of its key
-      file.rename(from = here("Download", "occurrence.txt"),
-                  to = here("Download",  paste0("occurrence_", k, ".txt")))
+      file.rename(from = here("download", "occurrence.txt"),
+                  to = here("download",  paste0("occurrence_", k, ".txt")))
       
       # remove the zip file
       file.remove(here("download", paste0(k, ".zip")))
@@ -106,25 +110,27 @@ if (run.occ.refine) {
       # create/overwrite the file for download status
       sink(here("data", "download_ran.txt"))
       
-      cat("The last key downloaded was:"); k
+      cat("The last key downloaded was: ", k)
       
-      cat("\nOccurrences were downloaded last from gbif at: ")
+      cat("\nOccurrences were downloaded last from gbif at: ", date())
       
-      date()
-      
-      cat("\n\nPlease don't delete this file.\nYour script will take needlessly long...")
+      cat(paste("\nPlease don't delete this file.", 
+                "If you do, the script will download everything again.",
+                sep = '\n')
+      )
       
       sink()
       
     }
     
-    #read extracted occurence.txt
-    exp <- fread(here("Download", paste0("occurrence_", k, ".txt")),
+    #read extracted occurrence.txt
+    exp <- fread(here("download", paste0("occurrence_", k, ".txt")),
                  quote = "", showProgress = FALSE,
                  select = c("kingdom", "phylum", "order", "family", "genus",
                             "species", "institutionCode", "collectionCode",
                             "datasetName","decimalLatitude", "decimalLongitude",
-                            "year", "month", "day", "eventDate", "hasGeospatialIssues", "issue")
+                            "year", "month", "day", "eventDate", "basisOfRecord",
+                            "hasGeospatialIssues", "issue")
     ) 
     
     
@@ -154,20 +160,8 @@ if (run.occ.refine) {
     
     
     #Save data as csv
-    if (exp$kingdom[1] == "Plantae") {
-      
-      #save to csv
-      fwrite(exp, here("Data", "occurrences_full.csv"),
-             append = TRUE)
-      
-      
-    } else  if (exp$kingdom[1] == "Animalia") {
-      
-      #save to csv
-      fwrite(exp, here("Data", "occurrences_full.csv"),
-             append = TRUE)
-      
-    }
+    fwrite(exp, here("data", "occurrences_full.csv"),
+           append = TRUE)
     
     # save the col names to add again later
     occ.names <- names(exp)
@@ -191,7 +185,8 @@ if (run.occ.refine) {
   names(dat.occ) <- occ.names
   
   #save dataset to add names
-  fwrite(dat.occ, here("data", "occurrences_full_refined.csv"), showProgress = FALSE)
+  fwrite(dat.occ, here("data", "occurrences_full_refined.csv"),
+         showProgress = FALSE)
   
   #remove dat.occ for memory reasons
   rm(dat.occ)
@@ -232,26 +227,16 @@ if (run.pruning |
   if (!(exists("dat.occ"))) {
     
     #load full dataset
-    dat.occ <- fread(here("Data", "occurrences_full_refined.csv"), showProgress = FALSE)
+    dat.occ <- fread(here("data", "occurrences_full_refined.csv"), showProgress = FALSE)
     
   }
   
-  # make a vactor of institutionCodes to exclude bc of distribution
+  # load names of institutions to be excluded due to data bias or exceedingly
+  # high content of suspicious occurrence records.
   # identified via source(here("scripts", "plot_occurrence_distribution.R"))
   # plots are located in plots/additional. To view the script in RStudio use
   # file.edit(here("scripts", "plot_occurrence_distribution.R"))
-  excl.inst <- c(
-    "Administration de la gestion de lâ€™eau (AGE)",
-    "Administration de la nature et des forÃªts (ANF)",
-    "MinistÃ¨re de l'Environnement, du Climat et du DÃ©veloppement durable (MECDD)",
-    "MusÃ©e national d'histoire naturelle Luxembourg (MnhnL)",
-    "Naturpark Ã–ewersauer",
-    "SICONA - Naturschutzsyndikat",
-    "SPW-DEMNA",
-    "STOWA"
-  )
-  
-  
+  excl.inst <- readLines('static_data/excluded_institutions.txt')
   
   ## Cleanup
   
@@ -266,11 +251,8 @@ if (run.pruning |
     #exclude first and last days
     filter(doy != 1, doy != 366, doy != 365) %>%
     
-    #exclude weird collections
+    #exclude collections
     filter(
-      # for having to many records on just one day
-      institutionCode != "GEO",
-      # for having mainly records from not actually within germany
       !(institutionCode %in% excl.inst)
     ) %>%
     
@@ -312,7 +294,7 @@ if (run.pruning |
   
   #save full dataset 
   fwrite(dat.occ,
-         here("Data", "occurrences_full_pruned.csv"),
+         here("data", "occurrences_full_pruned.csv"),
          showProgress = FALSE)
   
   
@@ -323,7 +305,7 @@ if (run.pruning |
     nInsects = as.numeric(count(dat.occ, kingdom)[1,2]),
     fracGeoref = sum(!is.na(dat.occ$decimalLatitude))/nrow(dat.occ)
   ) %>%
-    fwrite(here("Data", "occurrence_full_meta.csv"))
+    fwrite(here("data", "occurrence_full_meta.csv"))
   
   #remove dat.occ again for memory reasons
   rm(dat.occ)
@@ -335,7 +317,7 @@ if (run.pruning |
 
 
 #calculate species means
-dat.occ.mean <- fread(here("Data", "occurrences_full_pruned.csv"),
+dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
                       showProgress = FALSE,
                       select = c("kingdom",
                                  "phylum",
@@ -373,17 +355,15 @@ dat.occ.mean <- fread(here("Data", "occurrences_full_pruned.csv"),
             by = c("year")) %>%
   #save species yearly mean doy data
   fwrite(
-    here("Data", "occurrences_species_yearly_mean_doy_pruned.csv"),
+    here("data", "occurrences_species_yearly_mean_doy_pruned.csv"),
     showProgress = FALSE,
     na = NA
   )
 
-
-
 # Calculate decadal means -------------------------------------------------
 
 #load data again and dlete years before decadal cutoff 
-dat.occ.dec <- fread(here("Data", "occurrences_full_pruned.csv"),
+dat.occ.dec <- fread(here("data", "occurrences_full_pruned.csv"),
                      showProgress = FALSE,
                      select = c("kingdom",
                                 "phylum",
@@ -444,7 +424,7 @@ if (any(c("data.quality.assessment") %in% opts)) {
   
   dir.check(here("plots"))
   
-  dat.occ <- fread(here("Data", "occurrences_full_pruned.csv"), showProgress = FALSE)
+  dat.occ <- fread(here("data", "occurrences_full_pruned.csv"), showProgress = FALSE)
   
   png(here("Plots", "raw_plant_distribution.png"), height = 5000, width = 8000)
   
