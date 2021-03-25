@@ -36,13 +36,31 @@ if (!(file.exists(here("static_data", "overall_mean_temperature.csv")) &
 
 # Download and refinement -------------------------------------------------
 
-# check if download has already run with current gbif dataset
+# check if download has already run with current gbif dataset, first
+# see if all files are even present
 if(file.exists(here("data", "occurrences_full.csv")) &
-   file.exists(here("data", "occurrences_full_refined.csv"))) {
+   file.exists(here("data", "occurrences_full_refined.csv")) &
+   file.exists('data/download_ran.txt')) {
+  
+  # get download keys (uids of the datasets used, order is plants,
+  # last one is polls)
+  keys <- readLines('static_data/last_keys.txt')
+  
+  # check whether all downloads and extractions completed sucessfully
+  dl_ran_txt <- readLines('data/download_ran.txt')
+  
+  key_in <- rep(NA, length(keys))
+  
+  for (i in 1:length(keys)) {
+    
+    key_in[i] <- any(str_detect(dl_ran_txt, keys[i]))
+    
+  }
   
   # now check if the file is older than the record for the gbif requests
   if (file.mtime(here("static_data", "last_keys.txt")) < 
-      file.mtime(here("data", "occurrences_full.csv"))) {
+      file.mtime(here("data", "occurrences_full.csv")) &
+      all(key_in)) {
     
     # since the file for gbif requests is older, we're up to date with the occurrences
     # and we already have our occurrence dataset
@@ -75,11 +93,17 @@ if (run.occ.refine) {
   # make sure directory exists
   dir.check(here("download"))
   
-  # set keys (uids of the datasets used, order is plants, last one is polls)
-  keys <- readLines('static_data/last_keys.txt')
-  
   # create file for storing occurrences in (overwrites previous file)
   file.create(here("data", "occurrences_full.csv"))
+  
+  # also create file for storing keys that have finished the process
+  writeLines(text = c('File that keeps track of which downloads ran fully',
+                      'and whoose occurrences have been extracted.\n',
+                      'If this file is deleted, every occurrence request',
+                      'will download again!',
+                      '\n\n'),
+             con = 'data/download_ran.txt'
+             )
   
   #start for loop for each key
   for (k in keys) {
@@ -88,8 +112,16 @@ if (run.occ.refine) {
     # if not then download + extract + delete zip
     if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
     # if (TRUE) {
-      # retrieve compiled dataset
-      occ_download_get(k, here("download"), overwrite = TRUE)
+      # retrieve compiled dataset, if  the zip is not already in the downloads
+      # folder
+      if (! file.exists(paste0('download/', k, '.zip'))) {
+        # if this keeps hanging it might be because this function appears to 
+        # have a problem with large downloads (>2GB). In that case either 
+        # do it like me and just download those manually and place them in the
+        # downloads folder, or put in the work and find a way around it.
+        # Maybe tweak the maximum string lenth in start_gbif_downloads
+        occ_download_get(k, here("download"), overwrite = TRUE)
+      }
       
       # extract occurrence.txt
       unzip(here("download", paste0(k, ".zip")),
@@ -106,20 +138,6 @@ if (run.occ.refine) {
       
       # remove the zip file
       file.remove(here("download", paste0(k, ".zip")))
-      
-      # create/overwrite the file for download status
-      sink(here("data", "download_ran.txt"))
-      
-      cat("The last key downloaded was: ", k)
-      
-      cat("\nOccurrences were downloaded last from gbif at: ", date())
-      
-      cat(paste("\nPlease don't delete this file.", 
-                "If you do, the script will download everything again.",
-                sep = '\n')
-      )
-      
-      sink()
       
     }
     
@@ -172,6 +190,12 @@ if (run.occ.refine) {
       file.remove(here("download", paste0("occurrence_", k, ".txt")))
       
     }
+    
+    # save the key and time of the last occurrence set
+    # WARINING: not timezone aware 
+    dl_ran <- file('data/download_ran.txt', open = 'at')
+    writeLines(paste(k, Sys.time(), sep = '\t'), dl_ran)
+    close(dl_ran)
     
   }
   
