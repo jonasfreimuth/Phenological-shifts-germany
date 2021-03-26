@@ -70,12 +70,13 @@ for (ins in unique(filter(dat.occ,
                  size = 3) + 
       labs(x = "Longitude", y = "Latitude",
            title = ins) +
-      # dont plot the few records far outside the boundaries (those are just very few)
+      # dont plot the few records far outside the boundaries 
+      # (those are just very few)
       coord_fixed(ratio = 1.3,
                   ylim = c(47.27015165787987, 55.05835230401308),
                   xlim = c(5.8663129806518555, 15.041742324829102)) +
       scale_color_manual(name = "Group",
-                         values = col.grp) +
+                         values = col.group) +
       theme(
         plot.title = element_text(size = 40),
         plot.subtitle = element_text(size = 35),
@@ -122,7 +123,7 @@ print(
                 ylim = c(47.27015165787987, 55.05835230401308),
                 xlim = c(5.8663129806518555, 15.041742324829102)) +
     scale_color_manual(name = "Group",
-                       values = col.grp) +
+                       values = col.group) +
     facet_wrap(~institutionCode) +
     theme(
       plot.title = element_text(size = 40),
