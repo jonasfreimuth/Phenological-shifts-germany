@@ -42,11 +42,14 @@ thr.dec.rec <- 5
 thr.2k.min <- 2010
 thr.2k.max <- 2019
 
-#set cutoff for earliest year of records
-cutoff.year <- 1960
+#set cutoff for earliest year of records and last year
+year.start <- 1960
+year.stop <- 2019
+
 
 #set cutoff for decadal records
-cutoff.dec <- 1980
+dec.start <- 1980
+dec.stop <- 2019
 
 # force running of the entire script regardless of no new changes in the data?
 # if FALSE, workspace data from previous run will be loaded

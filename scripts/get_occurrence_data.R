@@ -280,8 +280,8 @@ if (run.pruning |
       !(institutionCode %in% excl.inst)
     ) %>%
     
-    #only include records from cutoff.year on
-    filter(year >= cutoff.year)
+    #only include records from year.start on
+    filter(year >= year.start & year.stop)
   
   
   ## Check how many issues the data has 
@@ -401,7 +401,7 @@ dat.occ.dec <- fread(here("data", "occurrences_full_pruned.csv"),
                                 "month",
                                 "doy")) %>%
   #delete years before cutoff
-  filter(year >= cutoff.dec) 
+  filter(year >= dec.start & year <= dec.stop) 
 
 #calculate number of decades in data set
 thr.dec <- length(unique(dat.occ.dec$decade))

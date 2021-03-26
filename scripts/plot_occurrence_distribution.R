@@ -30,12 +30,14 @@ dat.occ <- fread(
   #remove records without determined species
   filter(species != "") %>%
   
-  #exclude the current year from further analysis
-  filter(year != as.integer(substr(
-    Sys.Date(), start = 1, stop = 4
-  ))) %>%
-  #exclude first and last days
-  filter(doy != 1, doy != 366, doy != 365)
+  # #exclude the current year from further analysis
+  # filter(year != as.integer(substr(
+  #   Sys.Date(), start = 1, stop = 4
+  # ))) %>%
+  # #exclude first and last days
+  # filter(doy != 1, doy != 366, doy != 365)
+  
+  filter(year >= year.start & year <= year.stop) %>% 
 
 # get german shapefile for plotting
 germany <- raster::getData("GADM", country = "DEU", level = 1)
