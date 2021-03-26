@@ -1,17 +1,32 @@
 
 # Setup -------------------------------------------------------------------
 
+
 # make df for plotting by adding pvals of time and temp regressions
-dat.occ.plot <- left_join(dat.occ, bind_cols(select(stat.spec.time,
-                                                    species,
-                                                    slope.time = slope, pval.time = fdr.pval),
-                                             select(stat.spec.temp,
-                                                    slope.temp = slope, pval.temp = fdr.pval)
+dat.occ.plot <- left_join(dat.occ, bind_cols(
+  select(
+    stat.spec.time,
+    species,
+    slope.time = slope,
+    pval.time = fdr.pval
+  ),
+  select(stat.spec.temp,
+         slope.temp = slope, pval.temp = fdr.pval)
 ),
-by="species") %>%
-  mutate(species = fct_reorder(as.factor(species), slope.time),
-         pval.time = cut(pval.time, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05")),
-         pval.temp = cut(pval.temp, breaks = c(0, 0.05, 1), labels = c("p < 0.05", "p > 0.05"))) %>%
+by = "species") %>%
+  mutate(
+    species = fct_reorder(as.factor(species), slope.time),
+    pval.time = cut(
+      pval.time,
+      breaks = c(0, 0.05, 1),
+      labels = c("p < 0.05", "p > 0.05")
+    ),
+    pval.temp = cut(
+      pval.temp,
+      breaks = c(0, 0.05, 1),
+      labels = c("p < 0.05", "p > 0.05")
+    )
+  ) %>%
   arrange(slope.time)
 
 # set global parameters for plotting
