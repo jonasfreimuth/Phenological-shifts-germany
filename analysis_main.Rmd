@@ -153,7 +153,8 @@ if (all(file.exists(
 
 if(run.occ.get | 
    force.averaging |
-   force.pruning){
+   force.pruning |
+   any(c('full', 'data.quality.assesment') %in% opts)) {
   
   # run script for retrieving occurrence data from downloaded 
   # gbif datasets (and download them first if necessary)
@@ -165,10 +166,13 @@ if(run.occ.get |
 ```
 
 
+
 ```{r control running of the rest}
 
 # check if it is necessary to run the whole script in principle
-if (file.exists(here("data", "workspace_save.RData")) & force.main == FALSE) {
+if (file.exists(here("data", "workspace_save.RData")) &
+    force.main == FALSE &
+    is.null(opts)) {
   
   # now check whether there were changes in the data i.e. we had to run the 
   # occurrence getting script
@@ -1751,7 +1755,7 @@ for (i in seq(1, nrow(dat.int.year))) {
     # if it doesn't exist yet, create the interaction subdirectory
     dir.check(here("plots/interactions/temp"))
     
-    png(here("Plots/Interactions/temp", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
+    png(here("plots/interactions/temp", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
                                                ".png")),
         width = 1500, height = 1000)
     
@@ -3350,7 +3354,7 @@ if (any(c("full", "all.spec") %in% opts)){
   
 }
 
-if (any(c("full", "adiitional") %in% opts)){
+if (any(c("full", "additional") %in% opts)){
   
   source(here("scripts", "plot_occurrence_distribution.R"))
   
