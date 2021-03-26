@@ -1670,7 +1670,7 @@ for (i in seq(1, nrow(dat.int.year))) {
     #make sure directory exists
     dir.check(here("plots/interactions/time"))
     
-    png(here("Plots/Interactions/time", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
+    png(here("plots/interactions/time", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
                                                ".png")),
         width = 1500, height = 1000)
     
@@ -2115,9 +2115,9 @@ for (i in seq(1, nrow(int.dec))) {
   if (any(c("full", "int.spec.dec") %in% opts)) {
     
     # make sure subdir exists
-    dir.check(here("Plots/Interactions/decadal/time"))
+    dir.check(here("plots/interactions/decadal/time"))
     
-    png(here("Plots/Interactions/decadal/time",
+    png(here("plots/interactions/decadal/time",
              paste(i, unique(int.i.mean$poll),
                    unique(int.i.mean$plant),
                    "doy_diff.png",
@@ -2155,9 +2155,9 @@ for (i in seq(1, nrow(int.dec))) {
     dev.off()
     
     # make sure subdir exists
-    dir.check(here("Plots/Interactions/decadal/temp"))
+    dir.check(here("plots/interactions/decadal/temp"))
     
-    png(here("Plots/Interactions/decadal/temp",
+    png(here("plots/interactions/decadal/temp",
              paste(i, unique(int.i.mean$poll),
                    unique(int.i.mean$plant),
                    "doy_diff.png",
