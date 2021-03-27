@@ -3354,7 +3354,7 @@ if (any(c("full", "all.spec") %in% opts)){
   
 }
 
-if (any(c("full", "additional") %in% opts)){
+if (any(c("full", "additional", "data.quality.assessment") %in% opts)){
   
   source(here("scripts", "plot_occurrence_distribution.R"))
   
