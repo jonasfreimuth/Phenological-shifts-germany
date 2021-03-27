@@ -51,9 +51,9 @@ res.figures <- append.df(name = "thrPerc",
                          value = thr.perc,
                          multiplier = 100)
 res.figures <- append.df(name = "cutoffDec",
-                         value = cutoff.dec)
+                         value = dec.start)
 res.figures <- append.df(name = "cutoffYear",
-                         value = cutoff.year)
+                         value = year.start)
 
 # yearly and decadal numbers ----------------------------------------------
 
