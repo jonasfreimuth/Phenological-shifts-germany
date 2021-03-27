@@ -433,7 +433,7 @@ dat.occ.dec %>%
   #exclude species without records in every decade
   filter(length(unique(decade)) >= thr.dec) %>%
   ungroup() %>% 
-  #join trait data again (lost in avaraging)
+  #join trait data again (lost in averaging)
   left_join(bioflor_traits, by = "species") %>%
   left_join(fread(here("static_data",
                        "decadal_mean_temperature.csv")),
@@ -442,57 +442,3 @@ dat.occ.dec %>%
 
 rm(dat.occ.dec)
 
-# Plots for data quality assessment ---------------------------------------
-
-if (any(c("data.quality.assessment") %in% opts)) {
-  
-  dir.check(here("plots"))
-  
-  dat.occ <- fread(here("data", "occurrences_full_pruned.csv"), showProgress = FALSE)
-  
-  png(here("Plots", "raw_plant_distribution.png"), height = 5000, width = 8000)
-  
-  print(
-    ggplot(filter(dat.occ, kingdom == "Plantae")) +
-      geom_point(aes(y_mean_temp, doy, col = floor(year / 10) * 10),
-                 size = 10) +
-      # facet_wrap(~institutionCode) +
-      theme(axis.title = element_text(size = 160),
-            axis.text = element_text(size = 120),
-            axis.ticks = element_line(colour = "gray31", size = 3),
-            axis.ticks.length.y.left = unit(8, "bigpts"),
-            axis.ticks.length.x.bottom = unit(8, "bigpts"),
-            axis.line = element_line(colour = "gray31", size = 3),
-            legend.position = "bottom",
-            legend.text = element_text(size = 160),
-            legend.title = element_text(size = 160),
-            panel.background = element_blank(),
-            panel.grid.major = element_blank())
-  )
-  
-  dev.off()
-  
-  png(here("Plots", "raw_insect_distribution.png"), height = 5000, width = 8000)
-  
-  print(
-    ggplot(filter(dat.occ, kingdom == "Animalia")) +
-      geom_point(aes(y_mean_temp, doy, col = floor(year / 10) * 10),
-                 size = 10) +
-      # facet_wrap(~institutionCode) +
-      theme(axis.title = element_text(size = 160),
-            axis.text = element_text(size = 120),
-            axis.ticks = element_line(colour = "gray31", size = 3),
-            axis.ticks.length.y.left = unit(8, "bigpts"),
-            axis.ticks.length.x.bottom = unit(8, "bigpts"),
-            axis.line = element_line(colour = "gray31", size = 3),
-            legend.position = "bottom",
-            legend.text = element_text(size = 160),
-            legend.title = element_text(size = 160),
-            panel.background = element_blank(),
-            panel.grid.major = element_blank())
-  )
-  
-  dev.off()
-  
-  rm(dat.occ)
-}
