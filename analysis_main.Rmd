@@ -1796,41 +1796,19 @@ dat.int.time <- data.frame(group = NA,
 for (i in seq(1, nrow(dat.int.year))) {
   
   #generate data frame of records for one interaction
-  dat.i <- rbind(filter(dat.occ, species == as.character(dat.int.year$poll[i])) %>% droplevels(),
-                 filter(dat.occ, species == as.character(dat.int.year$plant[i])) %>% droplevels())
+  dat.i <- rbind(
+      filter(dat.occ,
+             species == as.character(dat.int.year$poll[i])) %>%
+        droplevels(),
+      filter(dat.occ,
+             species == as.character(dat.int.year$plant[i])) %>%
+        droplevels()
+    )
   
-  # if speciefied plot the phenological changes of the interaction
+  # if specified plot the phenological changes of the interaction
   if (any(c("full", "spec.int.slopes", "spec.int.slopes.time") %in% opts)) {
     
-    #make sure directory exists
-    dir.check(here("plots/interactions/time"))
-    
-    png(here("plots/interactions/time", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
-                                               ".png")),
-        width = 1500, height = 1000)
-    
-    print(
-      ggplot(dat.i, aes(x = year, y = mean.doy, col = kingdom)) +
-        geom_point(aes(size = n.rec)) +
-        geom_smooth(method = "lm", size = 1.5) +
-        labs(title = toString(unique(dat.i$species))) +
-        coord_cartesian(xlim = c(min(dat.occ$year), max(dat.occ$year)),
-                        ylim = c(0, 365)) +
-        theme(axis.title = element_text(size = 40),
-              axis.text = element_text(size = 40),
-              axis.text.x = element_text(angle = 30, hjust = 1),
-              axis.ticks = element_line(colour = "gray25", size = 1.2),
-              axis.ticks.length.y.left = unit(8, "bigpts"),
-              axis.ticks.length.x.bottom = unit(8, "bigpts"),
-              axis.line = element_line(colour = "gray25", size = 1.2),
-              plot.title = element_text(size = 40, hjust = .5),
-              legend.title = element_text(size = 40),
-              legend.text = element_text(size = 40),
-              panel.background = element_blank(),
-              panel.grid.major = element_blank())
-    )
-    
-    dev.off()
+    int_plot(x = year)
     
   }
   
@@ -1839,7 +1817,8 @@ for (i in seq(1, nrow(dat.int.year))) {
   sum.lm.i <- summary(lm(mean.doy ~ year * kingdom, dat.i))
   
   #run an ancova to test for a difference in the slopes of plants and pollinators
-  ancov.i <- anova(lm(mean.doy ~ year, dat.i), lm(mean.doy ~ year * kingdom, dat.i))
+  ancov.i <- anova(lm(mean.doy ~ year, dat.i),
+                   lm(mean.doy ~ year * kingdom, dat.i))
   
   #write results into df
   dat.int.i <- dat.i %>%
@@ -1848,7 +1827,8 @@ for (i in seq(1, nrow(dat.int.year))) {
               poll = dat.int.year$poll[i],
               sum.year = sum(n.rec),
               poll.slope = sum.lm.i[["coefficients"]][2,1],
-              plant.slope = sum.lm.i[["coefficients"]][2,1] + sum.lm.i[["coefficients"]][4,1],
+              plant.slope = sum.lm.i[["coefficients"]][2,1] +
+                sum.lm.i[["coefficients"]][4,1],
               diff.slope = plant.slope - poll.slope,
               pval = ancov.i$`Pr(>F)`[2]
     ) 
@@ -1878,43 +1858,20 @@ dat.int.temp <- data.frame(group = NA,
 for (i in seq(1, nrow(dat.int.year))) {
   
   #generate data frame of records for one interactions
-  dat.i <- rbind(filter(dat.occ, species == as.character(dat.int.year$poll[i])) %>% droplevels(),
-                 filter(dat.occ, species == as.character(dat.int.year$plant[i])) %>% droplevels())
+  dat.i <- rbind(
+    filter(dat.occ,
+           species == as.character(dat.int.year$poll[i])) %>%
+      droplevels(),
+    filter(dat.occ,
+           species == as.character(dat.int.year$plant[i])) %>%
+      droplevels()
+  )
   
   
-  # if speciefied plot the phenological changes of the interaction
+  # if specified plot the phenological changes of the interaction
   if (any(c("full", "spec.int.slopes", "spec.int.slopes.temp") %in% opts)) {
     
-    # check if the directory is present
-    # if it doesn't exist yet, create the interaction subdirectory
-    dir.check(here("plots/interactions/temp"))
-    
-    png(here("plots/interactions/temp", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
-                                               ".png")),
-        width = 1500, height = 1000)
-    
-    print(
-      ggplot(dat.i, aes(x = y_mean_temp, y = mean.doy, col = kingdom)) +
-        geom_point(aes(size = n.rec)) +
-        geom_smooth(method = "lm", size = 1.5) +
-        labs(title = toString(unique(dat.i$species))) +
-        coord_cartesian(xlim = c(min(dat.occ$y_mean_temp), max(dat.occ$y_mean_temp)),
-                        ylim = c(0, 365)) +
-        theme(axis.title = element_text(size = 40),
-              axis.text = element_text(size = 40),
-              axis.text.x = element_text(angle = 30, hjust = 1),
-              axis.ticks = element_line(colour = "gray25", size = 1.2),
-              axis.ticks.length.y.left = unit(8, "bigpts"),
-              axis.ticks.length.x.bottom = unit(8, "bigpts"),
-              axis.line = element_line(colour = "gray25", size = 1.2),
-              plot.title = element_text(size = 40, hjust = .5),
-              legend.title = element_text(size = 40),
-              legend.text = element_text(size = 40),
-              panel.background = element_blank(),
-              panel.grid.major = element_blank())
-    )
-    
-    dev.off()
+    int_plot(x = 'y_mean_temp')
     
   }
   
@@ -1922,7 +1879,8 @@ for (i in seq(1, nrow(dat.int.year))) {
   sum.lm.i <- summary(lm(mean.doy ~ y_mean_temp * kingdom, dat.i))
   
   #run an ancova to test for a difference in the slopes of plants and pollinators
-  ancov.i <- anova(lm(mean.doy ~ y_mean_temp, dat.i), lm(mean.doy ~ y_mean_temp * kingdom, dat.i))
+  ancov.i <- anova(lm(mean.doy ~ y_mean_temp, dat.i),
+                   lm(mean.doy ~ y_mean_temp * kingdom, dat.i))
   
   #write results into df
   dat.int.i <- dat.i %>%
@@ -1931,7 +1889,8 @@ for (i in seq(1, nrow(dat.int.year))) {
               poll = dat.int.year$poll[i],
               sum.year = sum(n.rec),
               poll.slope = sum.lm.i[["coefficients"]][2,1],
-              plant.slope = sum.lm.i[["coefficients"]][2,1] + sum.lm.i[["coefficients"]][4,1],
+              plant.slope = sum.lm.i[["coefficients"]][2,1] +
+                sum.lm.i[["coefficients"]][4,1],
               diff.slope = plant.slope - poll.slope,
               pval = ancov.i$`Pr(>F)`[2]
     ) 
