@@ -256,6 +256,65 @@ if (file.exists(here("data", "workspace_save.RData")) &
     
     load(here("data", "workspace_save.RData"))
     
+    # Plot if required ------------------------------------
+    
+    # base plots
+    if (any(c('full', 'base') %in% opts)) {
+      source('scripts/plot_results.R')
+    }
+    
+    # species interaction slopes
+    if (any(c('full',
+              'spec.int.slopes',
+              'spec.int.slopes.time',
+              'spec.int.slopes.temp') %in% opts)) {
+      
+      for (i in seq(1, nrow(dat.int.year))) {
+        
+        #generate data frame of records for one interaction
+        dat.i <- rbind(
+          filter(dat.occ,
+                 species == as.character(dat.int.year$poll[i])) %>%
+            droplevels(),
+          filter(dat.occ,
+                 species == as.character(dat.int.year$plant[i])) %>%
+            droplevels()
+        )
+        
+        # if specified plot the phenological changes of the interaction
+        if (any(c("full",
+                  "spec.int.slopes",
+                  "spec.int.slopes.time") %in% opts)) {
+          
+          int_plot(x = year)
+          
+        }
+        
+        # if specified plot the phenological changes of the interaction
+        if (any(c("full",
+                  "spec.int.slopes",
+                  "spec.int.slopes.temp") %in% opts)) {
+          
+          int_plot(x = 'y_mean_temp')
+          
+        }
+        
+      }
+      
+    }
+    
+    # TODO: traits
+    
+    # TODO: all.spec
+    
+    # TODO: int.spec.dec
+    
+    # TODO: data.quality.assesment
+    
+    # TODO: additional
+    
+    # TODO: species
+    
     # beep to notify we've stopped
     beep()
     
