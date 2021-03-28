@@ -1,18 +1,10 @@
-stop("This script is only for archiving purposes!
-     Running it again might result in slightly different
-     analysis results as the data for 2019
-     was not in its final state when the data was originally downloaded.
-     (see DWD documentation for difference between recent and historical data)")
-
-
 # Setup -------------------------------------------------------------------
 
 
 #load packages
-library("here")
 library("rdwd")
 library("beepr")
-library("RCurl")
+library("RCurl") # important to get a current index for selectDWD
 library("data.table")
 library("tidyverse")
 
@@ -23,7 +15,8 @@ options(dplyr.summarise.inform = FALSE)
 link <- selectDWD(res = "monthly", var = "kl" , per = "hr", current = TRUE)
 
 #import data set
-dat.clim <- dataDWD(file = link, varnames = TRUE, overwrite = TRUE)
+fnames <- dataDWD(url = link, read = FALSE)
+dat.clim <- readDWD(file = fnames, varnames = TRUE)
 
 #only select historical records and
 #turn object into regular data frame, drop unuseful columns, remove NAs
@@ -32,21 +25,26 @@ dat.clim.hist <- dat.clim[str_detect(names(dat.clim), "historical")] %>%
   select(STATIONS_ID, date = MESS_DATUM, temp = MO_TT.Lufttemperatur) %>% 
   mutate(year = as.integer(substr(date, 1, 4))) %>%
   mutate(month = as.integer(substr(date, 6, 7))) %>%
-  #filter out the last year as safety measure
-  filter(year != as.integer(substr(Sys.Date(), start = 1, stop = 4))-1) %>%
   drop_na(temp)
 
-#same as above and only for the last year
-dat.clim.rec <- dat.clim[str_detect(names(dat.clim), "recent")] %>%
-  bind_rows() %>%
-  select(STATIONS_ID, date = MESS_DATUM, temp = MO_TT.Lufttemperatur) %>% 
-  mutate(year = as.integer(substr(date, 1, 4))) %>%
-  mutate(month = as.integer(substr(date, 6, 7))) %>%
-  filter(year == as.integer(substr(Sys.Date(), start = 1, stop = 4))-1) %>%
-  drop_na(temp)
+# #same as above and only for the last year
+# # this is a remnant from the original script compiled in 2019, where the data
+# # for that year had not undergone rigorous quality control yet. Only use this
+# # when you know you need data for the current year which the historical 
+# # records cannot provide
+# dat.clim.rec <- dat.clim[str_detect(names(dat.clim), "recent")] %>%
+#   bind_rows() %>%
+#   select(STATIONS_ID, date = MESS_DATUM, temp = MO_TT.Lufttemperatur) %>%
+#   mutate(year = as.integer(substr(date, 1, 4))) %>%
+#   mutate(month = as.integer(substr(date, 6, 7))) %>%
+#   filter(year == as.integer(substr(Sys.Date(), start = 1, stop = 4))-1) %>%
+#   drop_na(temp)
+# 
+# #bind both together
+# dat.clim <- bind_rows(dat.clim.hist, dat.clim.rec)
 
-#bind both together
-dat.clim <- bind_rows(dat.clim.hist, dat.clim.rec)
+dat.clim <- dat.clim.hist
+rm(dat.clim.hist)
 
 # Calculate overall mean and spring temperature ---------------------------
 
@@ -103,8 +101,16 @@ data("metaIndex")
 
 #join Bundesland to temperature data
 dat.climx <- metaIndex %>%
-  filter(per == "historical" & hasfile == TRUE & var == "kl" & res == "daily") %>%
-  select(STATIONS_ID = Stations_id, Stationshoehe, geoBreite, geoLaenge, Stationsname, state = Bundesland) %>%
+  filter(per == "historical" &
+           hasfile == TRUE & var == "kl" & res == "daily") %>%
+  select(
+    STATIONS_ID = Stations_id,
+    Stationshoehe,
+    geoBreite,
+    geoLaenge,
+    Stationsname,
+    state = Bundesland
+  ) %>%
   right_join(y = dat.climx, by = "STATIONS_ID")
 
 #calculate state means for each year
@@ -120,12 +126,12 @@ dat.clim.mean <- dat.climx %>%
 
 
 #save overall mean temperature
-fwrite(dat.clim.tot, here("static_data", "overall_mean_temperature.csv"))
+fwrite(dat.clim.tot, 'static_data/overall_mean_temperature.csv')
 
 #save decadal means
-fwrite(dat.clim.dec,  here("static_data", "decadal_mean_temperature.csv"))
+fwrite(dat.clim.dec,  'static_data/decadal_mean_temperature.csv')
 
 #save mean state temperature data
-fwrite(dat.clim.mean, here("static_data", "state_mean_temperature.csv"))
+fwrite(dat.clim.mean, 'static_data/state_mean_temperature.csv')
 
 beep()
