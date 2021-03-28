@@ -51,6 +51,8 @@ year.stop <- 2019
 dec.start <- 1980
 dec.stop <- 2019
 
+# #set max months of flowering threshold (redo pruning after changing)
+# thr.FlDur <- 12
 
 ## Control options ----------------------------------------
 
@@ -61,7 +63,7 @@ dec.stop <- 2019
 force.main <- FALSE
 
 # force pruning? (necessary after changing earliest year cutoff)
-force.pruning <- TRUE
+force.pruning <- FALSE
 
 # force calculation of mean doys? (better to only set it to FALSE if you're 
 # really impatient)
@@ -73,7 +75,7 @@ force.averaging <- FALSE
 # useful when working on that part of the get_occurrence_data script, so you 
 # don't have to download everything again. All the files take up 
 # about 22 GB when kept.
-delete.occ.download <- FALSE
+delete.occ.download <- TRUE
 
 ### Climate download --------------------------------------
 
@@ -84,7 +86,7 @@ force.clim.get <- FALSE
 
 # control whether the climate data script needs to delete its downloads
 # downloads take up about 40 MB
-delete.clim.download <- FALSE
+delete.clim.download <- TRUE
 
 ### Plant trait download ----------------------------------
 
@@ -109,19 +111,37 @@ force.traits.get <- FALSE
 #                 of doy and in decades
 # - data.quality.assessment: plots all occurrence records of 
 #                           plants and pollinators in one each
-#                           (not included in full, requires more than 8 GB of RAM 
-#                           (right now at least))
+#                           (not included in full, requires more than 8 GB 
+#                           of RAM (right now at least))
 # - additional:   * spatial occurrence distributions by institution
 #                 * spatial occurrence distribution overall
 #                 * decadal spatial occurrence distribution
 #                 * doy distribution over the year for (for now only)
-#                   all Butterfly species (to estimate the degree of multivoltism)
+#                   all Butterfly species (to estimate the degree of
+#                   multivoltism)
 # - species: plots yearly mean doys and regression for each species
-opts <- c('full')
+opts <- c()
 
-# #set max months of flowering threshold (redo pruning after changing)
-# thr.FlDur <- 12
+# this vector is used to check whether options are valid
+val_opts <- c('full',
+              'base',
+              'spec.int.slopes',
+              'spec.int.slopes.time',
+              'spec.int.slopes.temp',
+              'traits',
+              'all.spec',
+              'int.spec.dec',
+              'data.quality.assessment',
+              'additional',
+              'species')
 
+opts_are_val <- opts %in% val_opts
+
+if (!all(opts_are_val)) {
+  stop(str_glue('Options {paste(opts[!opts_are_val], collapse = ', ')}',
+                'are not valid for this analysis script.\n',
+                'Please check whether they are spelled correctly'))
+}
 
 
 # Functions --------------------------------------------
@@ -1696,7 +1716,8 @@ dat.int <-
 
 ```{r Calculate slope differences}
 
-#filter interactions down to interactions with both partners having occurrence records
+# filter interactions down to interactions with both partners having 
+# occurrence records
 dat.int.year <- dat.int %>%  
   filter(poll %in% dat.occ.poll$species &
            plant %in% dat.occ.plant$species)
@@ -1781,11 +1802,10 @@ for (i in seq(1, nrow(dat.int.year))) {
 dat.int.time <- drop_na(dat.int.time, diff.slope)
 
 #save interaction data
-write.csv(dat.int.time, here("data", "pla_poll_interactions_time.csv"), row.names = FALSE)
+write.csv(dat.int.time, here("data", "pla_poll_interactions_time.csv"),
+          row.names = FALSE)
 
-
-
-# for time ----------------------------------------------------------
+# for temperature ---------------------------------------------------
 
 dat.int.temp <- data.frame(group = NA,
                            plant = NA,
