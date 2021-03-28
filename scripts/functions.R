@@ -27,8 +27,6 @@ dir.check <- function(path) {
   # if yes stop and do nothing
   if(xist) {
     
-    
-    
   } else if (dir.exists(parent)) { # check if parent exists
     
     # if yes create the directory in the parent
@@ -164,16 +162,6 @@ slopes <- function(data, formula = mean.doy ~ year,
             "species", "id.grp", "slope", "intercept", "pval", 
             "rsquared", "df", "fstat", "ci.min", "ci.max",
             paste(str_sub(as.character(get_expr(add_vars)), 2), sep = ", "))
-  
-  
-  # #create data frame to store statistic values
-  # stat.out <- setNames(data.frame(matrix(ncol = length(cols),
-  #                                        nrow = length(unique(data$tax_level))),
-  #                                 stringsAsFactors = FALSE),
-  #                      cols)
-  # 
-  # #take one row out to store values from each loop
-  # stat.i <- stat.out[1,]
   
   #select summary vars according to tax level
   # there's porbably a better way to do this but i can't be asked right now
@@ -362,7 +350,7 @@ trait <- function(data = dat.occ.plant, var, trait_name, min_spec = 2) {
   stat.traits <- bind_rows(trait.list)
   
   
-  ##calulate meta stats -------------------------------------------------
+  ## calculate meta stats -------------------------------------------------
   
   #calculate N, mean and sd of slopes 
   stat.traits.meta <- stat.traits %>%
