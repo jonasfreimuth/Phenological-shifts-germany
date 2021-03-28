@@ -26,8 +26,9 @@ library("data.table")
 library("tidyverse")
 
 
-# Vars --------------------------------------------
+# Vars ----------------------------------------------------
 
+## Analysis parameters ------------------------------------
 
 #set min threshold of species records in a year
 thr.spec <- 4
@@ -46,17 +47,21 @@ thr.2k.max <- 2019
 year.start <- 1960
 year.stop <- 2019
 
-
 #set cutoff for decadal records
 dec.start <- 1980
 dec.stop <- 2019
+
+
+## Control options ----------------------------------------
+
+### General -----------------------------------------------
 
 # force running of the entire script regardless of no new changes in the data?
 # if FALSE, workspace data from previous run will be loaded
 force.main <- FALSE
 
 # force pruning? (necessary after changing earliest year cutoff)
-force.pruning <- FALSE
+force.pruning <- TRUE
 
 # force calculation of mean doys? (better to only set it to FALSE if you're 
 # really impatient)
@@ -69,6 +74,27 @@ force.averaging <- FALSE
 # don't have to download everything again. All the files take up 
 # about 22 GB when kept.
 delete.occ.download <- FALSE
+
+### Climate download --------------------------------------
+
+# control climate data script running
+# if set to false the script may still run if no climate data files with the
+# right name are not found in the static_data folder
+force.clim.get <- FALSE
+
+# control whether the climate data script needs to delete its downloads
+# downloads take up about 40 MB
+delete.clim.download <- FALSE
+
+### Plant trait download ----------------------------------
+
+# control bioflor scraping script running
+# if set to false the script may still run if plant trait files with the
+# right name are not found in the static_data folder
+force.traits.get <- FALSE
+
+
+## Plotting options ---------------------------------------
 
 # give level of additional plots
 # full -> do everything
@@ -91,7 +117,7 @@ delete.occ.download <- FALSE
 #                 * doy distribution over the year for (for now only)
 #                   all Butterfly species (to estimate the degree of multivoltism)
 # - species: plots yearly mean doys and regression for each species
-opts <- c()
+opts <- c('full')
 
 # #set max months of flowering threshold (redo pruning after changing)
 # thr.FlDur <- 12
@@ -161,6 +187,35 @@ if(run.occ.get |
   # View in RStudio via file.edit(here("scripts", "get_occurrence_data.R"))
   source(here("scripts", "get_occurrence_data.R"), local = TRUE)
   
+}
+
+```
+
+```{r control climate and plant trait data scripts}
+
+# Climate data --------------------------------------------
+
+if (all(file.exists('static_data/overall_mean_temperature.csv',
+                    'static_data/decadal_mean_temperature.csv'))) {
+  run.clim.get <- FALSE
+} else {
+  run.clim.get <- TRUE
+}
+
+if (run.clim.get | force.clim.get) {
+  source('scripts/get_german_climate_data.R')
+}
+
+# Plant trait data ----------------------------------------
+
+if (file.exists('static_data/bioflor_traits.csv')) {
+  run.traits.get <- FALSE
+} else {
+  run.traits.get <- TRUE
+}
+
+if (run.traits.get | force.traits.get) {
+  source('scripts/get_german_climate_data.R')
 }
 
 ```
