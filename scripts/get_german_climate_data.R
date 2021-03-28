@@ -19,7 +19,7 @@ fnames <- dataDWD(url = link, read = FALSE)
 dat.clim <- readDWD(file = fnames, varnames = TRUE)
 
 #only select historical records and
-#turn object into regular data frame, drop unuseful columns, remove NAs
+#turn object into regular data frame, drop useful columns, remove NAs
 dat.clim.hist <- dat.clim[str_detect(names(dat.clim), "historical")] %>%
   bind_rows() %>%
   select(STATIONS_ID, date = MESS_DATUM, temp = MO_TT.Lufttemperatur) %>% 
@@ -133,5 +133,15 @@ fwrite(dat.clim.dec,  'static_data/decadal_mean_temperature.csv')
 
 #save mean state temperature data
 fwrite(dat.clim.mean, 'static_data/state_mean_temperature.csv')
+
+
+# Cleanup -----------------------------------------------------------------
+
+# if specified, delete DWDdownload folder
+if (exists('delete.clim.download')) {
+  if (delete.clim.download) {
+    unlink('DWDdata', recursive = TRUE)
+  }
+}
 
 beep()
