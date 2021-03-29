@@ -2,9 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
-Data
-Download
-Plots
+data
+download
+plots
+DWDdata
 analysis_main.nb.html
 gadm36_DEU_1_sp.rds
 
