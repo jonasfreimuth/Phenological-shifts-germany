@@ -54,48 +54,6 @@ dec.stop <- 2019
 # #set max months of flowering threshold (redo pruning after changing)
 # thr.FlDur <- 12
 
-## Control options ----------------------------------------
-
-### General -----------------------------------------------
-
-# force running of the entire script regardless of no new changes in the data?
-# if FALSE, workspace data from previous run will be loaded
-force.main <- FALSE
-
-# force pruning? (necessary after changing earliest year cutoff)
-force.pruning <- FALSE
-
-# force calculation of mean doys? (better to only set it to FALSE if you're 
-# really impatient)
-force.averaging <- FALSE
-
-# keep raw occurrence files from download? 
-# enabling this will retain the huge files downloaded from gbif containing 
-# raw occurrence data
-# useful when working on that part of the get_occurrence_data script, so you 
-# don't have to download everything again. All the files take up 
-# about 22 GB when kept.
-delete.occ.download <- TRUE
-
-### Climate download --------------------------------------
-
-# control climate data script running
-# if set to false the script may still run if no climate data files with the
-# right name are not found in the static_data folder
-force.clim.get <- FALSE
-
-# control whether the climate data script needs to delete its downloads
-# downloads take up about 40 MB
-delete.clim.download <- TRUE
-
-### Plant trait download ----------------------------------
-
-# control bioflor scraping script running
-# if set to false the script may still run if plant trait files with the
-# right name are not found in the static_data folder
-force.traits.get <- FALSE
-
-
 ## Plotting options ---------------------------------------
 
 # give level of additional plots
@@ -143,10 +101,69 @@ if (!all(opts_are_val)) {
                 'Please check whether they are spelled correctly'))
 }
 
+# ## Save options -------------------------------------------
+# 
+# params <- list("thr.spec" = thr.spec,
+#                "thr.perc" = thr.perc,
+#                "thr.dec.rec" = thr.dec.rec,
+#                "thr.2k.max" = thr.2k.max,
+#                "thr.2k.min" = thr.2k.min,
+#                "year.start" = year.start,
+#                "year.stop" = year.stop,
+#                "dec.start" = dec.stop,
+#                "opts" = opts
+#                )
 
-# Functions --------------------------------------------
+## Control options ----------------------------------------
+
+### General -----------------------------------------------
+
+# force running of the entire script regardless of no new changes in the data?
+# if FALSE, workspace data from previous run will be loaded
+force.main <- FALSE
+
+# force pruning? (necessary after changing earliest year cutoff)
+force.pruning <- FALSE
+
+# force calculation of mean doys? (better to only set it to FALSE if you're 
+# really impatient)
+force.averaging <- FALSE
+
+# keep raw occurrence files from download? 
+# enabling this will retain the huge files downloaded from gbif containing 
+# raw occurrence data
+# useful when working on that part of the get_occurrence_data script, so you 
+# don't have to download everything again. All the files take up 
+# about 22 GB when kept.
+delete.occ.download <- TRUE
+
+### Climate download --------------------------------------
+
+# control climate data script running
+# if set to false the script may still run if no climate data files with the
+# right name are not found in the static_data folder
+force.clim.get <- FALSE
+
+# control whether the climate data script needs to delete its downloads
+# downloads take up about 40 MB
+delete.clim.download <- TRUE
+
+### Plant trait download ----------------------------------
+
+# control bioflor scraping script running
+# if set to false the script may still run if plant trait files with the
+# right name are not found in the static_data folder
+force.traits.get <- FALSE
+
+# Functions -----------------------------------------------
 
 source(here('scripts', 'functions.R'))
+
+# Save options and parameters -----------------------------
+
+# done so that reloading an older workspace does not overwrite changes to
+# parameters, options and loaded functions
+save.image('data/curr_environment.RData')
 
 ```
 
@@ -162,6 +179,7 @@ if (all(file.exists(
   here("data", "occurrences_full_pruned.csv"),
   here("data", "occurrences_species_yearly_mean_doy_pruned.csv"),
   here("data", "download_ran.txt")
+
 ))) {
   
   # files exist, now check for other conditions
@@ -193,6 +211,7 @@ if (all(file.exists(
   
   
 } else {
+  
   run.occ.get <- TRUE
   
 }
@@ -254,7 +273,11 @@ if (file.exists(here("data", "workspace_save.RData")) &
   # if not, it should be save to just load the previous data and stop
   if (! run.occ.get) {
     
+    # load old workspace
     load(here("data", "workspace_save.RData"))
+    
+    # load current parameters, options and functions
+    load('data/curr_environment.RData')
     
     # Plot if required ------------------------------------
     
@@ -3364,6 +3387,7 @@ Analysis of differences in mean slope between dependence levels:
 
 
 ```{r Check on pollinator dependence alone}
+
 cat("\nAnova mean time slope:\n\n")
 
 mod.time.polldep <- aov(data = stat.spec.time.PollDep, slope ~ PollDep)
@@ -3374,9 +3398,14 @@ cat("\nTukey multiple comparisons of means
     95% family-wise confidence level\n\n")
 
 stat.spec.time.PollDep.posthoc <- TukeyHSD(mod.time.polldep)
-stat.spec.time.PollDep.posthoc <- as.data.frame(stat.spec.time.PollDep.posthoc[["PollDep"]]) %>%
-  mutate(pairs = unlist(attr(stat.spec.time.PollDep.posthoc[["PollDep"]], "dimnames")[1])) %>%
+
+stat.spec.time.PollDep.posthoc <-
+  as.data.frame(stat.spec.time.PollDep.posthoc[["PollDep"]]) %>%
+  mutate(pairs = unlist(attr(
+    stat.spec.time.PollDep.posthoc[["PollDep"]], "dimnames"
+  )[1])) %>%
   select(pairs, everything())
+
 print.data.frame(stat.spec.time.PollDep.posthoc)
 
 cat("\n\n")
