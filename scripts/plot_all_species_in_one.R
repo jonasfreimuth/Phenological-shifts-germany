@@ -193,3 +193,7 @@ huge_plot_print(path = here("plots/print", "huge_insect_species_temp.png"),
           ylab = "DOY",
           data = filter(dat.occ.plot, kingdom == "Animalia")
 )
+
+
+# Cleanup -------------------------------------------------
+rm(dat.occ.plot)
