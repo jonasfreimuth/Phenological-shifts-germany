@@ -22,7 +22,8 @@ dir.check <- function(path) {
   xist <- dir.exists(path)
   
   # get parent directory (there might be a better way, right now it takes )
-  parent <- str_sub(string = path, end = str_locate(path, "/(?=\\w+$)")[1,2] - 1)
+  parent <- str_sub(string = path,
+                    end = str_locate(path, "/(?=\\w+$)")[1,2] - 1)
   
   # if yes stop and do nothing
   if(xist) {
@@ -388,8 +389,9 @@ trait <- function(data = dat.occ.plant, var, trait_name, min_spec = 2) {
   
 }
 
-# function for analysing differnces between trait levels
-analyse.trait <- function(trait = Habitat, data = dat.occ.plant) {
+# function for analyzing differences between trait levels
+analyse.trait <- function(trait = Habitat, data = dat.occ.plant,
+                          verbose = TRUE) {
   
   trait <- enquo(trait)
   
@@ -875,24 +877,27 @@ traitplot <- function(abb_trait) {
     geom_point(data = stat.trait.time$meta,
                aes(x = !! abb_trait, y = mean.slope),
                col = "gray10", size = 8) +
-    # geom_text(data = stat.trait.time$meta, 
-    #           aes(x = !! abb_trait, y = ypos(stat.trait.time$stat$slope, frac = 0.5),
+    # geom_text(data = stat.trait.time$meta,
+    #           aes(x = !! abb_trait,
+    #               y = ypos(stat.trait.time$stat$slope, frac = 0.5),
     #               label = paste0("n = \n", n.slope)),
     #           size = 13, col = "gray31") +
     # #add labels for differing factor levels
     # geom_text(
     #   data = pairdiff(stat.trait.time$stat, pd.form,
-    #                   level_order = sort(unique(stat.trait.time$stat[[quo_get_expr(abb_trait)]]))),
+    #                   level_order = sort(
+    #                     unique(stat.trait.time$stat[[quo_get_expr(abb_trait)]]))
+    #                   ),
     #   aes(
     #     x = level,
     #     y = ypos(stat.trait.time$stat$slope, frac = 0.1),
-  #     label = letter
-  #   ),
-  #   size = 13,
-  #   col = "gray31"
-  # ) +
-  labs(x = as.character(quo_get_expr(abb_trait)),
-       y = "Temporal change [days/decade]") +
+    #     label = letter
+    #   ),
+    #   size = 13,
+    #   col = "gray31"
+    # ) +
+    labs(x = as.character(quo_get_expr(abb_trait)),
+         y = "Temporal change [days/decade]") +
     scale_y_continuous(labels = mult_10_format()) +
     theme(axis.title = element_text(size = 40),
           axis.text = element_text(size = 40),
@@ -922,24 +927,28 @@ traitplot <- function(abb_trait) {
     geom_point(data = stat.trait.temp$meta,
                aes(x = !! abb_trait, y = mean.slope),
                col = "gray10", size = 8) +
-    # geom_text(data = stat.trait.temp$meta, 
-    #           aes(x = !! abb_trait, y = ypos(stat.trait.temp$stat$slope, frac = 0.5),
+    # geom_text(data = stat.trait.temp$meta,
+    #           aes(x = !! abb_trait,
+    #               y = ypos(stat.trait.temp$stat$slope,
+    #                        frac = 0.5),
     #               label = paste0("n = \n", n.slope)),
     #           size = 13, col = "gray31") +
     # #add labels for differing factor levels
     # geom_text(
     #   data = pairdiff(stat.trait.temp$stat, pd.form,
-    #                   level_order = sort(unique(stat.trait.time$stat[[quo_get_expr(abb_trait)]]))),
+    #                   level_order = sort(
+    #                     unique(stat.trait.time$stat[[quo_get_expr(abb_trait)]]))
+    #   ),
     #   aes(
     #     x = level,
     #     y = ypos(stat.trait.temp$stat$slope, frac = 0.1),
-  #     label = letter
-  #   ),
-  #   size = 13,
-  #   col = "gray31"
-  # ) +
-  labs(x = as.character(quo_get_expr(abb_trait)),
-       y = "Climate sensitivity [days/\u00B0C]") +
+    #     label = letter
+    #   ),
+    #   size = 13,
+    #   col = "gray31"
+    # ) +
+    labs(x = as.character(quo_get_expr(abb_trait)),
+         y = "Climate sensitivity [days/\u00B0C]") +
     theme(axis.title = element_text(size = 40),
           axis.text = element_text(size = 40),
           axis.ticks = element_line(colour = col.ax, size = 1.2),
@@ -955,7 +964,8 @@ traitplot <- function(abb_trait) {
   
   
   # save both plots into the global environment 
-  assign(str_glue("plots_{as.character(quo_get_expr(abb_trait))}"), list(plt.time, plt.temp), pos = 1)
+  assign(str_glue("plots_{as.character(quo_get_expr(abb_trait))}"),
+         list(plt.time, plt.temp), pos = 1)
   
   # print plots
   
@@ -995,7 +1005,8 @@ decimal_to_percent_format <- function() {
 
 # define function for making midado plots
 dur_mikado_plot <- function(data, filename = NULL, width = 1500, height = 1000,
-                            min = min.doy, mean = mean.doy, max = max.doy, x = year, facet = ~ id.grp,
+                            min = min.doy, mean = mean.doy, max = max.doy,
+                            x = year, facet = ~ id.grp,
                             raw.alpha = 0.3,
                             title = NULL, xlab = NULL, ylab = NULL) {
   
@@ -1108,8 +1119,10 @@ dur_slope_plot_save <- function(x = id.grp,
     geom_text(
       data = pairdiff(filter(data,
                              #exclude Hymenoptera, Diptera and the Insects overall group
-                             !(id.grp %in% c(excl.group.year, col.grp$group[5]))),
-                      formula(str_glue("{quo_get_expr(y)} ~ {quo_get_expr(x)}"))),
+                             !(id.grp %in% c(excl.group.year,
+                                             col.grp$group[5]))),
+                      formula(str_glue("{quo_get_expr(y)} ~ {quo_get_expr(x)}"))
+                      ),
       aes(
         x = level,
         y = ypos(c(stat.all.dur$slope,
@@ -1228,7 +1241,8 @@ slope_plot_save <- function(x = id.grp,
     geom_text(
       data = pairdiff(data = filter(data,
                                     #exclude Hymneoptera, Diptera and the Insects overall group
-                                    !(id.grp %in% c(excl.group.year, col.grp$group[5]))),
+                                    !(id.grp %in% c(excl.group.year,
+                                                    col.grp$group[5]))),
                       formula(str_glue("{quo_get_expr(y)} ~ {quo_get_expr(x)}")),
                       level_order = levels(data[[toString(quo_get_expr(x))]])),
       aes(
