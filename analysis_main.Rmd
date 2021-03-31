@@ -61,11 +61,11 @@ dec.stop <- 2019
 # base -> only base analysis (or just leave it blank for now)
 # or a vector of desired options
 # one of 
-# - spec.int.slopes: plots interactions on species level (mean.doy vs time/temp)
+# - int.slopes.year: plots interactions on species level (mean.doy vs time/temp)
 # - traits: analyses all plant traits and their influence on response over time
 #           and temp
 # - all.spec: plots all species reaction to time in one plot
-# - int.spec.dec: same as spec int slope but on the level of difference 
+# - int.slopes.dec: same as spec int slope but on the level of difference 
 #                 of doy and in decades
 # - data.quality.assessment: plots all occurrence records of 
 #                           plants and pollinators in one each
@@ -78,17 +78,17 @@ dec.stop <- 2019
 #                   all Butterfly species (to estimate the degree of
 #                   multivoltism)
 # - species: plots yearly mean doys and regression for each species
-opts <- c()
+opts <- c('full')
 
 # this vector is used to check whether options are valid
 val_opts <- c('full',
               'base',
-              'spec.int.slopes',
-              'spec.int.slopes.time',
-              'spec.int.slopes.temp',
+              'int.slopes.year',
+              'int.slopes.year.time',
+              'int.slopes.year.temp',
               'traits',
               'all.spec',
-              'int.spec.dec',
+              'int.slopes.dec',
               'data.quality.assessment',
               'additional',
               'species')
@@ -409,9 +409,9 @@ if (file.exists(here("data", "workspace_save.RData")) &
     
     # species interaction slopes
     if (any(c('full',
-              'spec.int.slopes',
-              'spec.int.slopes.time',
-              'spec.int.slopes.temp') %in% opts)) {
+              'int.slopes.year',
+              'int.slopes.year.time',
+              'int.slopes.year.temp') %in% opts)) {
       
       for (i in seq(1, nrow(dat.int.year))) {
         
@@ -427,19 +427,19 @@ if (file.exists(here("data", "workspace_save.RData")) &
         
         # if specified plot the phenological changes of the interaction
         if (any(c("full",
-                  "spec.int.slopes",
-                  "spec.int.slopes.time") %in% opts)) {
+                  "int.slopes.year",
+                  "int.slopes.year.time") %in% opts)) {
           
-          int_plot(x = year)
+          int_plot_year(x = year)
           
         }
         
         # if specified plot the phenological changes of the interaction
         if (any(c("full",
-                  "spec.int.slopes",
-                  "spec.int.slopes.temp") %in% opts)) {
+                  "int.slopes.year",
+                  "int.slopes.year.temp") %in% opts)) {
           
-          int_plot(x = 'y_mean_temp')
+          int_plot_year(x = 'y_mean_temp')
           
         }
         
@@ -447,17 +447,27 @@ if (file.exists(here("data", "workspace_save.RData")) &
       
     }
     
-    # TODO: traits
+    if (any('full', 'traits') %in% opts) {
+        # do the trait analysis for every plant trait 
+        for (pl_trait in names(select(dat.occ, LifeForm:Habitat))) {
+        
+        abb_trait <- abbreviate(tolower(trait), 7, strict = TRUE)
+
+        traitplot(abb_trait)
+      }
+    }
     
-    # TODO: all.spec
-    
-    # TODO: int.spec.dec
-    
-    # TODO: data.quality.assesment
-    
-    # TODO: additional
+    # TODO: int.slopes.dec
     
     # TODO: species
+    
+    if (any(c('full', 'all.spec') %in% opts)) {
+      source('scripts/all_species_in_one.R')
+    }
+    
+    if (any(c('full', 'data.quality.assessment', 'additional') %in% opts)) {
+      source('scripts/plot_occurrence_distribution.R')
+    }
     
     # beep to notify we've stopped
     beep()
@@ -1950,9 +1960,9 @@ for (i in seq(1, nrow(dat.int.year))) {
     )
   
   # if specified plot the phenological changes of the interaction
-  if (any(c("full", "spec.int.slopes", "spec.int.slopes.time") %in% opts)) {
+  if (any(c("full", "int.slopes.year", "int.slopes.year.time") %in% opts)) {
     
-    int_plot(x = year)
+    int_plot_year(x = "year")
     
   }
   
@@ -2013,9 +2023,9 @@ for (i in seq(1, nrow(dat.int.year))) {
   
   
   # if specified plot the phenological changes of the interaction
-  if (any(c("full", "spec.int.slopes", "spec.int.slopes.temp") %in% opts)) {
+  if (any(c("full", "int.slopes.year", "int.slopes.year.temp") %in% opts)) {
     
-    int_plot(x = 'y_mean_temp')
+    int_plot_year(x = 'y_mean_temp')
     
   }
   
@@ -2349,7 +2359,7 @@ for (i in seq(1, nrow(int.dec))) {
   
   # Plotting ---------------------------------------------------------------
   
-  if (any(c("full", "int.spec.dec") %in% opts)) {
+  if (any(c("full", "int.slopes.dec") %in% opts)) {
     
     # make sure subdir exists
     dir.check(here("plots/interactions/decadal/time"))
