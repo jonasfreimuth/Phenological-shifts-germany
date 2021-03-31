@@ -155,6 +155,127 @@ delete.clim.download <- TRUE
 # right name are not found in the static_data folder
 force.traits.get <- FALSE
 
+## Set graphics parameters --------------------------------
+
+# set colour for raw data points
+col.pt <- "gray31"
+
+# set colour for static lines
+col.line <- "gray31"
+
+# set colour for axis elements
+col.ax <- "gray31"
+
+# set col for annotations
+col.note <- "gray31"
+
+# annotation text size
+annot_text <- 20
+
+# line types
+lty.sec <- 3
+
+# line size
+hline_size_large <- 2
+line_size_large <- 2.5
+
+# text size
+text_size_large <- 50
+legend_text_size_large <- 40
+
+# axis parameters
+axis_size_large <- 2
+axis_ticks_size_large <- 2
+axis_ticks_length_large <- 16
+
+# size of plot labels for cowplot
+# when plots were optimized for 22 x 14 in
+label_size <- 50
+
+### set colour tables -------------------------------------------------------
+
+# define colours
+# DO NOT CHANGE ORDER, only append
+col.grp <-
+  data.frame(
+    group = c(
+      "Beetles",
+      "Flies",
+      "Bees",
+      "Butterflies/\nMoths",
+      "Insects overall",
+      "Plants",
+      "Hoverfly - Plant",
+      "Bee - Plant",
+      "Butterfly - Plant",
+      "Overall",
+      "Insect dependent",
+      "Intermediate",
+      "Insect independent"
+    ),
+    colour = c(
+      "#9815db",
+      "#f41d0f",
+      "#ffa500",
+      "#4744ff",
+      "gold",
+      "#008a00",
+      "#f41d0f",
+      "#ffa500",
+      "#4744ff",
+      "deepskyblue",
+      "red",
+      "#ffa500",
+      "#008a00"
+    )
+  )
+
+# alternative: named vector
+col.grp.vec <- col.grp$colour
+names(col.grp.vec) <- col.grp$group
+
+#set colours for Plant-Pollinator comparisons
+col.plapoll <- col.grp[5:6,]
+
+# static polls group (no exclusion)
+col.poll.stc <- col.grp[1:4,]
+
+#only for polls
+col.poll <- col.grp[1:4,] %>% 
+  filter(!(group %in% excl.trivial.year))
+
+#only for plants
+col.plant <- col.grp[6,]
+
+#set colours for group comparisons (add plant group at the end)
+col.group.stc <- bind_rows(col.poll.stc, col.plant)
+col.group <- bind_rows(col.poll, col.plant)
+
+#set colours for group comparisons including overall
+col.group2.stc <- bind_rows(col.poll.stc, col.plapoll)
+col.group2 <- bind_rows(col.poll, col.plapoll)
+
+#set colours for PollDep comparisons
+col.PollDep <- col.grp[11:13,]
+
+# interaction colours with standard names
+col.int.stc <- col.grp[7:9,]
+col.int.stc$group <- c("Hoverfly", "Bee", "Butterfly")
+
+#set colours for Interaction comparisions
+col.int <- col.grp[7:9,]
+
+#set colours for Interaction comparison with overall group
+col.int2 <- col.grp[7:10,]
+
+#set colours for Interaction group comparisions
+col.int3 <- bind_rows(col.int, col.plant)
+
+#set colours for decade comparisons
+col.dec <- data.frame(group = c("1990s and before", "all decades", "1990s on"),
+                      colour = c("#2F5496", "#972A4B", "#FF0000")
+)
+
 # Functions -----------------------------------------------
 
 source(here('scripts', 'functions.R'))
