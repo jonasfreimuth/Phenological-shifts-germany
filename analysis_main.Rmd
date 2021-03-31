@@ -123,7 +123,7 @@ if (!all(opts_are_val)) {
 force.main <- FALSE
 
 # force pruning? (necessary after changing earliest year cutoff)
-force.pruning <- FALSE
+force.pruning <- TRUE
 
 # force calculation of mean doys? (better to only set it to FALSE if you're 
 # really impatient)
@@ -1911,12 +1911,14 @@ ggplot(data = stat.group.2k.temp.meta) +
 
 #load interaction data
 dat.int <-
-  read.csv(here("static_data", "plant_pollinator_interactions_for_potential_networks_2018.csv"),
+  read.csv(here("static_data",
+                "plant_pollinator_interactions_for_potential_networks_2018.csv"),
            stringsAsFactors = FALSE) %>%
   rename(poll = POLLINATOR_NAME, plant = PLANT_NAME) %>%
   
   #add the plant trait data to the interactions
-  left_join(fread(here("static_data", "bioflor_traits.csv")), by = c("plant" = "species")) %>%
+  left_join(fread(here("static_data", "bioflor_traits.csv")),
+            by = c("plant" = "species")) %>%
   
   #exclude interactions with pollinator independent plants
   filter(PollDep != "No") %>%
@@ -3389,21 +3391,35 @@ Reactions of each Group:
 ```{r Plot group reactions}
 
 #plot trends of collection day in realtion to year by group
-ggplot(data = dat.occ.polldep, aes(x = year, y = mean.doy, group = PollDep, color = PollDep)) +
+ggplot(data = dat.occ.polldep, aes(
+  x = year,
+  y = mean.doy,
+  group = PollDep,
+  color = PollDep
+)) +
   geom_point(size = 1.5, alpha = .3, position = position_dodge(width = 0.8)) +
   geom_smooth(method = lm, se = T, size = 1.5, linetype = 1, alpha = .7) +
   theme_minimal() +
-  labs(title = "Linear Relationship Between between year and\nCollection Day for each Group",
+  labs(title = paste("Linear Relationship Between between year and",
+                     "Collection Day for each Group", sep = '\n'),
        x = "Year",
        y = "DOY") 
 
 
-#plot trends of collection day in realtion to yearly temp by group
-ggplot(data = dat.occ.polldep, aes(x = y_mean_temp, y = mean.doy, group = PollDep, color = PollDep)) +
+#plot trends of collection day in relation to yearly temp by group
+ggplot(data = dat.occ.polldep,
+       aes(
+         x = y_mean_temp,
+         y = mean.doy,
+         group = PollDep,
+         color = PollDep
+       )) +
   geom_point(size = 1.5, alpha = .3, position = position_dodge(width = 0.01)) +
   geom_smooth(method = lm, se = T, size = 1.5, linetype = 1, alpha = .7) +
   theme_minimal() +
-  labs(title = "Linear Relationship Between between yearly mean temperature and\nCollection Day for each Group",
+  labs(title = paste(
+    "Linear Relationship Between between yearly mean temperature and",
+    "Collection Day for each Group", sep = "\n"),
        x = "Yearly mean temperature [u00B0C]",
        y = "DOY")
 
@@ -3551,8 +3567,10 @@ cat("\nTukey multiple comparisons of means
     95% family-wise confidence level\n\n")
 
 stat.spec.temp.PollDep.posthoc <- TukeyHSD(mod.temp.polldep)
-stat.spec.temp.PollDep.posthoc <- as.data.frame(stat.spec.temp.PollDep.posthoc[["PollDep"]]) %>%
-  mutate(pairs = unlist(attr(stat.spec.temp.PollDep.posthoc[["PollDep"]], "dimnames")[1])) %>%
+stat.spec.temp.PollDep.posthoc <- as.data.frame(
+  stat.spec.temp.PollDep.posthoc[["PollDep"]]) %>%
+  mutate(pairs = unlist(
+    attr(stat.spec.temp.PollDep.posthoc[["PollDep"]], "dimnames")[1])) %>%
   select(pairs, everything())
 print.data.frame(stat.spec.temp.PollDep.posthoc)
 
@@ -3564,12 +3582,13 @@ print.data.frame(stat.spec.temp.PollDep.posthoc)
 ```{r Analyse traits}
 
 # check options
-if (any(c("full", "traits") %in% opts)){
+if (any(c("full", "traits") %in% opts)) {
   
   # do the trait analysis for every plant trait 
   for (pl_trait in names(select(dat.occ, LifeForm:Habitat))) {
     
-    str_glue("\n\n\n###################################################\n\n {pl_trait}:\n\n")
+    str_glue(
+      "\n\n\n#############################################\n\n {pl_trait}:\n\n")
     
     # first convert trait to symbol
     pl_trait <- sym(pl_trait)
@@ -3590,7 +3609,8 @@ analyse.trait()
 ```
 
 ```{r Analysis of mean flowering month}
-analyse.trait(data = mutate(dat.occ.plant, meanFlMonth = floor((FlStart + FlEnd)/2)),
+analyse.trait(data = mutate(dat.occ.plant,
+                            meanFlMonth = floor((FlStart + FlEnd)/2)),
               trait = meanFlMonth)
 ```
 
