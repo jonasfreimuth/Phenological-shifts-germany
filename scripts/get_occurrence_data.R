@@ -14,6 +14,8 @@ dir.check(here("data"))
 # if not run script for obtaining it
 if ( !(file.exists(here("static_data", "bioflor_traits.csv")))) {
   
+  cat('Plant trait data not found, running download script.')
+  
   source(here("scripts", "get_bioflor_traits.R"))
   
 }
@@ -30,6 +32,8 @@ bioflor_traits <- fread(here("static_data", "bioflor_traits.csv"),
 if (!(file.exists(here("static_data", "overall_mean_temperature.csv")) &
       file.exists(here("static_data", "overall_mean_temperature.csv")))) {
   
+  cat('Climate data not found, running download script.')
+  
   source(here("scripts", "get_german_climate_data.R"))
   
 }
@@ -38,9 +42,14 @@ if (!(file.exists(here("static_data", "overall_mean_temperature.csv")) &
 
 # check if download has already run with current gbif dataset, first
 # see if all files are even present
-if(file.exists(here("data", "occurrences_full.csv")) &
-   file.exists(here("data", "occurrences_full_refined.csv")) &
-   file.exists('data/download_ran.txt')) {
+
+files_to_check <- c('data/occurrences_full.csv',
+                    'data/occurrences_full_refined.csv',
+                    'data/download_ran.txt')
+
+files_exist <- file.exists(files_to_check)
+
+if(all(files_exist)) {
   
   # get download keys (uids of the datasets used, order is plants,
   # last one is polls)
@@ -62,6 +71,9 @@ if(file.exists(here("data", "occurrences_full.csv")) &
       file.mtime(here("data", "occurrences_full.csv")) &
       all(key_in)) {
     
+    cat('Downloads are older than occurrence file, running refinement is not',
+        'necessary if not forced.')
+    
     # since the file for gbif requests is older, we're up to date with the occurrences
     # and we already have our occurrence dataset
     # we don't run the download
@@ -69,6 +81,9 @@ if(file.exists(here("data", "occurrences_full.csv")) &
     run.occ.refine <- FALSE
     
   } else {
+    
+    cat('Either downloads are not older than occurrence file or not all',
+    'downloads ran, refinement will be run.')
     
     # the occurrence dataset is older
     # the occurrences are out of date
@@ -79,6 +94,9 @@ if(file.exists(here("data", "occurrences_full.csv")) &
   } 
   
 } else {
+  
+  cat('Files', paste(files_to_check[!files_exist], collapse = ', '),
+               'do not exist, running occurrence refining.')
   
   # there is no file
   # we don't have downloads yet
@@ -107,21 +125,31 @@ if (run.occ.refine) {
   
   #start for loop for each key
   for (k in keys) {
-    
+    cat('Running refinement for key', k, )
     # check if we already have an extracted occurrence file
     # if not then download + extract + delete zip
     if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
+      cat('Occurrence txt file for key', k, 'not found.')
     # if (TRUE) {
       # retrieve compiled dataset, if  the zip is not already in the downloads
       # folder
       if (! file.exists(paste0('download/', k, '.zip'))) {
+        dl_link <- occ_download_meta(k)[["downloadLink"]]
+        
+        cat('Zipped occurrence download not on disk, downloading.',
+            '\nIf download takes to long, manually download zip file from',
+            dl_link, ', place in /download and run script again.')
+        
         # if this keeps hanging it might be because this function appears to 
         # have a problem with large downloads (>2GB). In that case either 
         # do it like me and just download those manually and place them in the
         # downloads folder, or put in the work and find a way around it.
-        # Maybe tweak the maximum string lenth in start_gbif_downloads
+        # Maybe tweak the maximum string length in start_gbif_downloads
         occ_download_get(k, here("download"), overwrite = TRUE)
+        
       }
+      
+      cat('Extracting occurrence txt file...')
       
       # extract occurrence.txt
       unzip(here("download", paste0(k, ".zip")),
@@ -141,6 +169,8 @@ if (run.occ.refine) {
       
     }
     
+    cat('Extracting occurrence records...')
+    
     #read extracted occurrence.txt
     exp <- fread(here("download", paste0("occurrence_", k, ".txt")),
                  quote = "", showProgress = FALSE,
@@ -150,7 +180,6 @@ if (run.occ.refine) {
                             "year", "month", "day", "eventDate", "basisOfRecord",
                             "hasGeospatialIssues", "issue")
     ) 
-    
     
     #exclude records without days
     exp <- filter(exp, day != "")
@@ -176,6 +205,8 @@ if (run.occ.refine) {
       
     }
     
+    cat('Appending occurrences to full csv...')
+    
     
     #Save data as csv
     fwrite(exp, here("data", "occurrences_full.csv"),
@@ -197,6 +228,7 @@ if (run.occ.refine) {
     writeLines(paste(k, Sys.time(), sep = '\t'), dl_ran)
     close(dl_ran)
     
+    cat('Done with this dataset.')
   }
   
   # remove unneeded objects
@@ -229,15 +261,23 @@ if (file.exists(here("data", "occurrences_full_pruned.csv"))) {
   if(file.mtime(here("data", "occurrences_full_refined.csv")) >
      file.mtime(here("data", "occurrences_full_pruned.csv")) ) {
     
+    cat('Refined occurrences are not older than pruned occurrences, running
+        pruning.')
+    
     run.pruning <- TRUE
     
   } else {
+    
+    cat('Refined occurrences are older than pruned occurrences,',
+        'skipping pruning if not forced.')
     
     run.pruning <- FALSE
     
   }
   
 } else {
+  
+  cat('File of pruned occurrences not found, running pruning.')
   
   run.pruning <- TRUE
   
@@ -250,8 +290,11 @@ if (run.pruning |
   # load occurrence data
   if (!(exists("dat.occ"))) {
     
+    cat('Pruning...')
+    
     #load full dataset
-    dat.occ <- fread(here("data", "occurrences_full_refined.csv"), showProgress = FALSE)
+    dat.occ <- fread(here("data", "occurrences_full_refined.csv"),
+                     showProgress = FALSE)
     
   }
   
@@ -262,15 +305,11 @@ if (run.pruning |
   # file.edit(here("scripts", "plot_occurrence_distribution.R"))
   excl.inst <- readLines('static_data/excluded_institutions.txt')
   
-  ## Cleanup
+  ## Cleanup 
   
-  #remove records without determined species
-  dat.occ <- filter(dat.occ, species != "") %>%
-    
-    #exclude the current year from further analysis
-    filter(year != as.integer(substr(
-      Sys.Date(), start = 1, stop = 4
-    ))) %>%
+  dat.occ <- dat.occ %>% 
+    #remove records without determined species
+    filter(species != "") %>%
     
     #exclude first and last days
     filter(doy != 1, doy != 366, doy != 365) %>%
@@ -329,16 +368,19 @@ if (run.pruning |
     nInsects = as.numeric(count(dat.occ, kingdom)[1,2]),
     fracGeoref = sum(!is.na(dat.occ$decimalLatitude))/nrow(dat.occ)
   ) %>%
-    fwrite(here("data", "occurrence_full_meta.csv"))
+    fwrite(here("data", "occurrence_full_pruned_meta.csv"))
   
   #remove dat.occ again for memory reasons
   rm(dat.occ)
+  
+  cat('Done pruning.')
   
 }
 
 
 # Calculate yearly species means ------------------------------------------
 
+cat('Calculating yearly average DOYs...')
 
 #calculate species means
 dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
@@ -357,7 +399,7 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
   group_by(kingdom, phylum, order, family, genus, id.grp, decade) %>%
   group_by(species, .add = TRUE) %>%
   group_by(year, .add = TRUE) %>%
-  # filter  out years with too few records
+  # filter out years with insufficient number of records
   filter(n() >= thr.spec) %>%
   summarise(
     mean.doy = mean(doy),
@@ -384,7 +426,11 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
     na = NA
   )
 
+cat('Done')
+
 # Calculate decadal means -------------------------------------------------
+
+cat('Calculating decadal DOYs')
 
 #load data again and dlete years before decadal cutoff 
 dat.occ.dec <- fread(here("data", "occurrences_full_pruned.csv"),
@@ -438,7 +484,10 @@ dat.occ.dec %>%
   left_join(fread(here("static_data",
                        "decadal_mean_temperature.csv")),
             by = "decade") %>% 
-  fwrite(here("data", "occurrences_species_decadal_mean_doy_pruned.csv"), showProgress = FALSE)
+  fwrite(here("data", "occurrences_species_decadal_mean_doy_pruned.csv"),
+         showProgress = FALSE)
 
 rm(dat.occ.dec)
+
+cat('Done')
 
