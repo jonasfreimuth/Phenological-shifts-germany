@@ -638,8 +638,47 @@ dur_plot_2k <- function(x = decade,
   
 }
 
-# function for generating species interaction plots
-int_plot <- function(data = dat.i, x,
+# function for generating species interaction plots on yearly data
+int_plot_year <- function(data = dat.i, x,
+                     filename = paste0(x, '_',
+                                    paste(unique(data$species),
+                                          collapse = '_'),
+                                    ".png"),
+                     dir = paste0("plots/interactions/", x),
+                     width = 20, height = 12.5
+) {
+  # print(dir)
+  dir.check(dir)
+  
+  plot_int <- ggplot(data,
+                     aes_string(x = x,
+                                y = "mean.doy",
+                                col = "kingdom")) +
+    geom_point(aes(size = n.rec)) +
+    geom_smooth(method = "lm", size = 1.5) +
+    labs(title = toString(unique(data$species))) +
+    coord_cartesian(xlim = c(year.start, year.stop),
+                    ylim = c(0, 365)) +
+    theme(axis.title = element_text(size = 40),
+          axis.text = element_text(size = 40),
+          axis.text.x = element_text(angle = 30, hjust = 1),
+          axis.ticks = element_line(colour = "gray25", size = 1.2),
+          axis.ticks.length.y.left = unit(8, "bigpts"),
+          axis.ticks.length.x.bottom = unit(8, "bigpts"),
+          axis.line = element_line(colour = "gray25", size = 1.2),
+          plot.title = element_text(size = 40, hjust = .5),
+          legend.title = element_text(size = 40),
+          legend.text = element_text(size = 40),
+          panel.background = element_blank(),
+          panel.grid.major = element_blank())
+  
+  ggsave(filename = paste0(dir, '/', filename),  width = width, height = height,
+         plot = plot_int)
+}
+
+# function for generating species interaction plots on decadal data
+# warning, does different things from yearly plot
+int_plot_dec <- function(data = dat.i, x,
                      filename = paste0(x, '_',
                                     paste(unique(data$species),
                                           collapse = '_'),
