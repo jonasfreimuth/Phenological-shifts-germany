@@ -700,15 +700,22 @@ corvif <- function(data) {
 # factor levels as determined by a statistical test. When group_order 
 # (character vector of level names) is provided, pairings will be assigned
 # Letters according to their precedence in group_order
-pairdiff <- function(data, formula, test = "Tukey", Letters = LETTERS, threshold = 0.05,
+pairdiff <- function(data, formula, test = "Tukey",
+                     Letters = LETTERS, threshold = 0.05,
                      level_order = NULL) {
   
   if (test == "Tukey") {
     
+    # do test
+    tk_test <- TukeyHSD(aov(data = data, formula = formula))
+    
+    # extract names and p-val vector
+    pvals <- tk_test[[paste(formula[3])]][,4]
+    names(pvals) <- rownames(tk_test[[paste(formula[3])]])
+    
+    
     #find letters for non differing factor levels
-    pairs <- multcompLetters(
-      #extract named row of pvalues from Tukey test
-      TukeyHSD(aov(data = data, formula = formula))[[paste(formula[3])]][,4],
+    pairs <- multcompLetters(pvals,
       Letters = Letters,
       threshold = threshold)
     
@@ -721,12 +728,15 @@ pairdiff <- function(data, formula, test = "Tukey", Letters = LETTERS, threshold
     #perform test
     test <- t.test(formula, data)
     
-    #get results into form accepted by multcompLetters
-    spoofvec <- test[["p.value"]]
-    names(spoofvec) <- paste(str_extract(names(test[["estimate"]]), "[:alpha:]+$"), collapse = "-")
+    
+    # extract names and pvals from test
+    pvals <- test[["p.value"]]
+    names(pvals) <-paste(str_extract(names(test[["estimate"]]),
+                                        "[:alpha:]+$"), 
+                            collapse = "-")
     
     #find letters for non differeing factor levels
-    pairs <- multcompLetters(spoofvec, Letters = Letters,
+    pairs <- multcompLetters(pvals, Letters = Letters,
                              threshold = threshold)
     # save letters and levels
     levels_df <- data.frame(letter = pairs$Letters, level = names(pairs$Letters))
