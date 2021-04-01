@@ -10,25 +10,6 @@ options(stringsAsFactors = FALSE)
 # if it doesn't exist yet, create the plots directory
 dir.check(here("plots"))
 
-# set groups to be excludes
-excl.group.year <- c("Diptera", "Hymenoptera")
-
-# set named vector for recoding group names to common names
-recode.vec <- c(
-  "Coleoptera" = "Beetles",
-  "Diptera" = "Flies",
-  "Hymenoptera" = "Bees",
-  "Lepidoptera" = "Butterflies/\nMoths"
-)
-
-# make alternative vector for interactions
-recode.vec.int <- recode.vec[2:4]
-recode.vec.int[1:3] <- c("Hoverfly - Plant", "Bee - Plant", "Butterfly - Plant")
-
-
-# translate to trivial names
-excl.trivial.year <- recode_factor(excl.group.year, !!! recode.vec)
-
 # It's getting hot in Germany ---------------------------------------------
 
 ggsave(

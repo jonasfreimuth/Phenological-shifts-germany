@@ -31,13 +31,18 @@ library("tidyverse")
 ## Analysis parameters ------------------------------------
 
 #set min threshold of species records in a year
-thr.spec <- 4
+thr.spec <- 10
 
 # set minimum of percent of period covered
 thr.perc <- 0.4
 
-#set threshold for min # of records per decade
-thr.dec.rec <- 5
+# set threshold for min # of records per decade for decadal averages
+# based on raw occurrence data
+thr.dec.rec <- 10
+
+# set threshold for min # of years per decade for decadal averages
+# based on yearly average data
+thr.dec.year <- 5
 
 # thresholds for short term phenology changes
 thr.2k.min <- 2010
@@ -48,8 +53,8 @@ year.start <- 1960
 year.stop <- 2019
 
 #set cutoff for decadal records
-dec.start <- 1980
-dec.stop <- 2019
+dec.start <- 1960
+dec.stop <- 2010
 
 # #set max months of flowering threshold (redo pruning after changing)
 # thr.FlDur <- 12
@@ -123,11 +128,11 @@ if (!all(opts_are_val)) {
 force.main <- FALSE
 
 # force pruning? (necessary after changing earliest year cutoff)
-force.pruning <- TRUE
+force.pruning <- FALSE
 
 # force calculation of mean doys? (better to only set it to FALSE if you're 
 # really impatient)
-force.averaging <- FALSE
+force.averaging <- TRUE
 
 # keep raw occurrence files from download? 
 # enabling this will retain the huge files downloaded from gbif containing 
@@ -191,6 +196,27 @@ axis_ticks_length_large <- 16
 # size of plot labels for cowplot
 # when plots were optimized for 22 x 14 in
 label_size <- 50
+
+### define trivial group names ----------------------------------------------
+
+# set groups to be excluded
+excl.group.year <- c("Diptera", "Hymenoptera")
+
+# set named vector for recoding group names to common names
+recode.vec <- c(
+  "Coleoptera" = "Beetles",
+  "Diptera" = "Flies",
+  "Hymenoptera" = "Bees",
+  "Lepidoptera" = "Butterflies/\nMoths"
+)
+
+# make alternative vector for interactions
+recode.vec.int <- recode.vec[2:4]
+recode.vec.int[1:3] <- c("Hoverfly - Plant", "Bee - Plant", "Butterfly - Plant")
+
+
+# translate to trivial names
+excl.trivial.year <- recode_factor(excl.group.year, !!! recode.vec)
 
 ### set colour tables -------------------------------------------------------
 
@@ -298,7 +324,7 @@ if (all(file.exists(
   here("data", "occurrences_full.csv"),
   here("data", "occurrences_full_refined.csv"),
   here("data", "occurrences_full_pruned.csv"),
-  here("data", "occurrences_species_yearly_mean_doy_pruned.csv"),
+  here("data", "species_yearly_mean_doy_raw_based.csv"),
   here("data", "download_ran.txt")
 
 ))) {
@@ -320,7 +346,7 @@ if (all(file.exists(
     
     # check if averaged occurrences are older than pruned occurrences
     file.mtime(here("data", "occurrences_full_pruned.csv")) >
-    file.mtime(here("data", "occurrences_species_yearly_mean_doy_pruned.csv"))) {
+    file.mtime(here("data", "species_yearly_mean_doy_raw_based.csv"))) {
     
     run.occ.get <- TRUE
     
@@ -489,10 +515,20 @@ if (file.exists(here("data", "workspace_save.RData")) &
 
 ```
 
+```{r Display meta data}
+
+# display summary of data after pruning
+print(read.csv('data/occurrence_full_pruned_meta.csv'))
+
+# display
+
+```
+
+
 
 ```{r Load data, echo=FALSE}
 # load yearly mean data
-dat.occ <- fread(here("data", "occurrences_species_yearly_mean_doy_pruned.csv")) 
+dat.occ <- fread(here("data", "species_yearly_mean_doy_raw_based.csv")) 
 
 # make sure there are records for a certain fraction of years
 thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
@@ -2185,7 +2221,7 @@ Differences between yearly mean DOYs in an Interaction over time, plotted all in
 
 ```{r Prune decadal Data}
 
-dat.occ.dec <- fread(here("data", "occurrences_species_decadal_mean_doy_pruned.csv"), showProgress = FALSE) %>%
+dat.occ.dec <- fread(here("data", "species_decadal_mean_doy_raw_based.csv"), showProgress = FALSE) %>%
   #exclude records without interaction data
   filter(species %in% dat.int$poll |
            species %in% dat.int$plant) %>%
