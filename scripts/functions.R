@@ -725,7 +725,7 @@ sum_df <- function(df, group_vars) {
                    max = ~max(.x),
                    n.unique = ~n_distinct(.x))
   
-  char_list <- list(n = ~n(),
+  char_list <- list(n = ~length(.x),
                     n.unique = ~n_distinct(.x))
   
   df_sum <- df %>% 
