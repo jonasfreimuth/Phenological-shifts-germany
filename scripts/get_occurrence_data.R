@@ -320,7 +320,16 @@ if (run.pruning |
     ) %>%
     
     #only include records from year.start on
-    filter(year >= year.start & year.stop)
+    filter(year >= year.start & year <= year.stop)
+  
+  ## summarize data set
+  fwrite(sum_df(dat.occ %>%
+                  select(order,
+                         id.grp,
+                         species,
+                         year,
+                         doy), id.grp),
+         "data/occurrences_full_pruned_summary.csv")
   
   
   ## Check how many issues the data has 
@@ -380,12 +389,7 @@ if (run.pruning |
 
 # Calculate yearly species means ------------------------------------------
 
-cat('Calculating yearly average DOYs...')
-
-#calculate species means
-dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
-                      showProgress = FALSE,
-                      select = c("kingdom",
+select_vars <- c("kingdom",
                                  "phylum",
                                  "order",
                                  "family",
@@ -395,7 +399,14 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
                                  "decade",
                                  "year",
                                  "month",
-                                 "doy")) %>%
+                 "doy")
+
+log_msg('Calculating yearly average DOYs...')
+
+#calculate species means
+dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
+                      showProgress = FALSE,
+                      select = select_vars) %>%
   group_by(kingdom, phylum, order, family, genus, id.grp, decade) %>%
   group_by(species, .add = TRUE) %>%
   group_by(year, .add = TRUE) %>%
@@ -418,42 +429,75 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
   #join trait data
   left_join(bioflor_traits, by = "species") %>%
   left_join(fread(here("static_data", "overall_mean_temperature.csv")),
-            by = c("year")) %>%
+            by = c("year"))
+
   #save species yearly mean doy data
-  fwrite(
-    here("data", "occurrences_species_yearly_mean_doy_pruned.csv"),
+fwrite(dat.occ.mean,
+       here("data", "species_yearly_mean_doy_raw_based.csv"),
     showProgress = FALSE,
     na = NA
   )
 
 log_msg('Calculating summary data for raw based yearly data...')
 
+# summarise dataset
+fwrite(sum_df(dat.occ.mean %>% 
+                select(id.grp,
+                       species,
+                       year,
+                       mean.doy,
+                       duration,
+                       n.rec
+                ), id.grp),
+       "data/species_yearly_mean_doy_raw_based_summary.csv")
+
+rm(dat.occ.mean)
+
+log_msg('Done')
+
 # Calculate decadal means -------------------------------------------------
 
-cat('Calculating decadal DOYs')
 
-#load data again and dlete years before decadal cutoff 
-dat.occ.dec <- fread(here("data", "occurrences_full_pruned.csv"),
-                     showProgress = FALSE,
-                     select = c("kingdom",
+tax_groups <- c("kingdom",
                                 "phylum",
                                 "order",
                                 "family",
                                 "genus",
                                 "species",
-                                "id.grp",
-                                "decade",
-                                "year",
-                                "month",
-                                "doy")) %>%
+                "id.grp")
+
+species_vars <- c("AccName", 
+                  "GbifKey", 
+                  "OrigName", 
+                  "bioflor_id", 
+                  "LifeForm", 
+                  "LifeSpan", 
+                  "FlStart", 
+                  "FlEnd", 
+                  "FlDur", 
+                  "ReprType", 
+                  "Dicliny", 
+                  "Dichogamy", 
+                  "SelfComp", 
+                  "PollVec", 
+                  "PollVecGrp", 
+                  "BreedSys", 
+                  "FlowClass", 
+                  "Habitat", 
+                  "PollDep")
+
+decade_vars <- c('species', 'decade')
+
+log_msg('Calculating decadal DOYs from raw occurrences...')
+
+thr.dec <- (dec.stop - dec.start)/10
+
+#load data again and delete years before decadal cutoff 
+dat.occ.dec.raw <- fread(here("data", "occurrences_full_pruned.csv"),
+                         showProgress = FALSE,
+                         select = select_vars) %>%
   #delete years before cutoff
-  filter(year >= dec.start & year <= dec.stop) 
-
-#calculate number of decades in data set
-thr.dec <- length(unique(dat.occ.dec$decade))
-
-# calculate mean and stuff for decades
-dat.occ.dec %>%
+  filter(decade >= dec.start & year <= dec.stop) %>%
   select(-year) %>%
   #drop unnecessary columns
   group_by(kingdom, phylum, order, family, genus, id.grp) %>%
@@ -481,13 +525,88 @@ dat.occ.dec %>%
   ungroup() %>% 
   #join trait data again (lost in averaging)
   left_join(bioflor_traits, by = "species") %>%
+  # join climate data
   left_join(fread(here("static_data",
                        "decadal_mean_temperature.csv")),
-            by = "decade") %>% 
-  fwrite(here("data", "occurrences_species_decadal_mean_doy_pruned.csv"),
+            by = "decade")
+
+fwrite(dat.occ.dec.raw,
+       here("data", "species_decadal_mean_doy_raw_based.csv"),
+       showProgress = FALSE)
+
+# summarise dataset
+fwrite(sum_df(dat.occ.dec.raw %>% 
+                select(id.grp,
+                       species,
+                       decade,
+                       mean.doy,
+                       duration
+                ), id.grp),
+       "data/species_decadal_mean_doy_raw_based_summary.csv")
+
+rm(dat.occ.dec.raw)
+
+log_msg('Done')
+
+
+log_msg('Calculating decadal mean doys from yearly mean doys...')
+
+dat.occ.dec.yearly <- fread('data/species_yearly_mean_doy_raw_based.csv',
+                            # for testing purposes select only first 1000
+                            nrow = 1000) %>% 
+  
+  # use only data within limits
+  filter(decade >= dec.start, decade <= dec.stop) %>% 
+  # use only decades where a species has enough years covered
+  group_by(species) %>% 
+  filter(n_distinct(year) >= thr.dec.year) %>%
+  ungroup %>% 
+  # drop year column
+  select(-year) %>% 
+  
+  # Summarizing 
+  group_by(across(matches(tax_groups) | matches(species_vars) | decade)) %>% 
+  summarise(
+    mean.doy.dec = mean(mean.doy),
+    sd.doy = sd(mean.doy),
+    ci.min.doy = ci.min(mean.doy),
+    ci.max.doy = ci.max(mean.doy),
+    min.mean.doy = min(mean.doy),
+    max.mean.doy = max(mean.doy),
+    median.doy = median(mean.doy),
+    duration.dec = max(max.doy) - min(min.doy),
+    n.year = length(mean.doy),
+    n.rec.dec =  sum(n.rec)
+  ) %>% 
+  ungroup() %>% 
+  
+  # Pruning
+  group_by(species) %>% 
+  # remove species without full decadal coverage
+  filter(n() >= ((dec.stop - dec.start)/10) + 1) %>%
+  # join climate data
+  left_join(fread(here("static_data",
+                       "decadal_mean_temperature.csv")),
+            by = "decade")
+
+fwrite(dat.occ.dec.yearly,
+       here("data", "species_decadal_mean_doy_year_based.csv"),
          showProgress = FALSE)
+
+# summarise dataset
+fwrite(sum_df(dat.occ.dec.yearly %>% 
+                select(id.grp,
+                       species,
+                       decade,
+                       mean.doy.dec,
+                       n.year,
+                       n.rec.dec
+                       ), id.grp),
+       "data/species_decadal_mean_doy_year_based_summary.csv")
+
+rm(dat.occ.dec.yearly)
 
 log_msg('Done.')
 
-cat('Done')
+log_msg('Done with occurrence getting script.')
 
