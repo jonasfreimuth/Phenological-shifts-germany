@@ -14,7 +14,7 @@ dir.check(here("data"))
 # if not run script for obtaining it
 if ( !(file.exists(here("static_data", "bioflor_traits.csv")))) {
   
-  cat('Plant trait data not found, running download script.')
+  log_msg('Plant trait data not found, running download script.')
   
   source(here("scripts", "get_bioflor_traits.R"))
   
@@ -32,7 +32,7 @@ bioflor_traits <- fread(here("static_data", "bioflor_traits.csv"),
 if (!(file.exists(here("static_data", "overall_mean_temperature.csv")) &
       file.exists(here("static_data", "overall_mean_temperature.csv")))) {
   
-  cat('Climate data not found, running download script.')
+  log_msg('Climate data not found, running download script.')
   
   source(here("scripts", "get_german_climate_data.R"))
   
@@ -71,7 +71,7 @@ if(all(files_exist)) {
       file.mtime(here("data", "occurrences_full.csv")) &
       all(key_in)) {
     
-    cat('Downloads are older than occurrence file, running refinement is not',
+    log_msg('Downloads are older than occurrence file, running refinement is not',
         'necessary if not forced.')
     
     # since the file for gbif requests is older, we're up to date with the occurrences
@@ -82,7 +82,7 @@ if(all(files_exist)) {
     
   } else {
     
-    cat('Either downloads are not older than occurrence file or not all',
+    log_msg('Either downloads are not older than occurrence file or not all',
     'downloads ran, refinement will be run.')
     
     # the occurrence dataset is older
@@ -95,7 +95,7 @@ if(all(files_exist)) {
   
 } else {
   
-  cat('Files', paste(files_to_check[!files_exist], collapse = ', '),
+  log_msg('Files', paste(files_to_check[!files_exist], collapse = ', '),
                'do not exist, running occurrence refining.')
   
   # there is no file
@@ -125,18 +125,18 @@ if (run.occ.refine) {
   
   #start for loop for each key
   for (k in keys) {
-    cat('Running refinement for key', k, )
+    log_msg('Running refinement for key', k, )
     # check if we already have an extracted occurrence file
     # if not then download + extract + delete zip
     if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
-      cat('Occurrence txt file for key', k, 'not found.')
+      log_msg('Occurrence txt file for key', k, 'not found.')
     # if (TRUE) {
       # retrieve compiled dataset, if  the zip is not already in the downloads
       # folder
       if (! file.exists(paste0('download/', k, '.zip'))) {
         dl_link <- occ_download_meta(k)[["downloadLink"]]
         
-        cat('Zipped occurrence download not on disk, downloading.',
+        log_msg('Zipped occurrence download not on disk, downloading.',
             '\nIf download takes to long, manually download zip file from',
             dl_link, ', place in /download and run script again.')
         
@@ -149,7 +149,7 @@ if (run.occ.refine) {
         
       }
       
-      cat('Extracting occurrence txt file...')
+      log_msg('Extracting occurrence txt file...')
       
       # extract occurrence.txt
       unzip(here("download", paste0(k, ".zip")),
@@ -169,7 +169,7 @@ if (run.occ.refine) {
       
     }
     
-    cat('Extracting occurrence records...')
+    log_msg('Extracting occurrence records...')
     
     #read extracted occurrence.txt
     exp <- fread(here("download", paste0("occurrence_", k, ".txt")),
@@ -205,7 +205,7 @@ if (run.occ.refine) {
       
     }
     
-    cat('Appending occurrences to full csv...')
+    log_msg('Appending occurrences to full csv...')
     
     
     #Save data as csv
@@ -228,7 +228,7 @@ if (run.occ.refine) {
     writeLines(paste(k, Sys.time(), sep = '\t'), dl_ran)
     close(dl_ran)
     
-    cat('Done with this dataset.')
+    log_msg('Done with this dataset.')
   }
   
   # remove unneeded objects
@@ -261,14 +261,14 @@ if (file.exists(here("data", "occurrences_full_pruned.csv"))) {
   if(file.mtime(here("data", "occurrences_full_refined.csv")) >
      file.mtime(here("data", "occurrences_full_pruned.csv")) ) {
     
-    cat('Refined occurrences are not older than pruned occurrences, running
+    log_msg('Refined occurrences are not older than pruned occurrences, running
         pruning.')
     
     run.pruning <- TRUE
     
   } else {
     
-    cat('Refined occurrences are older than pruned occurrences,',
+    log_msg('Refined occurrences are older than pruned occurrences,',
         'skipping pruning if not forced.')
     
     run.pruning <- FALSE
@@ -277,7 +277,7 @@ if (file.exists(here("data", "occurrences_full_pruned.csv"))) {
   
 } else {
   
-  cat('File of pruned occurrences not found, running pruning.')
+  log_msg('File of pruned occurrences not found, running pruning.')
   
   run.pruning <- TRUE
   
@@ -290,7 +290,7 @@ if (run.pruning |
   # load occurrence data
   if (!(exists("dat.occ"))) {
     
-    cat('Pruning...')
+    log_msg('Pruning...')
     
     #load full dataset
     dat.occ <- fread(here("data", "occurrences_full_refined.csv"),
@@ -373,7 +373,7 @@ if (run.pruning |
   #remove dat.occ again for memory reasons
   rm(dat.occ)
   
-  cat('Done pruning.')
+  log_msg('Done pruning.')
   
 }
 
@@ -426,7 +426,7 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
     na = NA
   )
 
-cat('Done')
+log_msg('Calculating summary data for raw based yearly data...')
 
 # Calculate decadal means -------------------------------------------------
 
@@ -487,7 +487,7 @@ dat.occ.dec %>%
   fwrite(here("data", "occurrences_species_decadal_mean_doy_pruned.csv"),
          showProgress = FALSE)
 
-rm(dat.occ.dec)
+log_msg('Done.')
 
 cat('Done')
 
