@@ -390,15 +390,15 @@ if (run.pruning |
 # Calculate yearly species means ------------------------------------------
 
 select_vars <- c("kingdom",
-                                 "phylum",
-                                 "order",
-                                 "family",
-                                 "genus",
-                                 "species",
-                                 "id.grp",
-                                 "decade",
-                                 "year",
-                                 "month",
+                 "phylum",
+                 "order",
+                 "family",
+                 "genus",
+                 "species",
+                 "id.grp",
+                 "decade",
+                 "year",
+                 "month",
                  "doy")
 
 log_msg('Calculating yearly average DOYs...')
