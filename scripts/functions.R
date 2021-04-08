@@ -1,7 +1,7 @@
 # functions to be loaded from main script
 
 
-# Main script funcitons ---------------------------------------------------
+# Main script functions ---------------------------------------------------
 
 #define function for species plotting
 specplot <-  function(data, spec) {

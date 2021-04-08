@@ -314,7 +314,7 @@ save.image('data/curr_environment.RData')
 
 ```
 
-```{r get occurrence data, echo=FALSE}
+```{r get occurrence data, include=FALSE}
 # check if running the script is actually necessary
 # this is the case when:
 # - it hasn't run before (output files are not present)
@@ -1789,7 +1789,7 @@ cor.tests <-
     stat.grp <- filter(data, id.grp == x)
     
     # make sure data has enough observations for cor.test
-    if (nrow(stat.grp) > 1) {
+    if (nrow(stat.grp) > 2) {
       test <- cor.test(stat.grp$time.slope, stat.grp$temp.slope)
       
       res <- data.frame(
@@ -2229,7 +2229,8 @@ Differences between yearly mean DOYs in an Interaction over time, plotted all in
 
 ```{r Prune decadal Data}
 
-dat.occ.dec <- fread(here("data", "species_decadal_mean_doy_raw_based.csv"), showProgress = FALSE) %>%
+dat.occ.dec <- fread(here("data", "species_decadal_mean_doy_raw_based.csv"),
+                     showProgress = FALSE) %>%
   #exclude records without interaction data
   filter(species %in% dat.int$poll |
            species %in% dat.int$plant) %>%
@@ -2241,7 +2242,7 @@ thr.dec <- round((max(dat.occ.dec$decade) - min(dat.occ.dec$decade))/10)+1
 
 ```
 
-Looking at indidivual species reactions over the decades:
+Looking at individual species reactions over the decades:
 
 ```{r Plots, echo=FALSE}
 
