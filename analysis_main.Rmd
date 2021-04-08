@@ -318,6 +318,35 @@ save.image('data/curr_environment.RData')
 
 ```
 
+```{r control climate and plant trait data scripts}
+
+# Climate data --------------------------------------------
+
+if (all(file.exists('static_data/overall_mean_temperature.csv',
+                    'static_data/decadal_mean_temperature.csv'))) {
+  run.clim.get <- FALSE
+} else {
+  run.clim.get <- TRUE
+}
+
+if (run.clim.get | force.clim.get) {
+  source('scripts/get_german_climate_data.R')
+}
+
+# Plant trait data ----------------------------------------
+
+if (file.exists('static_data/bioflor_traits.csv')) {
+  run.traits.get <- FALSE
+} else {
+  run.traits.get <- TRUE
+}
+
+if (run.traits.get | force.traits.get) {
+  source('scripts/get_german_climate_data.R')
+}
+
+```
+
 ```{r get occurrence data, include=FALSE}
 # check if running the script is actually necessary
 # this is the case when:
@@ -381,35 +410,74 @@ if(run.occ.get |
 
 ```
 
-```{r control climate and plant trait data scripts}
+```{r Display meta data, echo=FALSE}
 
-# Climate data --------------------------------------------
+# display summary of data after pruning
+print(fread("data/occurrence_full_pruned_meta.csv"))
+print(fread("data/occurrences_full_pruned_summary.csv"))
 
-if (all(file.exists('static_data/overall_mean_temperature.csv',
-                    'static_data/decadal_mean_temperature.csv'))) {
-  run.clim.get <- FALSE
-} else {
-  run.clim.get <- TRUE
-}
+# display summary of average yearly data
+print(fread("data/species_yearly_mean_doy_raw_based_summary.csv"))
 
-if (run.clim.get | force.clim.get) {
-  source('scripts/get_german_climate_data.R')
-}
+# summary of raw occurrence data based decadal data
+print(fread("data/species_decadal_mean_doy_raw_based_summary.csv"))
 
-# Plant trait data ----------------------------------------
-
-if (file.exists('static_data/bioflor_traits.csv')) {
-  run.traits.get <- FALSE
-} else {
-  run.traits.get <- TRUE
-}
-
-if (run.traits.get | force.traits.get) {
-  source('scripts/get_german_climate_data.R')
-}
+# summary of yearly mean based decadal data
+print(fread("data/species_decadal_mean_doy_year_based_summary.csv"))
 
 ```
 
+```{r Plot meta data, echo=FALSE}
+# pruned data
+ggplot(fread("data/occurrences_full_pruned_summary.csv"),
+       aes(x = id.grp, y = species.n.unique, fill = id.grp)) +
+  geom_col() + 
+  # scale_y_log10() +
+  labs(title = "Pruned data",
+       subtitle = "# species across groups",
+       x = "Group",
+       y = "# of species",
+       fill = "Group") +
+  theme_minimal()
+
+
+# yearly mean data
+ggplot(fread("data/species_yearly_mean_doy_raw_based_summary.csv"),
+       aes(x = id.grp, y = species.n.unique, fill = id.grp)) +
+  geom_col() + 
+  # scale_y_log10() +
+  labs(title = "Yearly mean data",
+       subtitle = "# species across groups",
+       x = "Group",
+       y = "# of species",
+       fill = "Group") +
+  theme_minimal()
+
+# decadal mean data, raw based
+ggplot(fread("data/species_decadal_mean_doy_raw_based_summary.csv"),
+       aes(x = id.grp, y = species.n.unique, fill = id.grp)) +
+  geom_col() + 
+  # scale_y_log10() +
+  labs(title = "Raw based decadal mean data",
+       subtitle = "# species across groups",
+       x = "Group",
+       y = "# of species",
+       fill = "Group") +
+  theme_minimal()
+
+# yearly mean data
+ggplot(fread("data/species_decadal_mean_doy_year_based_summary.csv"),
+       aes(x = id.grp, y = species.n.unique, fill = id.grp)) +
+  geom_col() + 
+  # scale_y_log10() +
+  labs(title = "Yearly based decadal mean data",
+       subtitle = "# species across groups",
+       x = "Group",
+       y = "# of species",
+       fill = "Group") +
+  theme_minimal()
+
+```
 
 
 ```{r control running of the rest}
@@ -518,24 +586,6 @@ if (file.exists(here("data", "workspace_save.RData")) &
 }
 
 ```
-
-```{r Display meta data}
-
-# display summary of data after pruning
-print(fread("data/occurrence_full_pruned_meta.csv"))
-print(fread("data/"))
-
-# display summary of average yearly data
-print(fread("data/species_yearly_mean_doy_raw_based_summary.csv"))
-
-# summary of raw occurrence data based decadal data
-print(fread("data/species_decadal_mean_doy_raw_based_summary.csv"))
-
-# summary of yearly mean based decadal data
-print(fread("data/species_decadal_mean_doy_year_based_summary.csv"))
-
-```
-
 
 
 ```{r Load data, echo=FALSE}
