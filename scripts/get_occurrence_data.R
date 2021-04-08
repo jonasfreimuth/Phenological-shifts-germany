@@ -551,12 +551,10 @@ log_msg('Done')
 
 log_msg('Calculating decadal mean doys from yearly mean doys...')
 
-dat.occ.dec.yearly <- fread('data/species_yearly_mean_doy_raw_based.csv',
-                            # for testing purposes select only first 1000
-                            nrow = 1000) %>% 
+dat.occ.dec.yearly <- fread('data/species_yearly_mean_doy_raw_based.csv') %>% 
   
   # use only data within limits
-  filter(decade >= dec.start, decade <= dec.stop) %>% 
+  filter(decade >= dec.year.start, decade <= dec.year.stop) %>% 
   # use only decades where a species has enough years covered
   group_by(species) %>% 
   filter(n_distinct(year) >= thr.dec.year) %>%
@@ -582,8 +580,8 @@ dat.occ.dec.yearly <- fread('data/species_yearly_mean_doy_raw_based.csv',
   
   # Pruning
   group_by(species) %>% 
-  # remove species without full decadal coverage
-  filter(n() >= ((dec.stop - dec.start)/10) + 1) %>%
+  # remove species without percentage of full decadal coverage
+  filter(n() >= (((dec.year.stop - dec.year.start)/10) + 1)) %>%
   # join climate data
   left_join(fread(here("static_data",
                        "decadal_mean_temperature.csv")),

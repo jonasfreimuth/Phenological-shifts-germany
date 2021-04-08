@@ -56,6 +56,10 @@ year.stop <- 2019
 dec.start <- 1960
 dec.stop <- 2010
 
+# for dec computation on yearly basis
+dec.year.start <- 1970
+dec.year.stop <- dec.stop
+
 # #set max months of flowering threshold (redo pruning after changing)
 # thr.FlDur <- 12
 
