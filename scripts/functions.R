@@ -716,6 +716,42 @@ int_plot_dec <- function(data = dat.i, x,
 }
 
 
+# function for summarizing data frames containing grouped data
+sum_df <- function(df, group_vars) {
+  
+  num_list <- list(mean = ~mean(.x),
+                   median = ~median(.x),
+                   min = ~min(.x),
+                   max = ~max(.x),
+                   n.unique = ~n_distinct(.x))
+  
+  char_list <- list(n = ~n(),
+                    n.unique = ~n_distinct(.x))
+  
+  df_sum <- df %>% 
+    ungroup() %>% 
+    mutate(across(where(is.factor), as.character)) %>% 
+    group_by({{group_vars}}) %>% 
+    summarise(tibble(
+      across(where(is.character), char_list,
+             .names = '{.col}.{.fn}'
+             ),
+      across(where(is.numeric), num_list,
+             .names = '{.col}.{.fn}'
+             )
+             )
+      ) %>% 
+    ungroup()
+  
+  return(df_sum)
+}
+
+# function for printing a log message starting with date and time
+log_msg <- function(...) {
+  print(paste(toString(format(Sys.time())), ...))
+}
+
+
 # Plot script functions ---------------------------------------------------
 
 

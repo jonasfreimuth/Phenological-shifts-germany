@@ -518,9 +518,17 @@ if (file.exists(here("data", "workspace_save.RData")) &
 ```{r Display meta data}
 
 # display summary of data after pruning
-print(read.csv('data/occurrence_full_pruned_meta.csv'))
+print(fread("data/occurrence_full_pruned_meta.csv"))
+print(fread("data/"))
 
-# display
+# display summary of average yearly data
+print(fread("data/species_yearly_mean_doy_raw_based_summary.csv"))
+
+# summary of raw occurrence data based decadal data
+print(fread("data/species_decadal_mean_doy_raw_based_summary.csv"))
+
+# summary of yearly mean based decadal data
+print(fread("data/species_decadal_mean_doy_year_based_summary.csv"))
 
 ```
 
