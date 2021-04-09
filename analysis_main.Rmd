@@ -88,7 +88,7 @@ dec.year.stop <- dec.stop
 #                   all Butterfly species (to estimate the degree of
 #                   multivoltism)
 # - species: plots yearly mean doys and regression for each species
-opts <- c('full')
+opts <- c('base')
 
 # this vector is used to check whether options are valid
 val_opts <- c('full',
@@ -111,19 +111,6 @@ if (!all(opts_are_val)) {
                 'Please check whether they are spelled correctly'))
 }
 
-# ## Save options -------------------------------------------
-# 
-# params <- list("thr.spec" = thr.spec,
-#                "thr.perc" = thr.perc,
-#                "thr.dec.rec" = thr.dec.rec,
-#                "thr.2k.max" = thr.2k.max,
-#                "thr.2k.min" = thr.2k.min,
-#                "year.start" = year.start,
-#                "year.stop" = year.stop,
-#                "dec.start" = dec.stop,
-#                "opts" = opts
-#                )
-
 ## Control options ----------------------------------------
 
 ### General -----------------------------------------------
@@ -137,7 +124,7 @@ force.pruning <- FALSE
 
 # force calculation of mean doys? (better to only set it to FALSE if you're 
 # really impatient)
-force.averaging <- TRUE
+force.averaging <- FALSE
 
 # keep raw occurrence files from download? 
 # enabling this will retain the huge files downloaded from gbif containing 
@@ -319,7 +306,7 @@ save.image('data/curr_environment.RData')
 
 ```
 
-```{r control climate and plant trait data scripts}
+```{r Ensure additional data is present}
 
 # Climate data --------------------------------------------
 
@@ -3718,7 +3705,7 @@ analyse.trait(data = mutate(dat.occ.plant,
 
 ```{r Run Plot saving Script}
 
-#run script to save plots with different graphic parameters for publication
+# run script to save plots with different graphic parameters for publication
 source(here("scripts", "plot_results.R"))
 
 if (any(c("full", "all.spec") %in% opts)){
