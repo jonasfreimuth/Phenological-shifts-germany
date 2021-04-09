@@ -298,6 +298,68 @@ if (run.pruning |
     
   }
   
+  # check whether finding indices of records outside germany is necessary
+  if (file.exists("data/indices_in_region.csv")) { 
+    if(file.mtime("data/indices_in_region.csv") > 
+       file.mtime("data/occurrences_full_refined.csv")) {
+      
+      # everything in order, don't run that part
+      run.idcs.germany <- FALSE
+      
+    } else {
+      
+      # indices possibly out of date, redo index getting
+      run.idcs.germany <- TRUE
+      
+    }
+    
+  } else {
+    
+    # no index data available, run index getting
+    run.idcs.germany <- TRUE
+    
+  }
+  
+  
+  if (run.idcs.germany) {
+    
+    
+    log_msg("Identifying records outside Germany...")
+    
+    ## Get indices of records not within the german borders
+    
+    germany <- germany <- raster::getData("GADM", country = "DEU", level = 1, 
+                                          path = "data")
+    
+    # extract only polygons from Spatial Polygons data frame
+    germany_pol <- SpatialPolygons(germany@polygons,
+                                   proj4string = germany@proj4string)
+    rm(germany)
+    
+    # extract spatial points from data
+    # WARNING:  this assumes that the GBIF data shares the projection of the 
+    #           polygonal data used
+    dat.occ.sp <- SpatialPoints(coords = as.matrix(dat.occ %>% 
+                                                     drop_na(decimalLatitude) %>% 
+                                                     select(decimalLongitude, 
+                                                            decimalLatitude)),
+                                proj4string = germany_pol@proj4string)
+    
+    # get logical vector of whether a given record is within one of the polygons
+    in_region <- !is.na(over(dat.occ.sp, germany_pol)) 
+    
+    log_msg("Done.")
+    
+    # save vector as it is time intensive to calculate
+    fwrite(list(in_region), "data/indices_in_region.csv")
+    
+  } else {
+    
+    in_region <- fread("data/indices_in_region.csv")
+    
+  }
+  
+  
   # load names of institutions to be excluded due to data bias or exceedingly
   # high content of suspicious occurrence records.
   # identified via source(here("scripts", "plot_occurrence_distribution.R"))
@@ -307,7 +369,14 @@ if (run.pruning |
   
   ## Cleanup 
   
+  log_msg("Cleanup...")
+  
   dat.occ <- dat.occ %>% 
+    
+    # exclude non - georeferenced and records outside germany
+    drop_na(decimalLatitude) %>% 
+    filter(in_region) %>%
+    
     #remove records without determined species
     filter(species != "") %>%
     
@@ -322,6 +391,12 @@ if (run.pruning |
     #only include records from year.start on
     filter(year >= year.start & year <= year.stop)
   
+  rm(in_region)
+  
+  log_msg("Done.")
+  
+  log_msg("Saving additional info...")
+  
   ## summarize data set
   fwrite(sum_df(dat.occ %>%
                   select(order,
@@ -330,7 +405,6 @@ if (run.pruning |
                          year,
                          doy), id.grp),
          "data/occurrences_full_pruned_summary.csv")
-  
   
   ## Check how many issues the data has 
   
@@ -375,6 +449,7 @@ if (run.pruning |
     nRow = nrow(dat.occ),
     nPlants = as.numeric(count(dat.occ, kingdom)[2,2]),
     nInsects = as.numeric(count(dat.occ, kingdom)[1,2]),
+    # should always be 1 now, kept for compatability reasons
     fracGeoref = sum(!is.na(dat.occ$decimalLatitude))/nrow(dat.occ)
   ) %>%
     fwrite(here("data", "occurrence_full_pruned_meta.csv"))

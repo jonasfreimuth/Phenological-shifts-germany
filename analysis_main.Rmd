@@ -15,14 +15,15 @@ options(dplyr.summarise.inform = FALSE,
 #load libraries
 library("here")
 library("beepr")
+library("data.table")
 library("cowplot")
 library("magick")
 library("lme4")
 library("lmerTest")
-library("rlang")
-library("rgbif")
 library("multcompView")
-library("data.table")
+library("rgbif")
+library("raster")
+library("rlang")
 library("tidyverse")
 
 

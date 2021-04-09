@@ -20,23 +20,28 @@ col.group = c("Coleoptera" = "chartreuse",
 
 # Load and prune data -----------------------------------------------------
 
-# pruning should go like in get_occurrence_data.R but is done extra here to preserve
-# institutions which get taken out there
+# pruning should go like in get_occurrence_data.R but is done extra here 
+# to preserve institutions which get taken out there
+
+# load indices of records to be excluded
+in_region <- fread("data/indices_in_region.csv")
 
 #load data
 dat.occ.full <- fread(
-  here("data", "occurrences_full_refined.csv")) %>% 
+  here("data", "occurrences_full_refined.csv")) %>%
+  
+  # exclude non - georeferenced and records outside germany
+  # this has to happen at the end, else the number of rows does not match
+  drop_na(decimalLatitude) %>% 
+  filter(in_region) %>% 
   
   #remove records without determined species
   filter(species != "") %>%
   
-  # #exclude the current year from further analysis
-  # filter(year != as.integer(substr(
-  #   Sys.Date(), start = 1, stop = 4
-  # ))) %>%
-  # #exclude first and last days
-  # filter(doy != 1, doy != 366, doy != 365)
+  #exclude first and last days
+  filter(doy != 1, doy != 366, doy != 365) %>% 
   
+  #only include records from year.start on
   filter(year >= year.start & year <= year.stop)
 
 
@@ -45,11 +50,10 @@ dat.occ.full <- fread(
 if (any(c("additional") %in% opts)) {
   
   # get german shapefile for plotting
-  germany <- raster::getData("GADM", country = "DEU", level = 1)
+  germany <- raster::getData("GADM", country = "DEU", level = 1, 
+                             path = "data")
   
-  for (ins in unique(filter(dat.occ.full,
-                            !is.na(decimalLatitude) &
-                            !is.na(decimalLongitude))$institutionCode)) {
+  for (ins in unique(dat.occ.full$institutionCode)) {
     
     # plot spatial distribution and save plot
     png(here("plots/additional",
@@ -62,20 +66,13 @@ if (any(c("additional") %in% opts)) {
         geom_polygon(data = germany,
                      aes(x = long, y = lat, group = group)) + 
         # only plot points from the current institution
-        # only plot points with coordinates (Duh)
-        geom_point(data = filter(dat.occ.full, institutionCode == ins &
-                                   !is.na(decimalLatitude) &
-                                   !is.na(decimalLongitude)),
-                   aes(x=decimalLongitude, y = decimalLatitude, col = id.grp),
+        geom_point(data = filter(dat.occ.full, institutionCode == ins),
+                   aes(x = decimalLongitude, y = decimalLatitude, col = id.grp),
                    alpha = .3,
                    size = 3) + 
         labs(x = "Longitude", y = "Latitude",
              title = ins) +
-        # dont plot the few records far outside the boundaries 
-        # (those are just very few)
-        coord_fixed(ratio = 1.3,
-                    ylim = c(47.27015165787987, 55.05835230401308),
-                    xlim = c(5.8663129806518555, 15.041742324829102)) +
+        coord_fixed(ratio = 1.3) +
         scale_color_manual(name = "Group",
                            values = col.group) +
         theme(
@@ -111,18 +108,12 @@ if (any(c("additional") %in% opts)) {
     ggplot() +
       geom_polygon(data = germany,
                    aes(x = long, y = lat, group = group)) + 
-      # only plot points with coordinates (Duh)
-      geom_point(data = filter(dat.occ.full,
-                               !is.na(decimalLatitude) &
-                                 !is.na(decimalLongitude)),
-                 aes(x=decimalLongitude, y = decimalLatitude, col = id.grp),
+      geom_point(data = dat.occ.full,
+                 aes(x = decimalLongitude, y = decimalLatitude, col = id.grp),
                  alpha = .3,
                  size = 3) + 
       labs(x = "Longitude", y = "Latitude") +
-      # dont plot the few records far outside the boundaries (those are just very few)
-      coord_fixed(ratio = 1.3,
-                  ylim = c(47.27015165787987, 55.05835230401308),
-                  xlim = c(5.8663129806518555, 15.041742324829102)) +
+      coord_fixed(ratio = 1.3) +
       scale_color_manual(name = "Group",
                          values = col.group) +
       facet_wrap(~institutionCode) +
@@ -154,14 +145,12 @@ if (any(c("additional") %in% opts)) {
     
     # make df with all records up to that decade
     dat.occ.full.dec <- dat.occ.full %>% 
-      filter(decade <= dec) %>% 
-      # exclude records without coordinates
-      filter(!is.na(decimalLatitude) &
-               !is.na(decimalLongitude))
+      filter(decade <= dec)
     
     # plot that onto germany
     png(here("plots/additional",
-             paste("occurrences_doy_distribution_decadal_", dec, ".png", sep = "")),
+             paste("occurrences_doy_distribution_decadal_",
+                   dec, ".png", sep = "")),
         width = 1500, height = 1000)
     
     print(
@@ -169,15 +158,12 @@ if (any(c("additional") %in% opts)) {
         geom_polygon(data = germany,
                      aes(x = long, y = lat, group = group)) + 
         geom_point(data = dat.occ.full.dec,
-                   aes(x = decimalLongitude, y = decimalLatitude, col = institutionCode),
+                   aes(x = decimalLongitude,
+                       y = decimalLatitude, col = institutionCode),
                    alpha = .3,
                    size = 3) + 
         labs(x = "Longitude", y = "Latitude",
              title = paste("Cumulative occurrences up to decade of", dec)) +
-        # dont plot the few records far outside the boundaries (those are just very few)
-        coord_fixed(ratio = 1.3,
-                    ylim = c(47.27015165787987, 55.05835230401308),
-                    xlim = c(5.8663129806518555, 15.041742324829102)) +
         theme(
           plot.title = element_text(size = 40),
           plot.subtitle = element_text(size = 35),
@@ -185,7 +171,7 @@ if (any(c("additional") %in% opts)) {
           axis.text = element_blank(),
           axis.ticks = element_blank(),
           axis.line = element_blank(),
-          legend.position = "bottom",
+          legend.position = "none",
           legend.title = element_text(size = 40),
           legend.text = element_text(size = 35),
           panel.background = element_blank(),
@@ -326,55 +312,60 @@ if (any(c("additional") %in% opts)) {
   dev.off()
   
   
-  # Plot species doy distributions ------------------------------------------
+  # # Plot species doy distributions ------------------------------------------
+  # 
+  # # somewhat WIP but Butterflies were the main interest anyway
+  # 
+  # dir.check("plots/additional/species_doy_dist")
+  # 
+  # # Butterfly species
+  # # I tried lapply instead of the common for loop here 
+  # # in the hopes that it might be faster but i haven't 
+  # # actually checked whether actually it is. Also 
+  # # invisible is necessary to not show a list of "null device" from dev.off()
+  # invisible(
+  #   lapply(unique(filter(dat.occ.full, order == "Lepidoptera")$species),
+  #          function(x) {
+  #            
+  #            png(here("plots/additional/species_doy_dist",
+  #                     str_glue("doy_dist_Lep_{str_replace(x, ' ', '_')}.png")),
+  #                height = 1000, width = 1500)
+  #            
+  #            print(
+  #              ggplot(filter(dat.occ.full, species == x),
+  #                     aes(doy)) + 
+  #                geom_bar() +
+  #                xlim(c(min(dat.occ.full$doy), max(dat.occ.full$doy))) +
+  #                theme(
+  #                  plot.title = element_text(size = 40),
+  #                  plot.subtitle = element_text(size = 35),
+  #                  axis.title = element_text(size = 40),
+  #                  axis.text = element_text(size = 30),
+  #                  axis.ticks = element_line(colour = "gray31", size = 1.2),
+  #                  axis.ticks.length.x.bottom = unit(8, "bigpts"),
+  #                  axis.line = element_line(colour = "gray31", size = 1.2),
+  #                  legend.position = "bottom",
+  #                  legend.title = element_text(size = 40),
+  #                  legend.text = element_text(size = 35),
+  #                  panel.background = element_blank(),
+  #                  panel.spacing = unit(32, "bigpts"),
+  #                  strip.background = element_blank(),
+  #                  strip.text = element_text(size = 30) )
+  #            )
+  #            dev.off()
+  #          }
+  #   )
+  # )
   
-  # somewhat WIP but Butterflies were the main interest anyway
-  
-  dir.check("plots/additional/species_doy_dist")
-  
-  # Butterfly species
-  # I tried lapply instead of the common for loop here 
-  # in the hopes that it might be faster but i haven't 
-  # actually checked whether actually it is. Also 
-  # invisible is necessary to not show a list of "null device" from dev.off()
-  invisible(
-    lapply(unique(filter(dat.occ.full, order == "Lepidoptera")$species),
-           function(x) {
-             
-             png(here("plots/additional/species_doy_dist",
-                      str_glue("doy_dist_Lep_{str_replace(x, ' ', '_')}.png")),
-                 height = 1000, width = 1500)
-             
-             print(
-               ggplot(filter(dat.occ.full, species == x),
-                      aes(doy)) + 
-                 geom_bar() +
-                 xlim(c(min(dat.occ.full$doy), max(dat.occ.full$doy))) +
-                 theme(
-                   plot.title = element_text(size = 40),
-                   plot.subtitle = element_text(size = 35),
-                   axis.title = element_text(size = 40),
-                   axis.text = element_text(size = 30),
-                   axis.ticks = element_line(colour = "gray31", size = 1.2),
-                   axis.ticks.length.x.bottom = unit(8, "bigpts"),
-                   axis.line = element_line(colour = "gray31", size = 1.2),
-                   legend.position = "bottom",
-                   legend.title = element_text(size = 40),
-                   legend.text = element_text(size = 35),
-                   panel.background = element_blank(),
-                   panel.spacing = unit(32, "bigpts"),
-                   strip.background = element_blank(),
-                   strip.text = element_text(size = 30) )
-             )
-             dev.off()
-           }
-    )
-  )
+  rm(dat.occ.full, dat.occ.full.dec, dat.n.rec, in_region)
 }
+
 # DOY distributions -------------------------------------------------------
 
 
 if (any(c("data.quality.assessment") %in% opts)) {
+  
+  dat.occ.full <- fread("data/occurrences_full_refined.csv")
   
   dir.check(here("plots/doy_distribution"))
   
