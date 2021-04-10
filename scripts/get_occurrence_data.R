@@ -360,13 +360,6 @@ if (run.pruning |
   }
   
   
-  # load names of institutions to be excluded due to data bias or exceedingly
-  # high content of suspicious occurrence records.
-  # identified via source(here("scripts", "plot_occurrence_distribution.R"))
-  # plots are located in plots/additional. To view the script in RStudio use
-  # file.edit(here("scripts", "plot_occurrence_distribution.R"))
-  excl.inst <- readLines('static_data/excluded_institutions.txt')
-  
   ## Cleanup 
   
   log_msg("Cleanup...")
@@ -385,7 +378,31 @@ if (run.pruning |
     
     #exclude collections
     filter(
-      !(institutionCode %in% excl.inst)
+      !(
+        # exclude spikes from colection GEO (GEO - Tag der Artenvielfalt),
+        # a german bioblitz event
+        (institutionCode == "GEO" & doy %in% c(163, 164, 166)) |
+          
+        # the data set of higher plants in Mecklenburg - Vorpommern from
+        # the Ernst-Moritz-Arndt-University Greifswald
+          (institutionCode == "EMAU" & 
+            collectionCode == "Floristic Databases MV - Higher Plants" &
+            doy == 163) |
+          
+        # records without institution and collection on those days
+        (institutionCode == "" & collectionCode == ""  &
+            doy %in% c(73, 95, 121)) |
+          
+        # suspicous naturgucker data from 2018 & 2019 concerning only 
+        # Diptera and Hymenoptera on those days. The cause could not be 
+        # determined by a rudimentary analysis
+        (id.grp %in% c("Hymenoptera", "Diptera") &
+           institutionCode == "naturgucker" &
+           year %in% c(2018, 2019) &
+           doy %in% c(216, 160, 224, 153, 161, 217, 154, 223, 215, 152, 156,
+                      158, 220, 159, 155, 218, 157, 222, 221, 219, 214, 151))
+          
+      )
     ) %>%
     
     #only include records from year.start on
