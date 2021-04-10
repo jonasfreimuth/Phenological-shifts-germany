@@ -164,6 +164,7 @@ if (any(c("additional") %in% opts)) {
                    size = 3) + 
         labs(x = "Longitude", y = "Latitude",
              title = paste("Cumulative occurrences up to decade of", dec)) +
+        coord_fixed(ratio = 1.3) +
         theme(
           plot.title = element_text(size = 40),
           plot.subtitle = element_text(size = 35),
@@ -418,6 +419,3 @@ if (any(c("data.quality.assessment") %in% opts)) {
 # Cleanup -----------------------------------------------------------------
 
 rm(dat.occ.full)
-
-beep()
-
