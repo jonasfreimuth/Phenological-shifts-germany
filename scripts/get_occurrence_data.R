@@ -504,11 +504,14 @@ log_msg('Calculating yearly average DOYs...')
 dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
                       showProgress = FALSE,
                       select = select_vars) %>%
+  
   group_by(kingdom, phylum, order, family, genus, id.grp, decade) %>%
   group_by(species, .add = TRUE) %>%
   group_by(year, .add = TRUE) %>%
+  
   # filter out years with insufficient number of records
   filter(n() >= thr.spec) %>%
+  
   summarise(
     mean.doy = mean(doy),
     sd.doy = sd(doy),

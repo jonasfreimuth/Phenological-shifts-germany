@@ -627,7 +627,8 @@ p.temp <- ggplot(dat.temp) +
   labs(x = "Year", y = "Yearly mean temperature [\u00B0C]",
        title = "Yearly mean air temperature\n of Germany over time") +
   scale_color_gradient(low = "#2F5496", high = "#FF0000") +
-  geom_text(aes(x = 1985, y = 10), label = paste0("r =  ", round(cor.temp[["estimate"]], 2)),
+  geom_text(aes(x = 1985, y = 10),
+            label = paste0("r =  ", round(cor.temp[["estimate"]], 2)),
             col = "gray38") +
   theme_minimal() +
   theme(legend.position = "none")
@@ -665,11 +666,11 @@ stat.ord.temp.polls <- slopes(dat.occ.poll, mean.doy ~ y_mean_temp, order)
 ```
 
 
-Plot relatioships of Plants and Pollinators occurences:  
+Plot relationships of Plants and Pollinators occurrences:  
 
 ```{r Plot group shifts}
 
-# generate lm results for groups to get significances of slopes
+# generate lm results for groups to get significance of slopes
 lm.res.plapoll.time <- lm.sum(dat.occ, id.grp, mean.doy ~ year) %>%
   mutate(breaks = cut(pval, breaks = c(0, 0.05, 1),
                       labels = c("p < 0.05", "p > 0.05"),
@@ -679,13 +680,14 @@ lm.res.plapoll.temp <- lm.sum(dat.occ, id.grp, mean.doy ~ y_mean_temp) %>%
                       labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE))
 
-#plot trends of collection day in realtion to year by group
+#plot trends of collection day in relation to year by group
 ggplot() +
   geom_point(data = dat.occ,
              aes(x = year, y = mean.doy,
                  col = id.grp, alpha = n.rec), 
              size = 1.5) +
-  geom_abline(aes(intercept = intercept, slope = slope, lty = breaks, col = id.grp),
+  geom_abline(aes(intercept = intercept,
+                  slope = slope, lty = breaks, col = id.grp),
               lm.res.plapoll.time,
               size = 1.5) +
   # geom_smooth(data = dat.occ, 
@@ -698,13 +700,14 @@ ggplot() +
        x = "Year",
        y = "DOY")
 
-#plot trends of collection day in realtion to temp by group
+#plot trends of collection day in relation to temp by group
 ggplot() +
   geom_point(data = dat.occ,
              aes(x = y_mean_temp, y = mean.doy, col = id.grp,
                  alpha = n.rec), 
              size = 1.5) +
-  geom_abline(aes(intercept = intercept, slope = slope, lty = breaks, col = id.grp),
+  geom_abline(aes(intercept = intercept,
+                  slope = slope, lty = breaks, col = id.grp),
               lm.res.plapoll.temp,
               size = 1.5) +
   # geom_smooth(data = dat.occ, 
@@ -750,11 +753,13 @@ ggplot(data = dat.occ,
 cat("\n\n")
 
 cat("Pollinator Slope: ", round(coef.time[2,1], 3), " days per year\n",
-    "Plant Slope: ", round(coef.time[2,1] + coef.time[4,1], 3), " days per year", 
+    "Plant Slope: ", round(coef.time[2,1] + coef.time[4,1], 3),
+    " days per year", 
     "\n\n")
 
 # same again for temp
-lmm.doy.temp <- lmer(mean.doy ~ y_mean_temp * kingdom + (1|order), data = dat.occ)
+lmm.doy.temp <- lmer(
+  mean.doy ~ y_mean_temp * kingdom + (1|order), data = dat.occ)
 
 cat("Summary temp model: \n\n")
 
@@ -778,7 +783,8 @@ ggplot(data = dat.occ,
 cat("\n\n")
 
 cat("Pollinator Slope: ", round(coef.temp[2,1], 3), " days per degree\n",
-    "Plant Slope: ", round(coef.temp[2,1] + coef.temp[4,1], 3), " days per degree\n")
+    "Plant Slope: ", round(coef.temp[2,1] + coef.temp[4,1], 3),
+    " days per degree\n")
 
 ```
 
@@ -835,7 +841,7 @@ ggplot() +
 
 ```
 
-Plot relatioships of Pollinator orders:  
+Plot relationships of Pollinator orders:  
 
 ```{r echo=FALSE}
 
@@ -867,8 +873,9 @@ ggplot() +
   theme_minimal() +
   theme(legend.position = "none") +
   labs(x = "Year", y = "DOY",
-       title = paste("Linear Relationship Between between year and Collection Day",
-       "for pollinator order", sep = '\n'))
+       title = paste(
+         "Linear Relationship Between between year and Collection Day",
+         "for pollinator order", sep = '\n'))
 
 #plot trends of collection day in realtion to mean temperature
 ggplot() +
@@ -884,8 +891,9 @@ ggplot() +
   theme_minimal() +
   theme(legend.position = "none")+
   labs(x = "Yearly mean Temperature [°C]", y = "DOY",
-       title = paste("Linear Relationship between between year and Collection Day",
-       "for pollinator order", sep = '\n'))
+       title = paste(
+         "Linear Relationship between between year and Collection Day",
+         "for pollinator order", sep = '\n'))
 ```
 
 ## Exploration of shifts of duration
@@ -893,7 +901,8 @@ ggplot() +
 ```{r Decadal duration calculation}
 
 # define vector of names of dat.occ useful for decadal duration analysis
-names.dur.dec <- c(names(dat.occ)[1:8], "mean.doy", "duration", "min.doy", "max.doy")
+names.dur.dec <- c(names(dat.occ)[1:8],
+                   "mean.doy", "duration", "min.doy", "max.doy")
 
 # average data on decadal level
 dat.occ.dur.dec <- dat.occ %>%
@@ -908,27 +917,31 @@ dat.occ.dur.dec <- dat.occ %>%
 
 ```{r Decadal duration plot, fig.width=10,fig.height=7}
 
-plt.dur.dec <- dur_plot(x = decade, y = duration, col = id.grp,
-                        # group = species,
-                        title = "Duration of activity (last - first doy) over time",
-                        xlab = "Decade",
-                        ylab = "Decadal mean duration [days]")
+plt.dur.dec <- dur_plot(
+  x = decade, y = duration, col = id.grp,
+  # group = species,
+  title = "Duration of activity (last - first doy) over time",
+  xlab = "Decade",
+  ylab = "Decadal mean duration [days]")
 
-plt.first.dec <- dur_plot(x = decade, y = min.doy, col = id.grp,
-                          # group = species,
-                          title = "First occurrence DOY over time",
-                          xlab = "Decade",
-                          ylab = "Decadal mean first DOY")
+plt.first.dec <- dur_plot(
+  x = decade, y = min.doy, col = id.grp,
+  # group = species,
+  title = "First occurrence DOY over time",
+  xlab = "Decade",
+  ylab = "Decadal mean first DOY")
 
-plt.last.dec <- dur_plot(x = decade, y = max.doy, col = id.grp, 
-                         # group = species,
-                         title = "Last occurrence DOY over time",
-                         xlab = "Decade",
-                         ylab = "Decadal mean last DOY")
+plt.last.dec <- dur_plot(
+  x = decade, y = max.doy, col = id.grp, 
+  # group = species,
+  title = "Last occurrence DOY over time",
+  xlab = "Decade",
+  ylab = "Decadal mean last DOY")
 
-gridExtra::grid.arrange(plt.dur.dec, plt.first.dec, plt.last.dec, p.temp +
-                          geom_point(aes(year, y_mean_temp, col = y_mean_temp)) +
-                          geom_smooth(aes(year, y_mean_temp), method = "lm"))
+gridExtra::grid.arrange(
+  plt.dur.dec, plt.first.dec, plt.last.dec, p.temp +
+    geom_point(aes(year, y_mean_temp, col = y_mean_temp)) +
+    geom_smooth(aes(year, y_mean_temp), method = "lm"))
 
 ```
 
@@ -1061,8 +1074,10 @@ ttest.dur <- data.frame(plapoll = ttest.dur[["p.value"]]) %>%
 
 
 slope_dec_dur <-
-  dur_slope_plot(xlab = "Group", ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-                 title = "Group shift of decadal mean\nduration of activity over time")
+  dur_slope_plot(
+    xlab = "Group", 
+    ylab = "Mean slope [days/year] (\u00B1 95% CI)",
+    title = "Group shift of decadal mean\nduration of activity over time")
 
 slope_dec_first <- dur_slope_plot(
   y = slope.first,
@@ -1091,7 +1106,9 @@ slope_dec_diff <- dur_slope_plot(
   ymax = ci.max.diff,
   xlab = "Group",
   ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-  title = "Group differences of shift of decadal mean first\nand last day of activity over time"
+  title = paste("Group differences of shift of decadal mean first",
+                "and last day of activity over time",
+                sep = "\n")
 )
 
 gridExtra::grid.arrange(slope_dec_first,
@@ -1121,7 +1138,8 @@ ggplot() +
                      xmax = ci.max.diff, col = id.grp),
                  data = stat.spec.dur.meta) +
   # geom_text(data = stat.spec.dur.meta,
-  #           aes(x = mean(c(min(stat.spec.dur$ci.min.diff), max(stat.spec.dur$ci.max.diff))),
+  #           aes(x = mean(c(min(stat.spec.dur$ci.min.diff),
+  #               max(stat.spec.dur$ci.max.diff))),
   #               y = ypos(stat.spec.dur$slope),
   #               label = str_glue("n = {n.slope.diff}")),
   #           col = "gray38") +
@@ -1139,23 +1157,26 @@ ggplot() +
 dat.occ.2k <- filter(dat.occ, year >= thr.2k.min & year <= thr.2k.max)
 
 
-p.dur <- dur_plot_2k(x = year, y = duration, col = id.grp,
-                     data = dat.occ.2k,
-                     title = str_glue("Duration of activity (last - first doy) over time
+p.dur <- dur_plot_2k(
+  x = year, y = duration, col = id.grp,
+  data = dat.occ.2k,
+  title = str_glue("Duration of activity (last - first doy) over time
                                    ({thr.2k.min} - {thr.2k.max})"),
-                     ylab = "Duration [days]")
+  ylab = "Duration [days]")
 
-p.first <- dur_plot_2k(x = year, y = min.doy, col = id.grp,
-                       data = dat.occ.2k,
-                       title = str_glue("First occurrence DOY over time
-                                   ({thr.2k.min} - {thr.2k.max})"),
-                       ylab = "First DOY")
+p.first <- dur_plot_2k(
+  x = year, y = min.doy, col = id.grp,
+  data = dat.occ.2k,
+  title = str_glue(
+    "First occurrence DOY over time ({thr.2k.min} - {thr.2k.max})"),
+  ylab = "First DOY")
 
-p.last <- dur_plot_2k(x = year, y = max.doy, col = id.grp,
-                      data = dat.occ.2k,
-                      title = str_glue("Last occurrence DOY over time
-                                   ({thr.2k.min} - {thr.2k.max})"),
-                      ylab = "Last DOY")
+p.last <- dur_plot_2k(
+  x = year, y = max.doy, col = id.grp,
+  data = dat.occ.2k,
+  title = str_glue(
+    "Last occurrence DOY over time ({thr.2k.min} - {thr.2k.max})"),
+  ylab = "Last DOY")
 
 # plot everything in one
 gridExtra::grid.arrange(p.first, p.last, p.dur, p.temp +
@@ -1301,8 +1322,7 @@ slope_dur <- dur_slope_plot(
   xlab = "Group",
   ylab = "Mean slope [days/year] (\u00B1 95% CI)",
   title = str_glue(
-    "Group shift of yearly mean
-                                duration of flight over time ({thr.2k.min} - {thr.2k.max})"
+    "Group shift of yearly mean duration of flight over time ({thr.2k.min} - {thr.2k.max})"
   )
 )
 
@@ -1315,9 +1335,8 @@ slope_first <- dur_slope_plot(
   metadata = stat.spec.dur.2k.meta,
   xlab = "Group",
   ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-  title = str_glue(
-    "Group shift of yearly mean
-                                first day of flight over time ({thr.2k.min} - {thr.2k.max})"
+  title = str_glue(paste
+    "Group shift of yearly mean first day of flight over time ({thr.2k.min} - {thr.2k.max})"
   )
 )
 
