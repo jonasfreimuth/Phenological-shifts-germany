@@ -580,14 +580,14 @@ if (file.exists(here("data", "workspace_save.RData")) &
 # load yearly mean data
 dat.occ <- fread(here("data", "species_yearly_mean_doy_raw_based.csv")) 
 
-# make sure there are records for a certain fraction of years
-thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
+# # make sure there are records for a certain fraction of years
+# thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
 
-#exclude species that span less than x years
-dat.occ <- dat.occ %>%
-  group_by(species) %>%
-  filter(length(year) >= thr.year) %>%
-  ungroup()
+# #exclude species that span less than x years
+# dat.occ <- dat.occ %>%
+#   group_by(species) %>%
+#   filter(length(year) >= thr.year) %>%
+#   ungroup()
 
 
 ## Create Subsets

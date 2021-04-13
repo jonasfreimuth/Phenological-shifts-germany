@@ -518,6 +518,12 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
     n.rec = length(doy)
   ) %>%
   ungroup() %>%
+  
+  # filter out species that don't span enough years
+  group_by(species) %>%
+  filter(length(year) >= round(thr.perc * (max(year) - min(year)))) %>%
+  ungroup() %>% 
+  
   #join trait data
   left_join(bioflor_traits, by = "species") %>%
   left_join(fread(here("static_data", "overall_mean_temperature.csv")),
