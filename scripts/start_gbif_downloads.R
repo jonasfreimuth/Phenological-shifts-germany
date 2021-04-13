@@ -9,6 +9,15 @@ stop(paste(
   )
 ))
 
+stop(paste(
+  c(
+    "If you are running this in the future, condiser looking into the GADM",
+    "option for GBIF Downloads. Setting this instead of country DE could",
+    "make the lengthy step of sorting out records outside of borders downstream",
+    "obsolete."
+  )
+))
+
 
 # Setup -------------------------------------------------------------------
 
