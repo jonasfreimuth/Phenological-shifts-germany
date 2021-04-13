@@ -393,6 +393,11 @@ if (run.pruning |
         (institutionCode == "" & collectionCode == ""  &
             doy %in% c(73, 95, 121)) |
           
+          
+        (id.grp == "Coleoptera" &
+          institutionCode == "" & collectionCode == ""  &
+           doy == 122) |
+          
         # suspicous naturgucker data from 2018 & 2019 concerning only 
         # Diptera and Hymenoptera on those days. The cause could not be 
         # determined by a rudimentary analysis
