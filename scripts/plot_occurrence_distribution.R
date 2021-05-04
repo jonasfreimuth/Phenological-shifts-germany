@@ -10,14 +10,6 @@ library(raster)
 
 dir.check(here("plots/additional"))
 
-
-# define color scheme
-col.group = c("Coleoptera" = "chartreuse",
-              "Diptera" = "yellow",
-              "Hymenoptera" = "orange",
-              "Lepidoptera" = "red",
-              "Plants" = "darkgreen")
-
 # Load and prune data -----------------------------------------------------
 
 # pruning should go like in get_occurrence_data.R but is done extra here 
@@ -75,7 +67,7 @@ if (any(c("additional") %in% opts)) {
              title = ins) +
         coord_fixed(ratio = 1.3) +
         scale_color_manual(name = "Group",
-                           values = col.group) +
+                           values = col.group.sci) +
         theme(
           plot.title = element_text(size = 40),
           plot.subtitle = element_text(size = 35),
@@ -116,7 +108,7 @@ if (any(c("additional") %in% opts)) {
       labs(x = "Longitude", y = "Latitude") +
       coord_fixed(ratio = 1.3) +
       scale_color_manual(name = "Group",
-                         values = col.group) +
+                         values = col.group.sci) +
       facet_wrap(~institutionCode) +
       theme(
         plot.title = element_text(size = 40),
@@ -255,7 +247,7 @@ if (any(c("additional") %in% opts)) {
         # facet_wrap(~institutionCode) + 
         scale_color_manual(name = "Group",
                            aesthetics = c("colour", "fill"),
-                           values = col.group) +
+                           values = col.group.sci) +
         theme(
           plot.title = element_text(size = 40),
           plot.subtitle = element_text(size = 35),

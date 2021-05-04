@@ -294,6 +294,12 @@ col.dec <- data.frame(group = c("1990s and before", "all decades", "1990s on"),
                       colour = c("#2F5496", "#972A4B", "#FF0000")
 )
 
+# colours for id.grps with scientific scheme
+# TODO: Apply colour scheme throughout notebook
+col.group.sci <- col.grp$colour[c(1:4, 6)]
+names(col.group.sci) <- c("Coleoptera", "Diptera", "Hymenoptera", "Lepidoptera",
+                          "Plants")
+
 # Functions -----------------------------------------------
 
 source(here('scripts', 'functions.R'))
@@ -426,6 +432,9 @@ ggplot(fread("data/occurrences_full_pruned_summary.csv"),
        x = "Group",
        y = "# of species",
        fill = "Group") +
+  scale_color_manual(name = "Group",
+                     values = col.group.sci,
+                     aesthetics = c("fill", "color")) +
   theme_minimal()
 
 
@@ -439,6 +448,9 @@ ggplot(fread("data/species_yearly_mean_doy_raw_based_summary.csv"),
        x = "Group",
        y = "# of species",
        fill = "Group") +
+  scale_color_manual(name = "Group",
+                     values = col.group.sci,
+                     aesthetics = c("fill", "color")) +
   theme_minimal()
 
 # decadal mean data, raw based
@@ -451,6 +463,9 @@ ggplot(fread("data/species_decadal_mean_doy_raw_based_summary.csv"),
        x = "Group",
        y = "# of species",
        fill = "Group") +
+  scale_color_manual(name = "Group",
+                     values = col.group.sci,
+                     aesthetics = c("fill", "color")) +
   theme_minimal()
 
 # yearly mean data
@@ -463,6 +478,9 @@ ggplot(fread("data/species_decadal_mean_doy_year_based_summary.csv"),
        x = "Group",
        y = "# of species",
        fill = "Group") +
+  scale_color_manual(name = "Group",
+                     values = col.group.sci,
+                     aesthetics = c("fill", "color")) +
   theme_minimal()
 
 ```
@@ -472,8 +490,7 @@ ggplot(fread("data/species_decadal_mean_doy_year_based_summary.csv"),
 
 # check if it is necessary to run the whole script in principle
 if (file.exists(here("data", "workspace_save.RData")) &
-    force.main == FALSE &
-    is.null(opts)) {
+    force.main == FALSE) {
   
   # now check whether there were changes in the data i.e. we had to run the 
   # occurrence getting script
