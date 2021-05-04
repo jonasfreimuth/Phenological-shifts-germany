@@ -235,17 +235,14 @@ if (run.occ.refine) {
   rm("exp")
   
   #load  full data 
-  dat.occ <- fread(here("data", "occurrences_full.csv"))
+  dat.occ.ref <- fread(here("data", "occurrences_full.csv"))
   
   #add row names
-  names(dat.occ) <- occ.names
+  names(dat.occ.ref) <- occ.names
   
   #save dataset to add names
-  fwrite(dat.occ, here("data", "occurrences_full_refined.csv"),
+  fwrite(dat.occ.ref, here("data", "occurrences_full_refined.csv"),
          showProgress = FALSE)
-  
-  #remove dat.occ for memory reasons
-  rm(dat.occ)
   
 }
 
@@ -286,17 +283,14 @@ if (file.exists(here("data", "occurrences_full_pruned.csv"))) {
 # run pruning if necessary or forced
 if (run.pruning |
     force.pruning) {
-  # if there is no occurrence data loaded yet (e.g. the script is run from here on)
-  # load occurrence data
   
   log_msg('Pruning...')
   
   if (!exists("dat.occ.ref")) {
     
     #load full dataset
-    dat.occ <- fread(here("data", "occurrences_full_refined.csv"),
-                     showProgress = FALSE)
-    
+    dat.occ.ref <- fread(here("data", "occurrences_full_refined.csv"),
+                         showProgress = FALSE)
   }
   
   # check whether finding indices of records outside germany is necessary
@@ -340,14 +334,15 @@ if (run.pruning |
     # extract spatial points from data
     # WARNING:  this assumes that the GBIF data shares the projection of the 
     #           polygonal data used
-    dat.occ.sp <- SpatialPoints(coords = as.matrix(dat.occ %>% 
-                                                     drop_na(decimalLatitude) %>% 
-                                                     select(decimalLongitude, 
-                                                            decimalLatitude)),
-                                proj4string = germany_pol@proj4string)
+    dat.occ.ref.sp <- SpatialPoints(coords = as.matrix(
+      dat.occ.ref %>% 
+        drop_na(decimalLatitude) %>% 
+        select(decimalLongitude, 
+               decimalLatitude)),
+      proj4string = germany_pol@proj4string)
     
     # get logical vector of whether a given record is within one of the polygons
-    in_region <- !is.na(over(dat.occ.sp, germany_pol)) 
+    in_region <- !is.na(over(dat.occ.ref.sp, germany_pol)) 
     
     log_msg("Done.")
     
@@ -365,7 +360,7 @@ if (run.pruning |
   
   log_msg("Cleanup...")
   
-  dat.occ <- dat.occ %>% 
+  dat.occ.pruned <- dat.occ.ref %>% 
     
     # exclude non - georeferenced and records outside germany
     drop_na(decimalLatitude) %>% 
@@ -414,14 +409,14 @@ if (run.pruning |
     #only include records from year.start on
     filter(year >= year.start & year <= year.stop)
   
-  rm(in_region)
+  rm(in_region, dat.occ.ref)
   
   log_msg("Done.")
   
   log_msg("Saving additional info...")
   
   ## summarize data set
-  fwrite(sum_df(dat.occ %>%
+  fwrite(sum_df(dat.occ.pruned %>%
                   select(order,
                          id.grp,
                          species,
@@ -432,7 +427,7 @@ if (run.pruning |
   ## Check how many issues the data has 
   
   #generate vector of every single occurrence of an issue
-  issues <- as.character(dat.occ$issue) %>%
+  issues <- as.character(dat.occ.pruned$issue) %>%
     str_split(";", simplify = TRUE )%>%
     str_c(sep = ", ") %>%
     #exclude all empty fields
@@ -448,7 +443,7 @@ if (run.pruning |
   rm(issues)
   
   ## Count the number of records in each institution
-  dat.occ %>%
+  dat.occ.pruned %>%
     count(institutionCode) %>%
     fwrite(here("data", "pruned_occ_institution_count.csv"))
   
@@ -456,29 +451,29 @@ if (run.pruning |
   ## Add climate data and save
   
   #join overall climate data and plant trait data to raw observational data
-  dat.occ <- left_join(dat.occ,
-                       read.csv(here("static_data", "overall_mean_temperature.csv")),
-                       by = c("year")) %>% 
+  dat.occ.pruned <- left_join(dat.occ.pruned,
+                              read.csv(here("static_data", "overall_mean_temperature.csv")),
+                              by = c("year")) %>% 
     left_join(bioflor_traits, by = "species")
   
   #save full dataset 
-  fwrite(dat.occ,
+  fwrite(dat.occ.pruned,
          here("data", "occurrences_full_pruned.csv"),
          showProgress = FALSE)
   
   
   # also save some metrics for the full data set
   data.frame(
-    nRow = nrow(dat.occ),
-    nPlants = as.numeric(count(dat.occ, kingdom)[2,2]),
-    nInsects = as.numeric(count(dat.occ, kingdom)[1,2]),
-    # should always be 1 now, kept for compatability reasons
-    fracGeoref = sum(!is.na(dat.occ$decimalLatitude))/nrow(dat.occ)
+    nRow = nrow(dat.occ.pruned),
+    nPlants = as.numeric(count(dat.occ.pruned, kingdom)[2,2]),
+    nInsects = as.numeric(count(dat.occ.pruned, kingdom)[1,2]),
+    # should always be 1 now, kept for compatibility reasons
+    fracGeoref = sum(!is.na(dat.occ.pruned$decimalLatitude))/nrow(dat.occ.pruned)
   ) %>%
     fwrite(here("data", "occurrence_full_pruned_meta.csv"))
   
-  #remove dat.occ again for memory reasons
-  rm(dat.occ)
+  #remove dat.occ.pruned for memory reasons
+  rm(dat.occ.pruned)
   
   log_msg('Done pruning.')
   
