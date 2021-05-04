@@ -144,7 +144,7 @@ lm.sum <- function(data = dat.occ, col = id.grp, formula = mean.doy ~ year) {
 #function for getting individual slopes
 slopes <- function(data, formula = mean.doy ~ year,
                    tax_level = species,
-                   ..., thr = 1,
+                   ..., thr = 2,
                    time_var = year) {
   
   #enquote var names
