@@ -72,7 +72,7 @@ if(all(files_exist)) {
       all(key_in)) {
     
     log_msg('Downloads are older than occurrence file, running refinement is not',
-        'necessary if not forced.')
+            'necessary if not forced.')
     
     # since the file for gbif requests is older, we're up to date with the occurrences
     # and we already have our occurrence dataset
@@ -83,7 +83,7 @@ if(all(files_exist)) {
   } else {
     
     log_msg('Either downloads are not older than occurrence file or not all',
-    'downloads ran, refinement will be run.')
+            'downloads ran, refinement will be run.')
     
     # the occurrence dataset is older
     # the occurrences are out of date
@@ -96,7 +96,7 @@ if(all(files_exist)) {
 } else {
   
   log_msg('Files', paste(files_to_check[!files_exist], collapse = ', '),
-               'do not exist, running occurrence refining.')
+          'do not exist, running occurrence refining.')
   
   # there is no file
   # we don't have downloads yet
@@ -121,7 +121,7 @@ if (run.occ.refine) {
                       'will download again!',
                       '\n\n'),
              con = 'data/download_ran.txt'
-             )
+  )
   
   #start for loop for each key
   for (k in keys) {
@@ -130,15 +130,15 @@ if (run.occ.refine) {
     # if not then download + extract + delete zip
     if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
       log_msg('Occurrence txt file for key', k, 'not found.')
-    # if (TRUE) {
+      # if (TRUE) {
       # retrieve compiled dataset, if  the zip is not already in the downloads
       # folder
       if (! file.exists(paste0('download/', k, '.zip'))) {
         dl_link <- occ_download_meta(k)[["downloadLink"]]
         
         log_msg('Zipped occurrence download not on disk, downloading.',
-            '\nIf download takes to long, manually download zip file from',
-            dl_link, ', place in /download and run script again.')
+                '\nIf download takes to long, manually download zip file from',
+                dl_link, ', place in /download and run script again.')
         
         # if this keeps hanging it might be because this function appears to 
         # have a problem with large downloads (>2GB). In that case either 
@@ -158,7 +158,7 @@ if (run.occ.refine) {
             # it seems the internal unzip can't deal with too large files
             # i hope this option works across platforms
             unzip = getOption('unzip')
-            )
+      )
       
       # give the extracted file the name of its key
       file.rename(from = here("download", "occurrence.txt"),
@@ -269,7 +269,7 @@ if (file.exists(here("data", "occurrences_full_pruned.csv"))) {
   } else {
     
     log_msg('Refined occurrences are older than pruned occurrences,',
-        'skipping pruning if not forced.')
+            'skipping pruning if not forced.')
     
     run.pruning <- FALSE
     
@@ -288,9 +288,10 @@ if (run.pruning |
     force.pruning) {
   # if there is no occurrence data loaded yet (e.g. the script is run from here on)
   # load occurrence data
-  if (!(exists("dat.occ"))) {
-    
-    log_msg('Pruning...')
+  
+  log_msg('Pruning...')
+  
+  if (!exists("dat.occ.ref")) {
     
     #load full dataset
     dat.occ <- fread(here("data", "occurrences_full_refined.csv"),
@@ -383,30 +384,30 @@ if (run.pruning |
         # a german bioblitz event
         (institutionCode == "GEO" & doy %in% c(163, 164, 166)) |
           
-        # the data set of higher plants in Mecklenburg - Vorpommern from
-        # the Ernst-Moritz-Arndt-University Greifswald
+          # the data set of higher plants in Mecklenburg - Vorpommern from
+          # the Ernst-Moritz-Arndt-University Greifswald
           (institutionCode == "EMAU" & 
-            collectionCode == "Floristic Databases MV - Higher Plants" &
-            doy == 163) |
+             collectionCode == "Floristic Databases MV - Higher Plants" &
+             doy == 163) |
           
-        # records without institution and collection on those days
-        (institutionCode == "" & collectionCode == ""  &
-            doy %in% c(73, 95, 121)) |
+          # records without institution and collection on those days
+          (institutionCode == "" & collectionCode == ""  &
+             doy %in% c(73, 95, 121)) |
           
           
-        (id.grp == "Coleoptera" &
-          institutionCode == "" & collectionCode == ""  &
-           doy == 122) |
+          (id.grp == "Coleoptera" &
+             institutionCode == "" & collectionCode == ""  &
+             doy == 122) |
           
-        # suspicous naturgucker data from 2018 & 2019 concerning only 
-        # Diptera and Hymenoptera on those days. The cause could not be 
-        # determined by a rudimentary analysis
-        (id.grp %in% c("Hymenoptera", "Diptera") &
-           institutionCode == "naturgucker" &
-           year %in% c(2018, 2019) &
-           doy %in% c(216, 160, 224, 153, 161, 217, 154, 223, 215, 152, 156,
-                      158, 220, 159, 155, 218, 157, 222, 221, 219, 214, 151))
-          
+          # suspicious naturgucker data from 2018 & 2019 concerning only 
+          # Diptera and Hymenoptera on those days. The cause could not be 
+          # determined by a rudimentary analysis
+          (id.grp %in% c("Hymenoptera", "Diptera") &
+             institutionCode == "naturgucker" &
+             year %in% c(2018, 2019) &
+             doy %in% c(216, 160, 224, 153, 161, 217, 154, 223, 215, 152, 156,
+                        158, 220, 159, 155, 218, 157, 222, 221, 219, 214, 151))
+        
       )
     ) %>%
     
@@ -537,12 +538,12 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
   left_join(fread(here("static_data", "overall_mean_temperature.csv")),
             by = c("year"))
 
-  #save species yearly mean doy data
+#save species yearly mean doy data
 fwrite(dat.occ.mean,
        here("data", "species_yearly_mean_doy_raw_based.csv"),
-    showProgress = FALSE,
-    na = NA
-  )
+       showProgress = FALSE,
+       na = NA
+)
 
 log_msg('Calculating summary data for raw based yearly data...')
 
@@ -565,11 +566,11 @@ log_msg('Done')
 
 
 tax_groups <- c("kingdom",
-                                "phylum",
-                                "order",
-                                "family",
-                                "genus",
-                                "species",
+                "phylum",
+                "order",
+                "family",
+                "genus",
+                "species",
                 "id.grp")
 
 species_vars <- c("AccName", 
@@ -695,7 +696,7 @@ dat.occ.dec.yearly <- fread('data/species_yearly_mean_doy_raw_based.csv') %>%
 
 fwrite(dat.occ.dec.yearly,
        here("data", "species_decadal_mean_doy_year_based.csv"),
-         showProgress = FALSE)
+       showProgress = FALSE)
 
 # summarise dataset
 fwrite(sum_df(dat.occ.dec.yearly %>% 
@@ -705,7 +706,7 @@ fwrite(sum_df(dat.occ.dec.yearly %>%
                        mean.doy.dec,
                        n.year,
                        n.rec.dec
-                       ), id.grp),
+                ), id.grp),
        "data/species_decadal_mean_doy_year_based_summary.csv")
 
 rm(dat.occ.dec.yearly)

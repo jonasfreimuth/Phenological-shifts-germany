@@ -774,6 +774,7 @@ corvif <- function(data) {
   
   cat("\n\nVariance inflation factors\n\n")
   print(car::vif(lm_mod))
+  
 }
 
 # function for generating letter labels to indicate differences between
