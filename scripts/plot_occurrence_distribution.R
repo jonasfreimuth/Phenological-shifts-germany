@@ -18,24 +18,26 @@ dir.check(here("plots/additional"))
 # load indices of records to be excluded
 in_region <- fread("data/indices_in_region.csv")
 
-#load data
-# dat.occ.full <- fread(
-#   here("data", "occurrences_full_refined.csv")) %>%
-# 
-#   # exclude non - georeferenced and records outside germany
-#   # this has to happen at the end, else the number of rows does not match
-#   drop_na(decimalLatitude) %>%
-#   filter(in_region) %>%
-# 
-#   #remove records without determined species
-#   filter(species != "") %>%
-# 
-#   #exclude first and last days
-#   filter(doy != 1, doy != 366, doy != 365) %>%
-# 
-#   #only include records from year.start on
-#   filter(year >= year.start & year <= year.stop)
-dat.occ.full <- fread("data/occurrences_full_pruned.csv")
+# load data (in the end should be same as pruned data without removal of 
+# institutions)
+dat.occ.full <- fread(
+  here("data", "occurrences_full_refined.csv")) %>%
+
+  # exclude non - georeferenced and records outside germany
+  # this has to happen at the end, else the number of rows does not match
+  drop_na(decimalLatitude) %>%
+  filter(in_region) %>%
+
+  #remove records without determined species
+  filter(species != "") %>%
+
+  #exclude first and last days
+  filter(doy != 1, doy != 366, doy != 365) %>%
+
+  #only include records from year.start on
+  filter(year >= year.start & year <= year.stop)
+
+# dat.occ.full.pruned <- fread("data/occurrences_full_pruned.csv")
 
 
 # Generate plots ----------------------------------------------------------
