@@ -670,7 +670,7 @@ plot(lm(y_mean_temp ~ year, dat.temp), which = c(1, 2, 5))
 ## Graphic data exploration
 
 
-```{r Calculating pla poll slopes, echo=FALSE}
+```{r Calculating pla poll slopes, include=FALSE}
 
 stat.ord.time.plants <- slopes(dat.occ.plant, mean.doy ~ year, order)
 
@@ -962,7 +962,7 @@ gridExtra::grid.arrange(
 
 ```
 
-```{r dur slopes stat}
+```{r dur slopes stat, include=FALSE}
 
 
 # get slopes for first, last doy and their difference (duration) into a df
@@ -1220,7 +1220,7 @@ ggplot(dat.n,
 
 ```
 
-```{r}
+```{r, include=FALSE}
 # get slopes for first, last doy and their difference (duration) into a df
 stat.spec.dur.2k <-
   bind_cols(
@@ -1451,7 +1451,7 @@ ggplot(dat.occ.dur.dec) +
 ## Analyse differences in phenology trends  
 
 
-```{r Calculating species slopes, echo=FALSE}
+```{r Calculating species slopes, include=FALSE}
 
 stat.spec.time.plants <- slopes(dat.occ.plant, mean.doy ~ year,
                                 tax_level = species)

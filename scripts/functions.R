@@ -252,8 +252,13 @@ slopes <- function(data, formula = mean.doy ~ year,
     
     data <- filter(data, tax_level == x)
     
+    log_msg("# of records for", quo_get_expr(tax_level), x,  "is",
+                nrow(data))
+    
     #if not enough records for taxlevel are present, skip
     if (nrow(data) < thr) {
+      
+      log_msg(nrow(data), "is not enough, skipping")
       
       return(NULL)
       
