@@ -525,7 +525,7 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
   
   # filter out species that don't span enough years
   group_by(species) %>%
-  filter(length(year) >= round(thr.perc * (max(year) - min(year)))) %>%
+  filter(n() >= round(thr.perc * (year.stop - year.start + 1))) %>%
   ungroup() %>% 
   
   #join trait data
@@ -592,7 +592,7 @@ decade_vars <- c('species', 'decade')
 
 log_msg('Calculating decadal DOYs from raw occurrences...')
 
-thr.dec <- length(seq(dec.start, dec.stop, 10))
+thr.dec <- ((dec.stop - dec.start)/10) + 1
 
 #load data again and delete years before decadal cutoff 
 dat.occ.dec.raw <- fread(here("data", "occurrences_full_pruned.csv"),
@@ -683,7 +683,7 @@ dat.occ.dec.yearly <- fread('data/species_yearly_mean_doy_raw_based.csv') %>%
   # Pruning
   group_by(species) %>% 
   # remove species without percentage of full decadal coverage
-  filter(n() >= length(seq(dec.year.start, dec.year.stop, 10))) %>%
+  filter(n() >= ((dec.stop - dec.start)/10) + 1) %>%
   # join climate data
   left_join(fread(here("static_data",
                        "decadal_mean_temperature.csv")),
