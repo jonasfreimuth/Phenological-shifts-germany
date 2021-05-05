@@ -1338,9 +1338,10 @@ slope_dur <- dur_slope_plot(
   metadata = stat.spec.dur.2k.meta,
   xlab = "Group",
   ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-  title = str_glue(
-    "Group shift of yearly mean duration of flight over time ({thr.2k.min} - {thr.2k.max})"
-  )
+  title = str_glue(paste(
+    "Group shift of yearly mean duration of",
+    "flight over time ({thr.2k.min} - {thr.2k.max})"
+  ))
 )
 
 slope_first <- dur_slope_plot(
@@ -1352,8 +1353,10 @@ slope_first <- dur_slope_plot(
   metadata = stat.spec.dur.2k.meta,
   xlab = "Group",
   ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-  title = str_glue(paste
-    "Group shift of yearly mean first day of flight over time ({thr.2k.min} - {thr.2k.max})"
+  title = str_glue(paste(
+    "Group shift of yearly mean first day of flight",
+    "over time ({thr.2k.min} - {thr.2k.max})"
+    )
   )
 )
 
@@ -1366,10 +1369,10 @@ slope_last <- dur_slope_plot(
   metadata = stat.spec.dur.2k.meta,
   xlab = "Group",
   ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-  title = str_glue(
-    "Group shift of yearly mean
-               last day of flight over time ({thr.2k.min} - {thr.2k.max})"
-  )
+  title = str_glue(paste(
+    "Group shift of yearly mean",
+    "last day of flight over time ({thr.2k.min} - {thr.2k.max})"
+  ))
 )
 
 slope_diff <- dur_slope_plot(
@@ -1381,10 +1384,10 @@ slope_diff <- dur_slope_plot(
   metadata = stat.spec.dur.2k.meta,
   xlab = "Group",
   ylab = "Mean slope [days/year] (\u00B1 95% CI)",
-  title = str_glue(
-    "Group differences of shift of yearly mean
-                                first and last day of flight over time ({thr.2k.min} - {thr.2k.max})"
-  )
+  title = str_glue(paste(
+    "Group differences of shift of yearly mean",
+    "first and last day of flight over time ({thr.2k.min} - {thr.2k.max})"
+  ))
 )
 
 gridExtra::grid.arrange(slope_first, slope_last, slope_diff, slope_dur)
