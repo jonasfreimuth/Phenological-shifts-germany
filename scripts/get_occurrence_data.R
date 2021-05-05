@@ -137,14 +137,16 @@ if (run.occ.refine) {
         dl_link <- occ_download_meta(k)[["downloadLink"]]
         
         log_msg('Zipped occurrence download not on disk, downloading.',
-                '\nIf download takes to long, manually download zip file from',
-                dl_link, ', place in /download and run script again.')
+                'If download takes to long, manually download zip file from',
+                dl_link, 'place in /download and run script again.')
         
         # if this keeps hanging it might be because this function appears to 
         # have a problem with large downloads (>2GB). In that case either 
         # do it like me and just download those manually and place them in the
         # downloads folder, or put in the work and find a way around it.
         # Maybe tweak the maximum string length in start_gbif_downloads
+        # so that you end up with more downloads of smaller size. This of
+        # course does not help if you have to use someone elses downloads.
         occ_download_get(k, here("download"), overwrite = TRUE)
         
       }
@@ -154,10 +156,8 @@ if (run.occ.refine) {
       # extract occurrence.txt
       unzip(here("download", paste0(k, ".zip")),
             file = "occurrence.txt", exdir = here("download"), overwrite = TRUE,
-            # if an error occurs, try commenting out the line below
-            # it seems the internal unzip can't deal with too large files
-            # i hope this option works across platforms
-            unzip = getOption('unzip')
+            # if an error occurs, try using another unzip method
+            unzip = "unzip"
       )
       
       # give the extracted file the name of its key
