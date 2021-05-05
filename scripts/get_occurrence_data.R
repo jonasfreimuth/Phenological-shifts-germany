@@ -125,7 +125,7 @@ if (run.occ.refine) {
   
   #start for loop for each key
   for (k in keys) {
-    log_msg('Running refinement for key', k, )
+    log_msg('Running refinement for key', k)
     # check if we already have an extracted occurrence file
     # if not then download + extract + delete zip
     if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
