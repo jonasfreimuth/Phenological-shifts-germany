@@ -250,7 +250,7 @@ if (run.occ.refine) {
 
 # check if th next part has already run (e.g. the output file exists)
 # also check if the next part needs to be run bc the output is outdated
-# (e.g. the output file from the previous part is mor recent than this part's
+# (e.g. the output file from the previous part is more recent than this part's
 # output) 
 
 if (file.exists(here("data", "occurrences_full_pruned.csv"))) {

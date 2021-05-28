@@ -875,7 +875,7 @@ dat.occ.poll.plot.ord <- dat.occ.poll.plot.ord %>%
               filter(!duplicated(order)),
             by = "order")
 
-#plot trends of collection day in realtion to year
+#plot trends of collection day in relation to year
 ggplot() +
   facet_wrap( ~ order, drop = FALSE) +
   geom_point(data = dat.occ.poll.plot.ord,
@@ -894,7 +894,7 @@ ggplot() +
          "Linear Relationship Between between year and Collection Day",
          "for pollinator order", sep = '\n'))
 
-#plot trends of collection day in realtion to mean temperature
+#plot trends of collection day in relation to mean temperature
 ggplot() +
   facet_wrap( ~ order, drop = FALSE) +
   geom_point(data = dat.occ.poll.plot.ord,

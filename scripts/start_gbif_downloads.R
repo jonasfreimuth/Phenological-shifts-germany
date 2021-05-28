@@ -57,7 +57,7 @@ n.keys.plant <- nrow(keys.plant)
 # as we are dealing with a lot of plant taxon keys we are going over the gbif
 # APIs character limit, so we need to break the request up into smaller bits
 
-# ~max characters in one substring, can be +- a key legnth
+# ~max characters in one substring, can be +- a key length
 str.max <- 10000
 
 avg_key_length <- mean(str_length(keys.plant$GbifKey))
