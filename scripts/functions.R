@@ -764,7 +764,7 @@ log_msg <- function(...) {
 corvif <- function(data) {
   
   #coerce to data frame
-  data <- as.data.frame(data, formula)
+  data <- as.data.frame(data)
   
   #vif part
   form <- formula(paste("mean.doy ~ ", paste(strsplit(
