@@ -181,17 +181,24 @@ if (run.occ.refine) {
                             "hasGeospatialIssues", "issue")
     ) 
     
-    #exclude records without days
-    exp <- filter(exp, day != "")
-    
-    #reformat the date to POSIXct and calculate DOY
-    exp <- mutate(exp, date = as.Date(substr(eventDate, 1, 10))) %>%
+    # perform refining
+    exp <- exp %>% 
+      
+      # exclude records without determined species
+      filter(species != "") %>% 
+      
+      # exclude records without record time specification down to days
+      filter(day != "") %>% 
+      
+      # reformat the date to POSIXct and calculate DOY
+      mutate(date = as.Date(substr(eventDate, 1, 10))) %>%
       select(-eventDate) %>%
       mutate(doy = as.integer(strftime(date, "%j"))) %>%
       mutate(decade = floor(year / 10) * 10)
     
     
-    #add group label
+    # add group labels
+    # WARNING: ASSUMES INDIVIDUAL DOWNLOADS ARE PURELY PLANTS OR POLLINATORS
     if (exp$kingdom[1] == "Plantae") {
       
       exp$id.grp <- as.character("Plants")
