@@ -1,0 +1,26 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+``` {r}
+library("glmmTMB")
+library("dplyr")
+
+select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
+                 'decade', 'id.grp', 'long', 'lat', 'temp')
+
+dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>% 
+  select(matches(select_cols))
+
+mtemp <- glmmTMB(doy ~ temp + lat + long + kingdom + (temp | species),
+          family = gaussian,
+          data = dat.occ)
+
+saveRDS(mtemp, file = paste("data/mtemp_model_",
+                            format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
+                            sep = ""))
+
+summary(mtemp)
+
+```
