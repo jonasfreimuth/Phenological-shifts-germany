@@ -3,7 +3,6 @@
 
 #load packages
 library("rdwd")
-library("beepr")
 library("RCurl") # important to get a current index for selectDWD
 library("data.table")
 library("tidyverse")
@@ -149,5 +148,3 @@ if (exists('delete.clim.download')) {
     unlink('DWDdata', recursive = TRUE)
   }
 }
-
-beep()
