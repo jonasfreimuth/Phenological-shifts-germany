@@ -14,10 +14,10 @@ dir.check(here("plots"))
 
 ggsave(
   ggplot(dat.temp,
-         aes(year, y_mean_temp, col = y_mean_temp)) +
+         aes(year, temp, col = temp)) +
     geom_point(size = 5) +
     geom_line(size = 2) +
-    geom_smooth(aes(year, y_mean_temp), method = "lm", col = "blue", size = 2, se = FALSE) +
+    geom_smooth(aes(year, temp), method = "lm", col = "blue", size = 2, se = FALSE) +
     labs(
       title = "Yearly mean temperature in Germany",
       x = "Year", y = "Mean temperature [\u00B0C]") +
@@ -121,7 +121,7 @@ ggsave(
 # 
 # print(
 #   #plot trends of collection day in relation to temp by group
-#   ggplot(data = dat.occ, aes(x = y_mean_temp, y = mean.doy, group = as.factor(kingdom), col = kingdom)) +
+#   ggplot(data = dat.occ, aes(x = temp, y = mean.doy, group = as.factor(kingdom), col = kingdom)) +
 #     geom_point(size = 3, alpha = 0.5) +
 #     geom_smooth(aes(col = kingdom),
 #                 method = lm, se = T, size = 2.5) +
@@ -198,7 +198,7 @@ ggsave(
 
 group_trends_temp_orders <- ggplot() +
   geom_point(data = dat.occ,
-             aes(x = y_mean_temp, y = mean.doy,
+             aes(x = temp, y = mean.doy,
                  col = id.grp), 
              size = 3, alpha = 0.5,
              position = position_dodge(width = 0.05)) +
@@ -211,7 +211,7 @@ group_trends_temp_orders <- ggplot() +
               lm.res.plapoll.temp,
               size = line_size_large) +
   # geom_smooth(data = dat.occ, 
-  #             aes(x = y_mean_temp, y = mean.doy, 
+  #             aes(x = temp, y = mean.doy, 
   #                 col = id.grp), 
   #             method = lm, se = T, size = 2.5, linetype = 1,
   #             alpha = 0.7) +
@@ -302,7 +302,7 @@ ggsave(
 # 
 # print(
 #   ggplot(data = dat.occ, 
-#          aes(x = y_mean_temp, y = mean.doy, col = kingdom)) +
+#          aes(x = temp, y = mean.doy, col = kingdom)) +
 #     geom_point(size = 3, alpha = 0.5) +
 #     geom_abline(intercept = coef.temp[1,1],
 #                 slope = coef.temp[2,1], size = 2.5,
@@ -376,10 +376,10 @@ print(
   ggplot() +
     facet_wrap( ~ order, drop = FALSE) +
     geom_point(data = dat.occ.plant.plot.ord,
-               aes(x = y_mean_temp, y = mean.doy),
+               aes(x = temp, y = mean.doy),
                size = 0.5, alpha = 0.7, col = "gray31") +
     stat_smooth(data = filter(dat.occ.plant.plot.ord, pval.temp <= 0.05),
-                aes(x = y_mean_temp, y = mean.doy),
+                aes(x = temp, y = mean.doy),
                 geom ="line", method = lm,
                 col = "gray10", alpha = 0.6, size = 1) +
     labs(x = "Yearly mean Temperature [°C]", y = "DOY") +
@@ -448,10 +448,10 @@ print(
   ggplot() +
     facet_wrap( ~ order, drop = FALSE) +
     geom_point(data = dat.occ.poll.plot.ord,
-               aes(x = y_mean_temp, y = mean.doy),
+               aes(x = temp, y = mean.doy),
                size = 2, alpha = 0.7, col = "gray31") +
     stat_smooth(data = filter(dat.occ.poll.plot.ord, pval.temp <= 0.05),
-                aes(x = y_mean_temp, y = mean.doy),
+                aes(x = temp, y = mean.doy),
                 geom ="line", method = lm,
                 col = "gray10", size = 2) +
     # geom_text(data = filter(dat.occ.poll.plot.ord, pval.temp <= 0.05),
@@ -492,7 +492,7 @@ if (any(c("full", "species") %in% opts)) {
     
     print(
       ggplot(dat.occ.s,
-             aes(year, mean.doy, col = y_mean_temp
+             aes(year, mean.doy, col = temp
                  # size = log10(n.rec)
              )) +
         geom_point(size = 5) +
@@ -502,7 +502,7 @@ if (any(c("full", "species") %in% opts)) {
         geom_text(aes(year, mean.doy, label = n.rec), size = 8,
                   nudge_y = 10) +
         scale_color_gradientn(colors = palette(100), name = "Yearly\nmean\nTemperature",
-                              limits = c(floor(min(dat.occ$y_mean_temp)), ceiling(max(dat.occ$y_mean_temp)))) +
+                              limits = c(floor(min(dat.occ$temp)), ceiling(max(dat.occ$temp)))) +
         # scale_size_continuous(name = "log10\n# of Records",
         #                       limits = c(min(log10(dat.occ$n.rec)), max(log10(dat.occ$n.rec)))) +
         labs(title = s,
@@ -1508,7 +1508,7 @@ png(here("plots", "PollDep overall trends over temp.png"), width = 1600, height 
 print(
   #plot trends of collection day in relation to year by group
   ggplot(data = dat.occ.polldep, aes(
-    x = y_mean_temp,
+    x = temp,
     y = mean.doy,
     group = PollDep,
     col = PollDep
@@ -1582,11 +1582,11 @@ dev.off()
 #   #plot trends of collection day in relation to year
 #   ggplot(data = dat.occ.polldep) +
 #     facet_wrap( ~ species, drop = FALSE) +
-#     geom_point(aes(x = y_mean_temp, y = mean.doy, col = PollDep),
+#     geom_point(aes(x = temp, y = mean.doy, col = PollDep),
 #                size = 2) +
 #     scale_color_grey(name = "Pollinator\ndependence", start = 0.8, end = 0.1) +
 #     stat_smooth(data = filter(dat.occPollDep, pval.temp <= 0.05),
-#                 aes(x = y_mean_temp, y = mean.doy, col = PollDep),
+#                 aes(x = temp, y = mean.doy, col = PollDep),
 #                 geom ="line", method = lm,
 #                 size = 2) +
 #     geom_text(aes(x = 8.5, y = 360, label = paste0("R\u00B2 =  ", round(rs.temp, 3))),

@@ -120,7 +120,7 @@ if (!all(opts_are_val)) {
 force.main <- FALSE
 
 # force pruning? (necessary after changing earliest year cutoff)
-force.pruning <- FALSE
+force.pruning <- TRUE
 
 # force calculation of mean doys? (better to only set it to FALSE if you're 
 # really impatient)
@@ -542,7 +542,7 @@ if (file.exists(here("data", "workspace_save.RData")) &
                   "int.slopes.year",
                   "int.slopes.year.temp") %in% opts)) {
           
-          int_plot_year(x = 'y_mean_temp')
+          int_plot_year(x = 'temp')
           
         }
         
@@ -632,10 +632,10 @@ dat.occ.poll <- filter(dat.occ, kingdom == "Animalia") %>%
 
 dat.temp <- dat.occ %>%
   ungroup() %>%
-  distinct(year, y_mean_temp)
+  distinct(year, temp)
 
 #generate lm for temp with time
-cor.temp <- cor.test(dat.temp$year, dat.temp$y_mean_temp)
+cor.temp <- cor.test(dat.temp$year, dat.temp$temp)
 
 cor.temp
 
@@ -651,8 +651,8 @@ p.temp <- ggplot(dat.temp) +
   theme(legend.position = "none")
 
 p.temp +
-  geom_point(aes(year, y_mean_temp, col = y_mean_temp)) +
-  geom_smooth(aes(year, y_mean_temp), method = "lm")
+  geom_point(aes(year, temp, col = temp)) +
+  geom_smooth(aes(year, temp), method = "lm")
 
 ```
 
@@ -661,7 +661,7 @@ Diagnostic Plots:
 ```{r}
 
 #generate diagnostics plots
-plot(lm(y_mean_temp ~ year, dat.temp), which = c(1, 2, 5))
+plot(lm(temp ~ year, dat.temp), which = c(1, 2, 5))
 
 ```
 
@@ -674,11 +674,11 @@ plot(lm(y_mean_temp ~ year, dat.temp), which = c(1, 2, 5))
 
 stat.ord.time.plants <- slopes(dat.occ.plant, mean.doy ~ year, order)
 
-stat.ord.temp.plants <- slopes(dat.occ.plant, mean.doy ~ y_mean_temp, order)
+stat.ord.temp.plants <- slopes(dat.occ.plant, mean.doy ~ temp, order)
 
 stat.ord.time.polls <- slopes(dat.occ.poll, mean.doy ~ year, order)
 
-stat.ord.temp.polls <- slopes(dat.occ.poll, mean.doy ~ y_mean_temp, order)
+stat.ord.temp.polls <- slopes(dat.occ.poll, mean.doy ~ temp, order)
 
 ```
 
@@ -692,7 +692,7 @@ lm.res.plapoll.time <- lm.sum(dat.occ, id.grp, mean.doy ~ year) %>%
   mutate(breaks = cut(pval, breaks = c(0, 0.05, 1),
                       labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE))
-lm.res.plapoll.temp <- lm.sum(dat.occ, id.grp, mean.doy ~ y_mean_temp) %>%
+lm.res.plapoll.temp <- lm.sum(dat.occ, id.grp, mean.doy ~ temp) %>%
   mutate(breaks = cut(pval, breaks = c(0, 0.05, 1),
                       labels = c("p < 0.05", "p > 0.05"),
                       right = FALSE))
@@ -720,7 +720,7 @@ ggplot() +
 #plot trends of collection day in relation to temp by group
 ggplot() +
   geom_point(data = dat.occ,
-             aes(x = y_mean_temp, y = mean.doy, col = id.grp,
+             aes(x = temp, y = mean.doy, col = id.grp,
                  alpha = n.rec), 
              size = 1.5) +
   geom_abline(aes(intercept = intercept,
@@ -728,7 +728,7 @@ ggplot() +
               lm.res.plapoll.temp,
               size = 1.5) +
   # geom_smooth(data = dat.occ, 
-  #             aes(x = y_mean_temp, y = mean.doy, 
+  #             aes(x = temp, y = mean.doy, 
   #                 col = id.grp), 
   #             method = lm, se = T, size = 1.5, linetype = 1,
   #             alpha = .7) +
@@ -776,7 +776,7 @@ cat("Pollinator Slope: ", round(coef.time[2,1], 3), " days per year\n",
 
 # same again for temp
 lmm.doy.temp <- lmer(
-  mean.doy ~ y_mean_temp * kingdom + (1|order), data = dat.occ)
+  mean.doy ~ temp * kingdom + (1|order), data = dat.occ)
 
 cat("Summary temp model: \n\n")
 
@@ -785,7 +785,7 @@ summary(lmm.doy.temp)
 coef.temp <- as.data.frame(summary(lmm.doy.temp)[["coefficients"]])
 
 ggplot(data = dat.occ, 
-       aes(x = y_mean_temp, y = mean.doy, col = kingdom)) +
+       aes(x = temp, y = mean.doy, col = kingdom)) +
   geom_point(aes(alpha = n.rec)) +
   geom_abline(intercept = coef.temp[1,1],
               slope = coef.temp[2,1], size = 1.5, col = "#f97970") +
@@ -843,11 +843,11 @@ ggplot() +
 ggplot() +
   facet_wrap( ~ order, drop = FALSE) +
   geom_point(data = dat.occ.plant.plot.ord,
-             aes(x = y_mean_temp, y = mean.doy,
+             aes(x = temp, y = mean.doy,
                  alpha = n.rec),
              size = 0.5,col = "dimgrey") +
   stat_smooth(data = filter(dat.occ.plant.plot.ord, pval.temp <= 0.05),
-              aes(x = y_mean_temp, y = mean.doy),
+              aes(x = temp, y = mean.doy),
               geom ="line", method = lm,
               col = "#2F5496", alpha = 0.6, size = 1) +
   theme_minimal() +
@@ -898,11 +898,11 @@ ggplot() +
 ggplot() +
   facet_wrap( ~ order, drop = FALSE) +
   geom_point(data = dat.occ.poll.plot.ord,
-             aes(x = y_mean_temp, y = mean.doy,
+             aes(x = temp, y = mean.doy,
                  alpha = n.rec),
              size = 0.5, col = "dimgrey") +
   stat_smooth(data = filter(dat.occ.poll.plot.ord, pval.temp <= 0.05), 
-              aes(x = y_mean_temp, y = mean.doy),
+              aes(x = temp, y = mean.doy),
               geom ="line", method = lm,
               col = "#2F5496", size = 1) +
   theme_minimal() +
@@ -957,8 +957,8 @@ plt.last.dec <- dur_plot(
 
 gridExtra::grid.arrange(
   plt.dur.dec, plt.first.dec, plt.last.dec, p.temp +
-    geom_point(aes(year, y_mean_temp, col = y_mean_temp)) +
-    geom_smooth(aes(year, y_mean_temp), method = "lm"))
+    geom_point(aes(year, temp, col = temp)) +
+    geom_smooth(aes(year, temp), method = "lm"))
 
 ```
 
@@ -1197,7 +1197,7 @@ p.last <- dur_plot_2k(
 
 # plot everything in one
 gridExtra::grid.arrange(p.first, p.last, p.dur, p.temp +
-                          geom_smooth(aes(year, y_mean_temp), method = "auto"))
+                          geom_smooth(aes(year, temp), method = "auto"))
 
 ```
 
@@ -1458,11 +1458,11 @@ ggplot(dat.occ.dur.dec) +
 
 stat.spec.time.plants <- slopes(dat.occ.plant, mean.doy ~ year,
                                 tax_level = species)
-stat.spec.temp.plants <- slopes(dat.occ.plant, mean.doy ~ y_mean_temp,
+stat.spec.temp.plants <- slopes(dat.occ.plant, mean.doy ~ temp,
                                 tax_level = species)
 stat.spec.time.polls <- slopes(dat.occ.poll,
                                tax_level = species)
-stat.spec.temp.polls <- slopes(dat.occ.poll, mean.doy ~ y_mean_temp,
+stat.spec.temp.polls <- slopes(dat.occ.poll, mean.doy ~ temp,
                                tax_level = species)
 
 ```
@@ -1965,7 +1965,7 @@ cat(
 # calculate species slopes
 stat.spec.2k.time <- slopes(dat.occ.2k, thr = 2)
 stat.spec.2k.temp <-
-  slopes(dat.occ.2k, formula = mean.doy ~ y_mean_temp, thr = 2)
+  slopes(dat.occ.2k, formula = mean.doy ~ temp, thr = 2)
 
 # calculate meta stats
 stat.group.2k.time.meta <- stat.spec.2k.time %>%
@@ -2152,16 +2152,16 @@ for (i in seq(1, nrow(dat.int.year))) {
   # if specified plot the phenological changes of the interaction
   if (any(c("full", "int.slopes.year", "int.slopes.year.temp") %in% opts)) {
     
-    int_plot_year(x = 'y_mean_temp')
+    int_plot_year(x = 'temp')
     
   }
   
   #generate model for estimating slopes of plant and pollinator
-  sum.lm.i <- summary(lm(mean.doy ~ y_mean_temp * kingdom, dat.i))
+  sum.lm.i <- summary(lm(mean.doy ~ temp * kingdom, dat.i))
   
   #run an ancova to test for a difference in the slopes of plants and pollinators
-  ancov.i <- anova(lm(mean.doy ~ y_mean_temp, dat.i),
-                   lm(mean.doy ~ y_mean_temp * kingdom, dat.i))
+  ancov.i <- anova(lm(mean.doy ~ temp, dat.i),
+                   lm(mean.doy ~ temp * kingdom, dat.i))
   
   #write results into df
   dat.int.i <- dat.i %>%
@@ -2224,7 +2224,7 @@ dat.int.meta.temp <- dat.int.temp %>%
 
 
 #add denomination for what kind of diff.slope
-dat.int.meta.temp$var <- "y_mean_temp"
+dat.int.meta.temp$var <- "temp"
 
 dat.int.meta <- rbind(dat.int.meta.time, dat.int.meta.temp)
 
@@ -2373,7 +2373,7 @@ int.spec.dec <- data.frame(group = NA,
                            poll = NA,
                            plant = NA,
                            decade = NA,
-                           y_mean_temp = NA,
+                           temp = NA,
                            doy.diff = NA,
                            id = NA)
 
@@ -2399,7 +2399,7 @@ for (i in seq(1, nrow(int.dec))) {
   # Summarizing -----------------------------------------------------
   
   int.i.mean <- int.i %>%
-    group_by(y_mean_temp, decade) %>%
+    group_by(temp, decade) %>%
     # filter decades with only one record (shouldn't be necessary any more)
     # filter(n() > 1) %>%
     # calculate difference of absolute  mean doy per decade
@@ -2450,7 +2450,7 @@ for (i in seq(1, nrow(int.dec))) {
   # Slope calculation - temp -----------------------------------------------
   
   #generate model for doy differences over time
-  sum.i.temp <- summary(lm(data = int.i.mean, formula = synchrony ~ y_mean_temp))
+  sum.i.temp <- summary(lm(data = int.i.mean, formula = synchrony ~ temp))
   
   #extract model output
   stat.int.i.temp <- data.frame(
@@ -2539,7 +2539,7 @@ for (i in seq(1, nrow(int.dec))) {
                    sep = "_")), width = 1600, height = 1000)
     
     print(
-      ggplot(int.i.mean, aes(x = y_mean_temp, y = synchrony)) +
+      ggplot(int.i.mean, aes(x = temp, y = synchrony)) +
         geom_line(size = 1.5) +
         geom_point(size = 4) +
         geom_smooth(method = "lm") +
@@ -2620,7 +2620,7 @@ int.mean.temp <- bind_rows(
   #Bee, Butterfly, Hoverfly means
   int.spec.dec %>%
     mutate(group = as.character(group)) %>%
-    group_by(group, y_mean_temp) %>%
+    group_by(group, temp) %>%
     summarise(mean.synchrony = mean(synchrony),
               ci.min.synchrony = ci.min(synchrony),
               ci.max.synchrony = ci.max(synchrony),
@@ -2629,7 +2629,7 @@ int.mean.temp <- bind_rows(
   
   #overall group
   int.spec.dec %>%
-    group_by(y_mean_temp) %>%
+    group_by(temp) %>%
     summarise(group = "Overall",
               mean.synchrony = mean(synchrony),
               ci.min.synchrony = ci.min(synchrony),
@@ -2987,7 +2987,7 @@ ggplot(int.mean.time,
 #all interaction plots in one
 ggplot(int.spec.dec,
        aes(
-         x = y_mean_temp,
+         x = temp,
          y = synchrony,
          group = id,
          col = group
@@ -2997,7 +2997,7 @@ ggplot(int.spec.dec,
   stat_summary(
     data = int.spec.dec,
     aes(
-      x = y_mean_temp,
+      x = temp,
       y = synchrony,
       group = group,
     ),
@@ -3010,7 +3010,7 @@ ggplot(int.spec.dec,
   ) +
   geom_smooth(
     aes(
-      x = y_mean_temp,
+      x = temp,
       y = synchrony,
       group = group,
     ),
@@ -3029,14 +3029,14 @@ ggplot(int.spec.dec,
   ) +
   labs(x = "Decadal mean Temperature [\u00B0C]",
        y = "Pla - Poll Synchrony") +
-  # coord_cartesian(xlim = c(min(dat.occ.dec$y_mean_temp), max(dat.occ.dec$decade))) +
+  # coord_cartesian(xlim = c(min(dat.occ.dec$temp), max(dat.occ.dec$decade))) +
   facet_wrap( ~ group, nrow = 3) +
   theme_minimal()
 
 #group means of interactions
 ggplot(int.mean.temp,
        aes(
-         x = y_mean_temp,
+         x = temp,
          y = mean.synchrony,
          col = group
        )) +
@@ -3063,24 +3063,24 @@ ggplot(int.mean.temp,
 #both together
 ggplot() +
   geom_point(data = int.spec.dec,
-             aes(y_mean_temp, synchrony,
+             aes(temp, synchrony,
                  col = group),
              alpha = .2) +
   geom_line(data = int.spec.dec,
-            aes(y_mean_temp, synchrony, group = id,
+            aes(temp, synchrony, group = id,
                 col = group),
             alpha = .1) +
   geom_errorbar(data = int.mean.temp,
-                aes(y_mean_temp, ymin = ci.min.synchrony,
+                aes(temp, ymin = ci.min.synchrony,
                     ymax = ci.max.synchrony,
                     col = group),
                 size = 1.2) +
   geom_point(data = int.mean.temp,
-             aes(y_mean_temp, mean.synchrony, col = group,
+             aes(temp, mean.synchrony, col = group,
                  pch = group),
              size = 2) +
   geom_line(data = int.mean.temp,
-            aes(y_mean_temp, mean.synchrony, col = group),
+            aes(temp, mean.synchrony, col = group),
             size = 1.2) +
   scale_color_manual(
     name = "Group",
@@ -3100,7 +3100,7 @@ ggplot() +
 
 # percentages of insect partner earlier
 ggplot(int.mean.temp, 
-       aes(y_mean_temp, ins.early.frac, col = group)) + 
+       aes(temp, ins.early.frac, col = group)) + 
   geom_point(size = 2) +
   geom_smooth(method = "lm") + 
   facet_wrap(~group) +
@@ -3261,16 +3261,16 @@ TukeyHSD(mod.int.all)
 ```{r Checking influences in overall dataset}
 
 #run lmm
-lmm.doy.all <- lmer(data = dat.occ, mean.doy ~ year * y_mean_temp * kingdom + (1|species))
+lmm.doy.all <- lmer(data = dat.occ, mean.doy ~ year * temp * kingdom + (1|species))
 
 cat("\nModel summary: \n\n")
 
 summary(lmm.doy.all)
 
-vars <- c("year", "y_mean_temp",
+vars <- c("year", "temp",
           "kingdom")
 
-corvif(dat.occ[,vars])
+corvif(as.data.frame(dat.occ)[,vars])
 
 
 cat("\nANOVA table for LMM: \n\n")
@@ -3313,7 +3313,7 @@ ggplot() +
 
 ```{r}
 #run linear mixed model
-lmm.doy.pla <- lmer(data = dat.occ.plant, mean.doy ~ year * y_mean_temp + (1|species))
+lmm.doy.pla <- lmer(data = dat.occ.plant, mean.doy ~ year * temp + (1|species))
 
 summary(lmm.doy.pla)
 
@@ -3338,7 +3338,7 @@ qqline(resid(lmm.doy.pla))
 ```{r}
 
 #run linear mixed model
-lmm.doy.poll <- lmer(data = dat.occ.poll, mean.doy ~ year * y_mean_temp + (1|species))
+lmm.doy.poll <- lmer(data = dat.occ.poll, mean.doy ~ year * temp + (1|species))
 
 summary(lmm.doy.poll)
 
@@ -3461,7 +3461,7 @@ ggplot(polldep.spec.mean.doy, aes(PollDep, mean.doy, group = PollDep,
 #calculate slopes for poll dep/ind plants
 stat.spec.time.PollDep <- slopes(dat.occ.polldep, mean.doy ~ year, species, PollDep) %>%
   mutate_if(is.character, as.factor)
-stat.spec.temp.PollDep <- slopes(dat.occ.polldep, mean.doy ~ y_mean_temp, species, PollDep)%>%
+stat.spec.temp.PollDep <- slopes(dat.occ.polldep, mean.doy ~ temp, species, PollDep)%>%
   mutate_if(is.character, as.factor) 
 
 #add significance to raw data
@@ -3535,7 +3535,7 @@ ggplot(data = dat.occ.polldep, aes(
 #plot trends of collection day in relation to yearly temp by group
 ggplot(data = dat.occ.polldep,
        aes(
-         x = y_mean_temp,
+         x = temp,
          y = mean.doy,
          group = PollDep,
          color = PollDep
@@ -3791,7 +3791,7 @@ source(here("scripts", "save_results_to_csv.R"))
 
 ```{r Beep}
 
-save.image(here("data", "workspace_save.RData"))
+save.image(here("data", "workspace_save_fdata.RData"))
 
 beep()
 
