@@ -5,6 +5,8 @@ output: html_notebook
 
 ``` {r}
 library("glmmTMB")
+library("mixedup")
+library("data.table")
 library("dplyr")
 
 select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
@@ -17,9 +19,14 @@ mtemp <- glmmTMB(doy ~ temp + lat + long + kingdom + (temp | species),
           family = gaussian,
           data = dat.occ)
 
-saveRDS(mtemp, file = paste("data/mtemp_model_",
-                            format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
-                            sep = ""))
+saveRDS(mtemp, file = paste0("data/mtemp_model_",
+                            format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds"))
+
+rnd_eff <- extract_random_effects(mtemp)
+
+fwrite(rnd_eff, paste0("data/mtemp_model_",
+                       format(Sys.time(), format = "%Y%m%d_%H%M"),
+                       "_rnd_eff.csv"))
 
 summary(mtemp)
 
