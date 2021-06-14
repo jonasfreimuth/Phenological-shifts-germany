@@ -13,6 +13,7 @@ options(dplyr.summarise.inform = FALSE,
         stringsAsFactors = FALSE)
 
 #load libraries
+# order of packages is important to avoid conflicts 
 library("here")
 library("beepr")
 library("data.table")
