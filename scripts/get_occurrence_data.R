@@ -38,220 +38,7 @@ if (!(file.exists(here("static_data", "overall_mean_temperature.csv")) &
   
 }
 
-# Download and refinement -------------------------------------------------
 
-# check if download has already run with current gbif dataset, first
-# see if all files are even present
-
-files_to_check <- c('data/occurrences_full.csv',
-                    'data/occurrences_full_refined.csv',
-                    'data/download_ran.txt')
-
-files_exist <- file.exists(files_to_check)
-
-if(all(files_exist)) {
-  
-  # get download keys (uids of the datasets used, order is plants,
-  # last one is polls)
-  keys <- readLines('static_data/last_keys.txt')
-  
-  # check whether all downloads and extractions completed sucessfully
-  dl_ran_txt <- readLines('data/download_ran.txt')
-  
-  key_in <- rep(NA, length(keys))
-  
-  for (i in 1:length(keys)) {
-    
-    key_in[i] <- any(str_detect(dl_ran_txt, keys[i]))
-    
-  }
-  
-  # now check if the file is older than the record for the gbif requests
-  if (file.mtime(here("static_data", "last_keys.txt")) < 
-      file.mtime(here("data", "occurrences_full.csv")) &
-      all(key_in)) {
-    
-    log_msg('Downloads are older than occurrence file, running refinement is not',
-            'necessary if not forced.')
-    
-    # since the file for gbif requests is older, we're up to date with the occurrences
-    # and we already have our occurrence dataset
-    # we don't run the download
-    
-    run.occ.refine <- FALSE
-    
-  } else {
-    
-    log_msg('Either downloads are not older than occurrence file or not all',
-            'downloads ran, refinement will be run.')
-    
-    # the occurrence dataset is older
-    # the occurrences are out of date
-    # we run the download
-    
-    run.occ.refine <- TRUE
-    
-  } 
-  
-} else {
-  
-  log_msg('Files', paste(files_to_check[!files_exist], collapse = ', '),
-          'do not exist, running occurrence refining.')
-  
-  # there is no file
-  # we don't have downloads yet
-  # run the download
-  
-  run.occ.refine <- TRUE
-  
-}
-
-if (run.occ.refine) {
-  
-  # make sure directory exists
-  dir.check(here("download"))
-  
-  # create file for storing occurrences in (overwrites previous file)
-  file.create(here("data", "occurrences_full.csv"))
-  
-  # also create file for storing keys that have finished the process
-  writeLines(text = c('File that keeps track of which downloads ran fully',
-                      'and whoose occurrences have been extracted.\n',
-                      'If this file is deleted, every occurrence request',
-                      'will download again!',
-                      '\n\n'),
-             con = 'data/download_ran.txt'
-  )
-  
-  #start for loop for each key
-  for (k in keys) {
-    log_msg('Running refinement for key', k)
-    # check if we already have an extracted occurrence file
-    # if not then download + extract + delete zip
-    if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
-      log_msg('Occurrence txt file for key', k, 'not found.')
-      # if (TRUE) {
-      # retrieve compiled dataset, if  the zip is not already in the downloads
-      # folder
-      if (! file.exists(paste0('download/', k, '.zip'))) {
-        dl_link <- occ_download_meta(k)[["downloadLink"]]
-        
-        log_msg('Zipped occurrence download not on disk, downloading.',
-                'If download takes to long, manually download zip file from',
-                dl_link, 'place in /download and run script again.')
-        
-        # if this keeps hanging it might be because this function appears to 
-        # have a problem with large downloads (>2GB). In that case either 
-        # do it like me and just download those manually and place them in the
-        # downloads folder, or put in the work and find a way around it.
-        # Maybe tweak the maximum string length in start_gbif_downloads
-        # so that you end up with more downloads of smaller size. This of
-        # course does not help if you have to use someone elses downloads.
-        occ_download_get(k, here("download"), overwrite = TRUE)
-        
-      }
-      
-      log_msg('Extracting occurrence txt file...')
-      
-      # extract occurrence.txt
-      unzip(here("download", paste0(k, ".zip")),
-            file = "occurrence.txt", exdir = here("download"), overwrite = TRUE,
-            # if an error occurs, try using another unzip method
-            unzip = "unzip"
-      )
-      
-      # give the extracted file the name of its key
-      file.rename(from = here("download", "occurrence.txt"),
-                  to = here("download",  paste0("occurrence_", k, ".txt")))
-      
-      # remove the zip file
-      file.remove(here("download", paste0(k, ".zip")))
-      
-    }
-    
-    log_msg('Extracting occurrence records...')
-    
-    #read extracted occurrence.txt
-    exp <- fread(here("download", paste0("occurrence_", k, ".txt")),
-                 quote = "", showProgress = FALSE,
-                 select = c("kingdom", "phylum", "order", "family", "genus",
-                            "species", "institutionCode", "collectionCode",
-                            "datasetName","decimalLatitude", "decimalLongitude",
-                            "year", "month", "day", "eventDate", "basisOfRecord",
-                            "hasGeospatialIssues", "issue")
-    ) 
-    
-    # perform refining
-    exp <- exp %>% 
-      
-      # exclude records without determined species
-      filter(species != "") %>% 
-      
-      # exclude records without record time specification down to days
-      filter(day != "") %>% 
-      
-      # reformat the date to POSIXct and calculate DOY
-      mutate(date = as.Date(substr(eventDate, 1, 10))) %>%
-      select(-eventDate) %>%
-      mutate(doy = as.integer(strftime(date, "%j"))) %>%
-      mutate(decade = floor(year / 10) * 10)
-    
-    
-    # add group labels
-    # WARNING: ASSUMES INDIVIDUAL DOWNLOADS ARE PURELY PLANTS OR POLLINATORS
-    if (exp$kingdom[1] == "Plantae") {
-      
-      exp$id.grp <- as.character("Plants")
-      
-      #also make sure only plants with traits are used
-      exp <- filter(exp, species %in% bioflor_traits$species)
-      
-    } else {
-      
-      exp$id.grp <- exp$order
-      
-    }
-    
-    log_msg('Appending occurrences to full csv...')
-    
-    
-    #Save data as csv
-    fwrite(exp, here("data", "occurrences_full.csv"),
-           append = TRUE)
-    
-    # save the col names to add again later
-    occ.names <- names(exp)
-    
-    # if not disabled, also remove occurrence txt file again
-    if (delete.occ.download) {
-      
-      file.remove(here("download", paste0("occurrence_", k, ".txt")))
-      
-    }
-    
-    # save the key and time of the last occurrence set
-    # WARINING: not timezone aware 
-    dl_ran <- file('data/download_ran.txt', open = 'at')
-    writeLines(paste(k, Sys.time(), sep = '\t'), dl_ran)
-    close(dl_ran)
-    
-    log_msg('Done with this dataset.')
-  }
-  
-  # remove unneeded objects
-  rm("exp")
-  
-  #load  full data 
-  dat.occ.ref <- fread(here("data", "occurrences_full.csv"))
-  
-  #add row names
-  names(dat.occ.ref) <- occ.names
-  
-  #save dataset to add names
-  fwrite(dat.occ.ref, here("data", "occurrences_full_refined.csv"),
-         showProgress = FALSE)
-  
-}
 
 # Prune data --------------------------------------------------------------
 
@@ -295,9 +82,8 @@ if (run.pruning |
   
   if (!exists("dat.occ.ref")) {
     
-    #load full dataset
-    dat.occ.ref <- fread(here("data", "occurrences_full_refined.csv"),
-                         showProgress = FALSE)
+    # load prepruned data
+    dat.occ.ref <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds")
   }
   
   # check whether finding indices of records outside germany is necessary
@@ -343,9 +129,9 @@ if (run.pruning |
     #           polygonal data used
     dat.occ.ref.sp <- SpatialPoints(coords = as.matrix(
       dat.occ.ref %>% 
-        drop_na(decimalLatitude) %>% 
-        select(decimalLongitude, 
-               decimalLatitude)),
+        drop_na(lat) %>% 
+        select(long, 
+               lat)),
       proj4string = germany_pol@proj4string)
     
     # get logical vector of whether a given record is within one of the polygons
@@ -370,7 +156,7 @@ if (run.pruning |
   dat.occ.pruned <- dat.occ.ref %>% 
     
     # exclude non - georeferenced and records outside germany
-    drop_na(decimalLatitude) %>% 
+    drop_na(lat) %>% 
     filter(in_region) %>%
     
     #remove records without determined species
@@ -475,7 +261,7 @@ if (run.pruning |
     nPlants = as.numeric(count(dat.occ.pruned, kingdom)[2,2]),
     nInsects = as.numeric(count(dat.occ.pruned, kingdom)[1,2]),
     # should always be 1 now, kept for compatibility reasons
-    fracGeoref = sum(!is.na(dat.occ.pruned$decimalLatitude))/nrow(dat.occ.pruned)
+    fracGeoref = sum(!is.na(dat.occ.pruned$lat))/nrow(dat.occ.pruned)
   ) %>%
     fwrite(here("data", "occurrence_full_pruned_meta.csv"))
   
