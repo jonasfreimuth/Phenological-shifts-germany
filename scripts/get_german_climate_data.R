@@ -50,8 +50,8 @@ rm(dat.clim.hist)
 #calculate yearly mean
 dat.clim.tot <- dat.clim %>% 
   group_by(year) %>%
-  summarise(y_mean_temp = mean(temp, na.rm = TRUE),
-            y_mean_temp.sd = sd(temp, na.rm = TRUE))
+  summarise(temp = mean(temp, na.rm = TRUE),
+            temp.sd = sd(temp, na.rm = TRUE))
 
 # calculate spring mean (February until May) and add to 
 # total mean
@@ -70,8 +70,8 @@ dat.clim.tot <- dat.clim %>%
 dat.clim.dec <- dat.clim %>%
   mutate(decade = floor(year/10)*10) %>%
   group_by(decade) %>%
-  summarise(y_mean_temp = mean(temp, na.rm = TRUE),
-            y_mean_temp.sd = sd(temp, na.rm = TRUE))
+  summarise(temp = mean(temp, na.rm = TRUE),
+            temp.sd = sd(temp, na.rm = TRUE))
 
 # calculate spring mean (February until May)
 dat.clim.dec <- dat.clim %>% 
@@ -89,8 +89,8 @@ dat.clim.dec <- dat.clim %>%
 dat.climx <- dat.clim %>%
   group_by(STATIONS_ID, .add = TRUE) %>%
   group_by(year, .add = TRUE) %>%
-  summarise(y_mean_temp = mean(temp, na.rm = TRUE),
-            y_mean_temp.sd = sd(temp, na.rm = TRUE))
+  summarise(temp = mean(temp, na.rm = TRUE),
+            temp.sd = sd(temp, na.rm = TRUE))
 
 #calculate mean spring temperature and add to yearly mean temperature data
 dat.climx <- dat.clim %>% 
