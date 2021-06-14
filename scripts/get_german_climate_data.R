@@ -3,7 +3,6 @@
 
 #load packages
 library("rdwd")
-library("beepr")
 library("RCurl") # important to get a current index for selectDWD
 library("data.table")
 library("tidyverse")
@@ -51,14 +50,16 @@ rm(dat.clim.hist)
 #calculate yearly mean
 dat.clim.tot <- dat.clim %>% 
   group_by(year) %>%
-  summarise(temp = mean(temp, na.rm = TRUE))
+  summarise(y_mean_temp = mean(temp, na.rm = TRUE),
+            y_mean_temp.sd = sd(temp, na.rm = TRUE))
 
 # calculate spring mean (February until May) and add to 
 # total mean
 dat.clim.tot <- dat.clim %>% 
   filter(month >= 2 & month <= 5) %>%
   group_by(year, .add = TRUE) %>%
-  summarise(spring1 = mean(temp, na.rm = TRUE))%>%
+  summarise(spring1 = mean(temp, na.rm = TRUE),
+            spring1.sd = sd(temp, na.rm = TRUE))%>%
   left_join(dat.clim.tot, by = "year")
 
 
@@ -69,14 +70,16 @@ dat.clim.tot <- dat.clim %>%
 dat.clim.dec <- dat.clim %>%
   mutate(decade = floor(year/10)*10) %>%
   group_by(decade) %>%
-  summarise(temp = mean(temp, na.rm = TRUE))
+  summarise(y_mean_temp = mean(temp, na.rm = TRUE),
+            y_mean_temp.sd = sd(temp, na.rm = TRUE))
 
 # calculate spring mean (February until May)
 dat.clim.dec <- dat.clim %>% 
   filter(month >= 2 & month <= 5) %>%
   mutate(decade = floor(year/10)*10) %>%
   group_by(decade) %>%
-  summarise(spring1 = mean(temp, na.rm = TRUE))%>%
+  summarise(spring1 = mean(temp, na.rm = TRUE),
+            spring1.sd = sd(temp, na.rm = TRUE)) %>%
   left_join(dat.clim.dec, by = "decade")
 
 
@@ -86,14 +89,16 @@ dat.clim.dec <- dat.clim %>%
 dat.climx <- dat.clim %>%
   group_by(STATIONS_ID, .add = TRUE) %>%
   group_by(year, .add = TRUE) %>%
-  summarise(temp = mean(temp, na.rm = TRUE))
+  summarise(y_mean_temp = mean(temp, na.rm = TRUE),
+            y_mean_temp.sd = sd(temp, na.rm = TRUE))
 
 #calculate mean spring temperature and add to yearly mean temperature data
 dat.climx <- dat.clim %>% 
   filter(month >= 2 & month <= 5) %>%
   group_by(STATIONS_ID, .add = TRUE) %>%
   group_by(year, .add = TRUE) %>%
-  summarise(spring1 = mean(temp, na.rm = TRUE))%>%
+  summarise(spring1 = mean(temp, na.rm = TRUE),
+            spring1.sd = sd(temp, na.rm = TRUE))%>%
   right_join(dat.climx, by = c("year", "STATIONS_ID"))
 
 #read meta files
@@ -143,5 +148,3 @@ if (exists('delete.clim.download')) {
     unlink('DWDdata', recursive = TRUE)
   }
 }
-
-beep()
