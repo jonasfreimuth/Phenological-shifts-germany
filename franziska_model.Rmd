@@ -13,6 +13,10 @@ select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
 dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>% 
   select(matches(select_cols))
 
+```
+
+
+``` {r temp model}
 mtemp <- glmmTMB(doy ~ temp + lat + long + kingdom + (temp | species),
           family = gaussian,
           data = dat.occ)
@@ -22,6 +26,10 @@ saveRDS(mtemp, file = paste("data/mtemp_model_",
                             sep = ""))
 
 summary(mtemp)
+```
+
+
+``` {r time model}
 mtime <- glmmTMB(doy ~ year + lat + long + kingdom + (year | species),
           family = gaussian,
           data = dat.occ)
