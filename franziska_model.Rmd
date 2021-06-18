@@ -22,5 +22,15 @@ saveRDS(mtemp, file = paste("data/mtemp_model_",
                             sep = ""))
 
 summary(mtemp)
+mtime <- glmmTMB(doy ~ year + lat + long + kingdom + (year | species),
+          family = gaussian,
+          data = dat.occ)
+
+
+saveRDS(mtemp, file = paste("data/mtime_model_",
+                            format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
+                            sep = ""))
+
+summary(mtime)
 
 ```
