@@ -5,7 +5,21 @@ output: html_notebook
 
 ``` {r}
 library("glmmTMB")
+library("mixedup")
+library("stringr")
 library("dplyr")
+
+source("scripts/functions.R")
+
+# TODO: make this fail save
+dir.check("./logs")
+
+model_log_file <- paste0("logs/models_",
+                            format(Sys.time(), format = "%Y%m%d_%H%M"),
+                            ".log")
+
+file.create(model_log_file)
+options("log_file" = model_log_file)
 
 select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
                  'decade', 'id.grp', 'long', 'lat', 'temp')
@@ -17,22 +31,46 @@ dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>
 
 
 ``` {r temp model}
-mtemp <- glmmTMB(doy ~ temp + lat + long + kingdom + (temp | species),
+log_msg("Starting doy ~ temp model...")
+
+mtemp <- glmmTMB(doy ~ temp + lat + long + id.grp + (temp | species),
           family = gaussian,
           data = dat.occ)
+
+log_msg("Done.")
+log_msg("Saving model to disk...")
 
 saveRDS(mtemp, file = paste("data/mtemp_model_",
                             format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
                             sep = ""))
 
 summary(mtemp)
+
+log_msg("Extracting random effects for doy ~ temp model...")
+
+rnd_eff <- extract_random_effects(mtemp)
+
+fwrite(rnd_eff, paste0("data/mtemp_model_",
+                       format(Sys.time(), format = "%Y%m%d_%H%M"),
+                       "_rnd_eff.csv"))
+
+# remove model due to memory limitations
+rm(mtemp)
+
+log_msg("Done with doy ~ temp model...")
+
 ```
 
 
 ``` {r time model}
-mtime <- glmmTMB(doy ~ year + lat + long + kingdom + (year | species),
+log_msg("Starting doy ~ year model...")
+
+mtime <- glmmTMB(doy ~ year + lat + long + id.grp + (year | species),
           family = gaussian,
           data = dat.occ)
+
+log_msg("Done.")
+log_msg("Saving model to disk...")
 
 
 saveRDS(mtemp, file = paste("data/mtime_model_",
@@ -41,4 +79,54 @@ saveRDS(mtemp, file = paste("data/mtime_model_",
 
 summary(mtime)
 
+log_msg("Extracting random effects for doy ~ temp model...")
+
+rnd_eff <- extract_random_effects(mtime)
+
+fwrite(rnd_eff, paste0("data/mtime_model_",
+                       format(Sys.time(), format = "%Y%m%d_%H%M"),
+                       "_rnd_eff.csv"))
+
+# remove model due to memory limitations
+rm(mtime)
+
+log_msg("Done with doy ~ year model...")
 ```
+
+``` {r time model kngdom}
+log_msg("Starting doy ~ year + kingdom model...")
+
+# modified to include kingdom
+mtime <- glmmTMB(doy ~ year + lat + long + kingdom + (year | species),
+          family = gaussian,
+          data = dat.occ)
+
+log_msg("Done.")
+log_msg("Saving model to disk...")
+
+saveRDS(mtemp, file = paste("data/mtime_model_",
+                            format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
+                            sep = ""))
+
+summary(mtime)
+
+log_msg("Extracting random effects for doy ~ year + kingdom model...")
+
+rnd_eff <- extract_random_effects(mtime)
+
+fwrite(rnd_eff, paste0("data/mtime_model_",
+                       format(Sys.time(), format = "%Y%m%d_%H%M"),
+                       "_rnd_eff.csv"))
+
+# remove model due to memory limitations
+rm(mtime)
+
+log_msg("Done with doy ~ temp model...")
+```
+
+```{r}
+log_msg("Done completely.")
+
+options("log_file" = NULL)
+```
+
