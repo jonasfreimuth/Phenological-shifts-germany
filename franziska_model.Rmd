@@ -7,6 +7,7 @@ output: html_notebook
 library("glmmTMB")
 library("mixedup")
 library("stringr")
+library("data.table")
 library("dplyr")
 
 source("scripts/functions.R")
