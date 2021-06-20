@@ -9,6 +9,7 @@ data
 download
 plots
 DWDdata
+logs
 
 # Rmd outputs
 *.nb.html
