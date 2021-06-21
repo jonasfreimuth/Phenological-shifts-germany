@@ -105,7 +105,7 @@ rm(mtime)
 log_msg("Done with doy ~ year model...")
 ```
 
-``` {r time model kngdom}
+```{undefined eval=FALSE, include=FALSE}
 log_msg("Starting doy ~ year + kingdom model...")
 
 # modified to include kingdom
