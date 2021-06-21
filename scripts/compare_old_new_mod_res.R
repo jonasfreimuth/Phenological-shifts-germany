@@ -9,8 +9,13 @@ library("dplyr")
 library("tidyr")
 library("here")
 library("stringr")
+library("ggplot2")
 
 source("scripts/functions.R")
+
+
+# for time ----------------------------------------------------------------
+
 
 # read in corresponding data
 mres_old <- read.csv("data/species_reaction_over_time.csv")
@@ -45,7 +50,7 @@ mres_diff <- data.frame(id.grp = mres_old$id.grp,
   arrange(id.grp)
 
 # save file 
-write.csv(mres_diff, "data/model_resuls_difference_time.csv")
+write.csv(mres_diff, "data/model_results_difference_time.csv")
 
 
 # Plot results ------------------------------------------------------------
@@ -88,7 +93,7 @@ ggsave(year_intercept_plt, filename = "plots/mres_year_intercept_diff.png")
 
 # read in corresponding data
 mres_old <- read.csv("data/species_reaction_with_temp.csv")
-mres_new <- read.csv("data/mtemp_model_doy_temp_int_idgrp_20210619_2311_rnd_eff.csv")
+mres_new <- read.csv("data/mtemp_model_20210621_1336_rnd_eff.csv")
 
 # isolate species present in both data sets
 both_spec <- intersect(mres_old$species, mres_new$group)
@@ -119,7 +124,7 @@ mres_diff <- data.frame(id.grp = mres_old$id.grp,
   arrange(id.grp)
 
 # save file 
-write.csv(mres_diff, "data/model_resuls_difference_temp.csv")
+write.csv(mres_diff, "data/model_results_difference_temp.csv")
 
 
 # Plot results ------------------------------------------------------------
@@ -137,7 +142,8 @@ temp_slope_plt <- ggplot(mres_diff, aes(reorder(species, - slope_diff), slope_di
   theme_minimal() +
   theme(axis.text.y = element_blank(),
         panel.grid = element_blank())
-temp_slope_plt
+
+# temp_slope_plt
 
 ggsave(temp_slope_plt, filename = "plots/mres_temp_slope_diff.png")
 
@@ -153,6 +159,6 @@ temp_intercept_plt <- ggplot(mres_diff, aes(reorder(species, - intercept_diff), 
   theme_minimal() +
   theme(axis.text.y = element_blank(),
         panel.grid = element_blank())
-temp_intercept_plt
+# temp_intercept_plt
 
 ggsave(temp_intercept_plt, filename = "plots/mres_temp_intercept_diff.png")
