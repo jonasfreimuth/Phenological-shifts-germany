@@ -142,7 +142,8 @@ temp_slope_plt <- ggplot(mres_diff, aes(reorder(species, - slope_diff), slope_di
   theme_minimal() +
   theme(axis.text.y = element_blank(),
         panel.grid = element_blank())
-temp_slope_plt
+
+# temp_slope_plt
 
 ggsave(temp_slope_plt, filename = "plots/mres_temp_slope_diff.png")
 
@@ -158,6 +159,6 @@ temp_intercept_plt <- ggplot(mres_diff, aes(reorder(species, - intercept_diff), 
   theme_minimal() +
   theme(axis.text.y = element_blank(),
         panel.grid = element_blank())
-temp_intercept_plt
+# temp_intercept_plt
 
 ggsave(temp_intercept_plt, filename = "plots/mres_temp_intercept_diff.png")
