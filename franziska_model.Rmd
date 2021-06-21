@@ -8,13 +8,14 @@ library("glmmTMB")
 library("mixedup")
 library("stringr")
 library("data.table")
+library("here")
 library("tidyr")
 library("dplyr")
 
 source("scripts/functions.R")
 
 # TODO: make this fail save
-dir.check("./logs")
+dir.check(here("./logs"))
 
 model_log_file <- paste0("logs/models_",
                             format(Sys.time(), format = "%Y%m%d_%H%M"),
