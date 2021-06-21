@@ -8,6 +8,7 @@ library("glmmTMB")
 library("mixedup")
 library("stringr")
 library("data.table")
+library("tidyr")
 library("dplyr")
 
 source("scripts/functions.R")
@@ -26,7 +27,16 @@ select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
                  'decade', 'id.grp', 'long', 'lat', 'temp')
 
 dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>% 
-  select(matches(select_cols))
+  select(matches(select_cols)) %>%
+  
+  # remove records w/o determined temp
+  drop_na(temp) %>% 
+
+  # center main independent variables to a mean of 0
+  mutate(temp = temp - mean(temp),
+         year = year - mean(year),
+         lat = lat - mean(lat),
+         long = long - mean(long))
 
 ```
 
@@ -41,7 +51,7 @@ mtemp <- glmmTMB(doy ~ temp + lat + long + temp * id.grp + (temp | species),
 log_msg("Done.")
 log_msg("Saving model to disk...")
 
-saveRDS(mtemp, file = paste("data/mtemp_model_",
+saveRDS(mtemp, file = paste("data/mtemp_model_cent_",
                             format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
                             sep = ""))
 
@@ -74,7 +84,7 @@ log_msg("Done.")
 log_msg("Saving model to disk...")
 
 
-saveRDS(mtime, file = paste("data/mtime_model_",
+saveRDS(mtime, file = paste("data/mtime_model_cent_",
                             format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
                             sep = ""))
 
