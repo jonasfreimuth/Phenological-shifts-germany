@@ -9,6 +9,7 @@ library("dplyr")
 library("tidyr")
 library("here")
 library("stringr")
+library("ggplot2")
 
 source("scripts/functions.R")
 
