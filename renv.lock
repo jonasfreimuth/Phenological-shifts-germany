@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.0.2",
+    "Version": "4.1.0",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -282,6 +282,13 @@
       "Repository": "CRAN",
       "Hash": "5eb7b98beb699405198e2cde15b77b01"
     },
+    "cowplot": {
+      "Package": "cowplot",
+      "Version": "1.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b418e8423699d11c7f2087c2bfd07da2"
+    },
     "cpp11": {
       "Package": "cpp11",
       "Version": "0.1.0",
@@ -414,13 +421,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "b8cff1d1391fd1ad8b65877f4c7f2e53"
-    },
-    "geoaxe": {
-      "Package": "geoaxe",
-      "Version": "0.1.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "d834a3030f6269ae4267c13d31103055"
     },
     "ggplot2": {
       "Package": "ggplot2",
@@ -582,6 +582,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "fc1c91e2e8d9e1fc932e75aa1ed989b7"
+    },
+    "magick": {
+      "Package": "magick",
+      "Version": "2.7.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "db36bbb91bf293f0550c51ecbf6f1928"
     },
     "magrittr": {
       "Package": "magrittr",
@@ -879,24 +886,10 @@
     },
     "rgbif": {
       "Package": "rgbif",
-      "Version": "3.2.0",
+      "Version": "3.6.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "21c0d9d281ed32837b26551dc6f72339"
-    },
-    "rgdal": {
-      "Package": "rgdal",
-      "Version": "1.5-12",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "016465080382049b80e24de145c62474"
-    },
-    "rgeos": {
-      "Package": "rgeos",
-      "Version": "0.5-3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "4b63e0cfe930613d0b28bb0761e84aad"
+      "Hash": "bf7f7f62a8107a68235316151f35d189"
     },
     "rio": {
       "Package": "rio",
@@ -1115,19 +1108,19 @@
       "Repository": "CRAN",
       "Hash": "ce4f6271baa94776db692f1cb2055bee"
     },
+    "wellknown": {
+      "Package": "wellknown",
+      "Version": "0.7.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5508d2da9b514f2214357cec1d4df46a"
+    },
     "whisker": {
       "Package": "whisker",
       "Version": "0.4",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ca970b96d894e90397ed20637a0c1bbe"
-    },
-    "wicket": {
-      "Package": "wicket",
-      "Version": "0.4.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "d50bba76a2e61d52c6195e8993ec14be"
     },
     "wikitaxa": {
       "Package": "wikitaxa",
@@ -1142,6 +1135,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ecd17882a0b4419545691e095b74ee89"
+    },
+    "wk": {
+      "Package": "wk",
+      "Version": "0.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f7e41a60d8b19cf505ffa06bf578c7bd"
     },
     "worrms": {
       "Package": "worrms",
