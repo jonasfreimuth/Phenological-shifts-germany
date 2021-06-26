@@ -462,7 +462,7 @@ if (any(c("data.quality.assessment") %in% opts)) {
   
   print(
     ggplot(filter(dat.occ, kingdom == "Plantae")) +
-      geom_point(aes(y_mean_temp, doy, col = floor(year / 10) * 10),
+      geom_point(aes(temp, doy, col = floor(year / 10) * 10),
                  size = 10) +
       # facet_wrap(~institutionCode) +
       theme(axis.title = element_text(size = 160),
@@ -484,7 +484,7 @@ if (any(c("data.quality.assessment") %in% opts)) {
   
   print(
     ggplot(filter(dat.occ, kingdom == "Animalia")) +
-      geom_point(aes(y_mean_temp, doy, col = floor(year / 10) * 10),
+      geom_point(aes(temp, doy, col = floor(year / 10) * 10),
                  size = 10) +
       # facet_wrap(~institutionCode) +
       theme(axis.title = element_text(size = 160),

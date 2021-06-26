@@ -7,7 +7,7 @@
 specplot <-  function(data, spec) {
   print(
     ggplot(filter(data, species == spec),
-           aes(year, mean.doy)) +
+           aes(year, doy)) +
       geom_pointrange(aes(ymin = ci.min.doy, ymax = ci.max.doy)) +
       geom_smooth(method = "lm") +
       theme_minimal()
@@ -100,7 +100,7 @@ xintercpt <- function(yintercept, slope) {
 
 # function for generating a data frame of linear model estimates and pvals for all levels
 # of a given data frame and a given variable
-lm.sum <- function(data = dat.occ, col = id.grp, formula = mean.doy ~ year) {
+lm.sum <- function(data = dat.occ, col = id.grp, formula = doy ~ year) {
   
   # make quosure
   col <- enquo(col)
@@ -143,7 +143,7 @@ lm.sum <- function(data = dat.occ, col = id.grp, formula = mean.doy ~ year) {
 }
 
 #function for getting individual slopes
-slopes <- function(data, formula = mean.doy ~ year,
+slopes <- function(data, formula = doy ~ year,
                    tax_level = species,
                    ..., thr = 1,
                    time_var = year) {
@@ -283,7 +283,7 @@ slopes <- function(data, formula = mean.doy ~ year,
                 end = max(time),
                 span = (max(time) - min(time)) + 1,
                 n = length(time),
-                mean.doy = mean(mean.doy)) %>%
+                doy = mean(doy)) %>%
       ungroup()
     
     #add statistics data
@@ -326,7 +326,7 @@ trait <- function(data = dat.occ.plant, var, trait_name, min_spec = 2) {
   data <- mutate(data, trait := !! trait_name, var := !! var)
   
   #calculate slopes 
-  stat <- slopes(data, mean.doy ~ var, tax_level = species, trait)
+  stat <- slopes(data, doy ~ var, tax_level = species, trait)
   
   #generate vector of every single occurrence of a trait
   traits <- as.character(stat$trait) %>%
@@ -408,7 +408,7 @@ analyse.trait <- function(trait = Habitat, data = dat.occ.plant) {
   #calculate stats and meta stats for Habitat trait, time and temperature
   stat.trait.time <- trait(var = year, trait_name = !! trait, data = data) 
   
-  stat.trait.temp <- trait(var = y_mean_temp, trait_name = !! trait, data = data)
+  stat.trait.temp <- trait(var = temp, trait_name = !! trait, data = data)
   
   #abbreviate trait name from here
   trait <- sym(abbreviate(tolower(quo_get_expr(trait)), 7, strict = TRUE))
@@ -653,9 +653,9 @@ corvif <- function(data) {
   data <- as.data.frame(data, formula)
   
   #vif part
-  form <- formula(paste("mean.doy ~ ", paste(strsplit(
+  form <- formula(paste("doy ~ ", paste(strsplit(
     names(data), " "), collapse = " + ")))
-  data   <- data.frame(mean.doy = 1 + rnorm(nrow(data)) , data)
+  data   <- data.frame(doy = 1 + rnorm(nrow(data)) , data)
   lm_mod  <- lm(form, data)
   
   cat("\n\nVariance inflation factors\n\n")
@@ -963,7 +963,7 @@ decimal_to_percent_format <- function() {
 
 # define function for making midado plots
 dur_mikado_plot <- function(data, filename = NULL, width = 1500, height = 1000,
-                            min = min.doy, mean = mean.doy, max = max.doy, x = year, facet = ~ id.grp,
+                            min = min.doy, mean = doy, max = max.doy, x = year, facet = ~ id.grp,
                             raw.alpha = 0.3,
                             title = NULL, xlab = NULL, ylab = NULL) {
   
@@ -977,7 +977,7 @@ dur_mikado_plot <- function(data, filename = NULL, width = 1500, height = 1000,
   print(
     ggplot(data) +
       # group regressions
-      # geom_line(aes(year, mean.doy, group = species),
+      # geom_line(aes(year, doy, group = species),
       #           stat = "smooth", method = "lm", se = FALSE,
       #           col = "gray31", alpha = raw.alpha, size = 1.5) +
       # geom_line(aes(!! x, !! min, group = species),
@@ -1303,7 +1303,7 @@ get_traits <- function(text, traits, patterns) {
 # define function to plot and save
 huge_plot <- function(path, width = 18000, height = 12000, 
                       x = year,
-                      y = mean.doy,
+                      y = doy,
                       ...,
                       ymin = min.doy,
                       ymax = max.doy,
@@ -1387,7 +1387,7 @@ huge_plot <- function(path, width = 18000, height = 12000,
 # define function to plot and save
 huge_plot_print <- function(path, width = 18000, height = 12000, 
                             x = year,
-                            y = mean.doy,
+                            y = doy,
                             ...,
                             ymin = min.doy,
                             ymax = max.doy,
