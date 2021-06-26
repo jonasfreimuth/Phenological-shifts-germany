@@ -1,13 +1,22 @@
+# R files
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+
+# script generated folders
 data
 download
 plots
 DWDdata
-analysis_main.nb.html
-gadm36_DEU_1_sp.rds
+logs
+
+# Rmd outputs
+*.nb.html
+*.pdf
+
+# spatial data
+gadm*.rds
 
 # ignore possibly copyright protected material
 static_data/bioflor_traits.csv
