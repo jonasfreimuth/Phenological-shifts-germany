@@ -1,0 +1,89 @@
+
+# Setup -------------------------------------------------------------------
+
+library("glmmTMB")
+library("mixedup")
+library("stringr")
+library("data.table")
+library("here")
+library("dplyr")
+
+source("scripts/functions.R")
+
+# set up logging
+# TODO: make this fail save
+dir.check(here("logs"))
+
+model_log_file <- paste0("logs/models_",
+                         format(Sys.time(), format = "%Y%m%d_%H%M"),
+                         ".log")
+
+file.create(model_log_file)
+
+options("log_file" = model_log_file)
+
+# read in data
+select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
+                 'decade', 'id.grp', 'long', 'lat', 'temp')
+
+dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>% 
+  
+  # reduce dataset, only use relevant columns
+  select(matches(select_cols)) %>% 
+  
+  # for testing purposes, limit number of observations
+  slice_sample(n = 1000)
+
+# read in preset model formulas
+form_vec <- readLines("static_data/model_formulas.txt")
+
+
+# Model loop --------------------------------------------------------------
+
+# loop through all preset models
+for (form in form_vec) {
+  
+  mod_form <- as.formula(form)
+  
+  # extract response and fist dependent variable
+  simple_form <- str_split(form, " ", simplify = TRUE)[, 1:3] %>%
+    paste(collapse = "")
+  
+  log_msg("Starting", simple_form, "model...")
+  
+  # run the model, this step takes a lot of time
+  glm_mod <- glmmTMB(mod_form, family = gaussian, data = dat.occ)
+  
+  log_msg("Done.")
+  log_msg("Saving model to disk...")
+  
+  # save model to disk
+  saveRDS(glm_mod,
+          file = paste("data/glmm_model_",
+                       str_replace(simple_form, "~", "_"), "_",
+                       format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
+                       sep = ""))
+  
+  # save summary output to disk
+  sink(paste("data/glmm_summary_",
+             str_replace(simple_form, "~", "_"), "_",
+             format(Sys.time(), format = "%Y%m%d_%H%M"), ".txt",
+             sep = ""))
+  summary(glm_mod)
+  sink()
+  
+  log_msg("Extracting random effects for", simple_form, "model...")
+  
+  rnd_eff <- extract_random_effects(glm_mod)
+  
+  fwrite(rnd_eff, paste0("data/glmm_rnd_eff_",
+                         str_replace(simple_form, "~", "_"), "_",
+                         format(Sys.time(), format = "%Y%m%d_%H%M"),
+                         ".csv"))
+  
+  # remove model due to memory limitations
+  rm(glm_mod)
+  
+  log_msg("Done with", simple_form, "model...")
+  
+}
