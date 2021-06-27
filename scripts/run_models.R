@@ -31,6 +31,9 @@ dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>
   # reduce dataset, only use relevant columns
   select(matches(select_cols)) %>% 
   
+  # # for testing, only take small subset of observations
+  # slice_sample(n = 1000) %>% 
+  
   # remove records w/o determined temp
   drop_na(temp) %>% 
   
@@ -38,10 +41,7 @@ dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>
   mutate(temp = temp - mean(temp),
          year = year - mean(year),
          lat = lat - mean(lat),
-         long = long - mean(long)) %>% 
-  
-  # for testing purposes, limit number of observations
-  slice_sample(n = 1000)
+         long = long - mean(long))
 
 # read in preset model formulas
 form_vec <- readLines("static_data/model_formulas.txt")
@@ -109,3 +109,4 @@ for (form in form_vec) {
   
   log_msg("Done with", simple_form, "model...")
   
+}
