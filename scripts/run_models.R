@@ -52,8 +52,6 @@ form_vec <- readLines("static_data/model_formulas.txt")
 # loop through all preset models
 for (form in form_vec) {
   
-  mod_form <- as.formula(form)
-  
   # split model formula into constituents
   mod_comps <- str_split(form, " ", simplify = TRUE)
   
@@ -61,10 +59,18 @@ for (form in form_vec) {
   simple_form <- mod_comps[, 1:3] %>%
     paste(collapse = "")
   
+  # extract random variable
+  # one or more word characters preceeded by a pipe symbol and zero or one 
+  #   whitespace
+  rnd_var <- str_extract(form, "(?<=\\|\\s?)\\w+")
+  
   # extract main independent var
   main_var <- mod_comps[, 3]
   
   log_msg("Starting", simple_form, "model...")
+  
+  # convert formula string to proper formula
+  mod_form <- as.formula(form)
   
   # run the model, this step takes a lot of time
   glm_mod <- glmmTMB(mod_form, family = gaussian, data = dat.occ)
@@ -97,9 +103,14 @@ for (form in form_vec) {
   
   # extract random effects, add them to overall effects to obtain proper 
   # estimate
-  rnd_eff <- ranef(glm_mod)$cond[[1]]
+  rnd_eff <- ranef(glm_mod)$cond[[rnd_var]]
+  
   rnd_eff[["(Intercept)"]] <- rnd_eff[["(Intercept)"]] + intercept
   rnd_eff[[main_var]] <- rnd_eff[[main_var]] + slope
+  rnd_eff[[rnd_var]] <- row.names(rnd_eff)
+  
+  rnd_eff <- rnd_eff %>% 
+    select(matches(c(rnd_var, main_var, "(Intercept)")))
   
   fwrite(rnd_eff, paste0("data/glmm_rnd_eff_",
                          str_replace(simple_form, "~", "_"), "_",
