@@ -80,12 +80,11 @@ for (form in form_vec) {
                        sep = ""))
   
   # save summary output to disk
-  sink(paste("data/glmm_summary_",
-             str_replace(simple_form, "~", "_"), "_",
-             format(Sys.time(), format = "%Y%m%d_%H%M"), ".txt",
-             sep = ""))
-  summary(glm_mod)
-  sink()
+  capture.output(summary(glm_mod), 
+                 file = paste("data/glmm_summary_",
+                       str_replace(simple_form, "~", "_"), "_",
+                       format(Sys.time(), format = "%Y%m%d_%H%M"), ".txt",
+                       sep = ""))
   
   log_msg("Extracting random effects for", simple_form, "model...")
   
@@ -110,4 +109,3 @@ for (form in form_vec) {
   
   log_msg("Done with", simple_form, "model...")
   
-}
