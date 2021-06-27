@@ -78,21 +78,21 @@ for (form in form_vec) {
   log_msg("Done.")
   log_msg("Saving model to disk...")
   
-  timestamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
+  time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
   # save model to disk
   saveRDS(glm_mod,
           file = paste("data/glmm_model_",
                        str_replace(simple_form, "~", "_"), "_",
-                       timestamp, ".rds",
+                       time_stamp, ".rds",
                        sep = ""))
   
   # save summary output to disk
   capture.output(summary(glm_mod), 
                  file = paste("data/glmm_summary_",
-                       str_replace(simple_form, "~", "_"), "_",
-                       timestamp, ".txt",
-                       sep = ""))
+                              str_replace(simple_form, "~", "_"), "_",
+                              time_stamp, ".txt",
+                              sep = ""))
   
   log_msg("Extracting random effects for", simple_form, "model...")
   
@@ -105,17 +105,18 @@ for (form in form_vec) {
   # estimate
   rnd_eff <- ranef(glm_mod)$cond[[rnd_var]]
   
-  rnd_eff[["(Intercept)"]] <- rnd_eff[["(Intercept)"]] + intercept
-  rnd_eff[[main_var]] <- rnd_eff[[main_var]] + slope
-  rnd_eff[[rnd_var]] <- row.names(rnd_eff)
+  # quick bodge to get an appropriate df for the weird ways i want to fill it
+  rnd_eff_out <- data.frame(row.names = 1:nrow(rnd_eff))
   
-  rnd_eff <- rnd_eff %>% 
-    select(matches(c(rnd_var, main_var, "(Intercept)")))
+  rnd_eff_out[[rnd_var]] <- row.names(rnd_eff)
+  rnd_eff_out[["Intercept"]] <- rnd_eff[["(Intercept)"]] + intercept
+  rnd_eff_out[[main_var]] <- rnd_eff[[main_var]] + slope
   
-  fwrite(rnd_eff, paste0("data/glmm_rnd_eff_",
-                         str_replace(simple_form, "~", "_"), "_",
-                         timestamp,
-                         ".csv"))
+  fwrite(rnd_eff_out,
+         paste0("data/glmm_rnd_eff_",
+                str_replace(simple_form, "~", "_"), "_",
+                time_stamp,
+                ".csv"))
   
   # remove model due to memory limitations
   rm(glm_mod)
