@@ -31,8 +31,8 @@ dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>
   # reduce dataset, only use relevant columns
   select(matches(select_cols)) %>% 
   
-  # # for testing, only take small subset of observations
-  # slice_sample(n = 1000) %>% 
+  # for testing, only take small subset of observations
+  slice_sample(n = 1000) %>%
   
   # remove records w/o determined temp
   drop_na(temp) %>% 
@@ -72,18 +72,20 @@ for (form in form_vec) {
   log_msg("Done.")
   log_msg("Saving model to disk...")
   
+  timestamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
+  
   # save model to disk
   saveRDS(glm_mod,
           file = paste("data/glmm_model_",
                        str_replace(simple_form, "~", "_"), "_",
-                       format(Sys.time(), format = "%Y%m%d_%H%M"), ".rds",
+                       timestamp, ".rds",
                        sep = ""))
   
   # save summary output to disk
   capture.output(summary(glm_mod), 
                  file = paste("data/glmm_summary_",
                        str_replace(simple_form, "~", "_"), "_",
-                       format(Sys.time(), format = "%Y%m%d_%H%M"), ".txt",
+                       timestamp, ".txt",
                        sep = ""))
   
   log_msg("Extracting random effects for", simple_form, "model...")
@@ -101,7 +103,7 @@ for (form in form_vec) {
   
   fwrite(rnd_eff, paste0("data/glmm_rnd_eff_",
                          str_replace(simple_form, "~", "_"), "_",
-                         format(Sys.time(), format = "%Y%m%d_%H%M"),
+                         timestamp,
                          ".csv"))
   
   # remove model due to memory limitations
