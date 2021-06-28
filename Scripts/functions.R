@@ -175,86 +175,37 @@ slopes <- function(data, formula = doy ~ year,
   # #take one row out to store values from each loop
   # stat.i <- stat.out[1,]
   
+  sum_var_vec <- c( 
+    "kingdom",
+    "phylum",
+    "order",
+    "id.grp",
+    "family",
+    "genus",
+    "species"
+  )
+  
+  n_sum_var <- length(sum_var_vec)
+  
   #select summary vars according to tax level
-  # there's porbably a better way to do this but i can't be asked right now
   if(taxon == "species") {
-    
-    #make a list of col names
-    sum_vars <- syms(
-      list(
-        "kingdom",
-        "phylum",
-        "order",
-        "id.grp",
-        "family",
-        "genus",
-        "species"
-      )
-    )
-    
-    
+    tax_depth <- 0
   } else if (taxon == "genus") {
-    
-    #make a list of col names
-    sum_vars <- syms(
-      list(
-        "kingdom",
-        "phylum",
-        "order",
-        "id.grp",
-        "family",
-        "genus"
-      )
-    )
-    
-    #add the additional vars to the list
-    sum_vars <-  c(sum_vars, lapply(add_vars, quo_get_expr))
-    
+    tax_depth <- 1
   } else if (taxon == "family") {
-    
-    #make a list of col names
-    sum_vars <- syms(
-      list(
-        "kingdom",
-        "phylum",
-        "order",
-        "id.grp",
-        "family"
-      )
-    )
-    
+    tax_depth <- 2
   } else if (taxon == "order") {
-    
-    #make a list of col names
-    sum_vars <- syms(
-      list(
-        "kingdom",
-        "phylum",
-        "order",
-        "id.grp"
-      )
-    )
-    
+    tax_depth <- 3
   } else if (taxon == "phylum") {
-    
-    #make a list of col names
-    sum_vars <- syms(
-      list(
-        "kingdom",
-        "phylum"
-      )
-    )
-    
+    tax_depth <- 4
   } else if (taxon == "kingdom") {
-    
-    #make a list of col names
-    sum_vars <- syms(
-      list(
-        "kingdom"
-      )
-    )
-    
+    tax_depth <- 5
   }
+  
+  #make a list of col names
+  sum_vars <- syms(as.list(
+    sum_var_vec[1:(n_sum_var - tax_depth)]
+  ))
   
   # add the additional vars to the list
   sum_vars <-  c(sum_vars, lapply(add_vars, quo_get_expr))
@@ -286,22 +237,42 @@ slopes <- function(data, formula = doy ~ year,
                 doy = mean(doy)) %>%
       ungroup()
     
-    #add statistics data
-    out <- out %>%
-      mutate(slope = sum.mod$coefficients[2,1],
-             intercept = sum.mod$coefficients[1,1],
-             pval = pf(sum.mod$fstatistic[1], sum.mod$fstatistic[2],
-                       sum.mod$fstatistic[3], lower.tail=FALSE),
-             rsquared = sum.mod$r.squared,
-             df = sum.mod$fstatistic[3],
-             fstat = sum.mod$fstatistic[1],
-             ci.min = ci.mod[1,1],
-             ci.max = ci.mod[1,2]
-             
-      )
+    # protection for when the slope could not be estimated
+    if (nrow(sum.mod$coefficients) >= 2) {
+      
+      #add statistics data
+      out <- out %>%
+        mutate(slope = sum.mod$coefficients[2,1],
+               intercept = sum.mod$coefficients[1,1],
+               pval = pf(sum.mod$fstatistic[1], sum.mod$fstatistic[2],
+                         sum.mod$fstatistic[3], lower.tail=FALSE),
+               rsquared = sum.mod$r.squared,
+               df = sum.mod$fstatistic[3],
+               fstat = sum.mod$fstatistic[1],
+               ci.min = ci.mod[1,1],
+               ci.max = ci.mod[1,2]
+               
+        )
+      
+    } else {
+      
+      warning(paste("Slope of", x, "could not be estimated, only one value",
+                    "present for independent variable. NAs generated."))
+      
+      out <- out %>%
+        mutate(slope = NA,
+               intercept = sum.mod$coefficients[1,1],
+               pval = NA,
+               rsquared = sum.mod$r.squared,
+               df = NA,
+               fstat = NA,
+               ci.min = ci.mod[1,1],
+               ci.max = ci.mod[1,2]
+               
+        )
+    }
     
     return(out)
-    
     
   })
   
@@ -1033,7 +1004,7 @@ dur_slope_plot_save <- function(x = id.grp,
                                 xlab = NULL, ylab = NULL,
                                 ylim = NULL,
                                 y_ax_explanation = NULL # currently unused
-                                ) {
+) {
   
   x <- enquo(x)
   y <- enquo(y)
@@ -1092,7 +1063,7 @@ dur_slope_plot_save <- function(x = id.grp,
          y = ylab) +
     coord_cartesian(ylim = ylim,
                     # xlim = c(1, nrow(metadata) + 1) # extends plot to the right
-                    ) +
+    ) +
     scale_y_continuous(labels = mult_10_format(),
                        
     ) +
@@ -1105,7 +1076,7 @@ dur_slope_plot_save <- function(x = id.grp,
       axis.text.x = element_text(size = 35,
                                  # angle = 25,
                                  # hjust = 1
-                                 ),
+      ),
       axis.ticks = element_line(colour = col.ax, size = 1.2),
       axis.ticks.length.y.left = unit(8, "bigpts"),
       axis.ticks.length.x.bottom = unit(8, "bigpts"),
