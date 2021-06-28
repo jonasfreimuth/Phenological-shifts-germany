@@ -2,10 +2,14 @@
 .Rhistory
 .RData
 .Ruserdata
-Data
-Download
-Plots
-analysis_main.nb.html
+data
+download
+plots
+
+# rmd files
+**/*.html
+
+# additional data
 gadm36_DEU_1_sp.rds
 
 # ignore possibly copyright protected material
