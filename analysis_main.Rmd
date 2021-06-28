@@ -154,13 +154,13 @@ if(run.occ.get |
 ```{r control running of the rest, eval=FALSE, include=FALSE}
 
 # check if it is necessary to run the whole script in principle
-if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
+if (file.exists(here("data", "workspace_save.RData")) & force.main == FALSE) {
   
   # now check whether there were changes in the data i.e. we had to run the occurrence getting script
   # if not, it should be save to just load the previous data and stop
   if (! run.occ.get) {
     
-    load(here("Data", "workspace_save.RData"))
+    load(here("data", "workspace_save.RData"))
     
     # beep to notify we've stopped
     beep()
@@ -484,7 +484,7 @@ ggplot() +
 ```{r Decadal duration calculation}
 
 # define vector of names of dat.occ useful for decadal duration analysis
-names.dur.dec <- c(names(dat.occ)[1:8], "doy")
+names.dur.dec <- c(names(dat.occ)[1:8], "doy", "decade")
 
 # average data on decadal level
 dat.occ.dur.dec <- dat.occ %>%
@@ -692,7 +692,7 @@ gridExtra::grid.arrange(slope_dec_first,
 
 ```
 
-```{r Duration vs asymmetry}
+```{r Duration vs asymmetry, eval=FALSE, include=FALSE}
 
 ggplot() +
   geom_point(aes(slope.diff, slope, group = id.grp),
@@ -724,7 +724,7 @@ ggplot() +
 ```
 
 
-```{r, fig.width=10,fig.height=7}
+```{r eval=FALSE, fig.height=7, fig.width=10, include=FALSE}
 
 # dat.occ.2k <- dat.occ
 dat.occ.2k <- filter(dat.occ, year >= thr.2k.min & year <= thr.2k.max)
@@ -754,7 +754,7 @@ gridExtra::grid.arrange(p.first, p.last, p.dur, p.temp +
 
 ```
 
-```{r records over time}
+```{r records over time, eval=FALSE, include=FALSE}
 dat.n <- dat.occ %>% 
   select(year, id.grp) %>% 
   group_by(year, id.grp) %>%
@@ -773,7 +773,7 @@ ggplot(dat.n,
 
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 # get slopes for first, last doy and their difference (duration) into a df
 stat.spec.dur.2k <-
   bind_cols(
@@ -879,7 +879,7 @@ stat.spec.dur.2k.poll.meta <-  stat.spec.dur.2k %>%
 
 ```
 
-```{r, fig.width=10,fig.height=7}
+```{r eval=FALSE, fig.height=7, fig.width=10, include=FALSE}
 
 
 slope_dur <- dur_slope_plot(
@@ -948,7 +948,7 @@ gridExtra::grid.arrange(slope_first, slope_last, slope_diff, slope_dur)
 ```
 
 
-```{r Mikado plot, fig.width=10,fig.height=7}
+```{r Mikado plot, eval=FALSE, fig.height=7, fig.width=10, include=FALSE}
 # set moethod for all lines
 method <- "lm"
 se <- FALSE
@@ -1689,7 +1689,7 @@ for (i in seq(1, nrow(dat.int.year))) {
 dat.int.time <- drop_na(dat.int.time, diff.slope)
 
 #save interaction data
-write.csv(dat.int.time, here("Data", "pla_poll_interactions_time.csv"), row.names = FALSE)
+write.csv(dat.int.time, here("data", "pla_poll_interactions_time.csv"), row.names = FALSE)
 
 
 
@@ -1772,7 +1772,7 @@ for (i in seq(1, nrow(dat.int.year))) {
 dat.int.temp <- drop_na(dat.int.temp, diff.slope)
 
 #save interaction data
-fwrite(dat.int.temp, here("Data", "pla_poll_interactions_temp.csv"))
+fwrite(dat.int.temp, here("data", "pla_poll_interactions_temp.csv"))
 
 ```
 
@@ -1896,7 +1896,7 @@ TukeyHSD(mod.int.temp)
 
 Differences between yearly mean DOYs in an Interaction over time, plotted all in one:  
 
-```{r Prune decadal Data}
+```{r Prune decadal data}
 
 dat.occ.dec <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>%
   #exclude records without interaction data
@@ -1920,14 +1920,14 @@ ggplot(# us
   #   group_by(species)
   # %>% filter(kingdom == "Plantae")
 ) +
-  geom_ribbon(aes(
-    x = decade,
-    ymin = ci.min.doy,
-    ymax = ci.max.doy,
-    group = species,
-    fill = id.grp
-  ),
-  alpha = .15) +
+  # geom_ribbon(aes(
+  #   x = decade,
+  #   ymin = ci.min.doy,
+  #   ymax = ci.max.doy,
+  #   group = species,
+  #   fill = id.grp
+  # ),
+  # alpha = .15) +
   geom_line(aes(x = decade, y = doy, group = species), alpha = .5) +
   geom_point(aes(x = decade, y = doy, col = id.grp)) +
   labs(x = "Decade", y = "Mean decadal DOY  (\u00B1 95% CI)") +
@@ -1996,8 +1996,8 @@ for (i in seq(1, nrow(int.dec))) {
               # calculate measure of synchrony (absolute value of doy.difference)
               synchrony = abs(doy.diff),
               # also preserve info on who is earlier
-              early.partner = switch(EXPR = toString(doy.diff/abs(doy.diff)),
-                                     "-1" = "poll", "1" = "plant"),
+              early.partner = ifelse(doy.diff/abs(doy.diff) == 1, "plant",
+                                     "poll"),
               plant = last(species, kingdom),
               poll = first(species, kingdom),
               id = i,
@@ -2018,13 +2018,18 @@ for (i in seq(1, nrow(int.dec))) {
     synchrony.slope = as.data.frame(sum.i.time$coefficients)$Estimate[2],
     pval = as.data.frame(sum.i.time$coefficients)$`Pr(>|t|)`[2],
     decades = "all decades",
+    
     # also add info on which is the predominantly early partner
     # returns both if equally frequent
     pred.early.partner = paste(names(which(
       max(table(int.i.mean$early.partner)) == table(int.i.mean$early.partner)
     )), collapse = ", "),
+    
     # add info on whether predominance switched
-    early.switch = if (all(int.i.mean$early.partner == int.i.mean$early.partner[1])) {
+    # first, check if NAs are present, if yes, we cant say
+    early.switch = if (any(is.na(int.i.mean$early.partner))) {
+      FALSE
+    } else if (all(int.i.mean$early.partner == int.i.mean$early.partner[1])) {
       FALSE
     } else {
       TRUE
@@ -2051,8 +2056,12 @@ for (i in seq(1, nrow(int.dec))) {
     pred.early.partner = paste(names(which(
       max(table(int.i.mean$early.partner)) == table(int.i.mean$early.partner)
     )), collapse = ", "),
+    
     # add info on whether predominance switched
-    early.switch = if (all(int.i.mean$early.partner == int.i.mean$early.partner[1])) {
+    # first, check if NAs are present, if yes, we cant say
+    early.switch = if (any(is.na(int.i.mean$early.partner))) {
+      FALSE
+    } else if (all(int.i.mean$early.partner == int.i.mean$early.partner[1])) {
       FALSE
     } else {
       TRUE
@@ -2158,6 +2167,8 @@ for (i in seq(1, nrow(int.dec))) {
   }
   
 }
+
+
 
 #correct pvalues for multiple testing
 stat.int.time$pval.adj <- p.adjust(stat.int.time$pval, method = "fdr")
@@ -3325,23 +3336,23 @@ if (any(c("full", "adiitional") %in% opts)){
 ```{r Save stat tables}
 
 #save species over time table
-write.csv(stat.spec.time, here("Data", "species_reaction_over_time.csv"),
+write.csv(stat.spec.time, here("data", "species_reaction_over_time.csv"),
           row.names = FALSE)
 
 #save species with temperature table
-write.csv(stat.spec.temp, here("Data", "species_reaction_with_temp.csv"),
+write.csv(stat.spec.temp, here("data", "species_reaction_with_temp.csv"),
           row.names = FALSE)
 
 #save group meta stat table
-write.csv(stat.group.meta, here("Data", "group_mean_slopes.csv"),
+write.csv(stat.group.meta, here("data", "group_mean_slopes.csv"),
           row.names = FALSE)
 
 #time interactions
-write.csv(dat.int.time, here("Data", "pla_poll_interacions_time.csv"),
+write.csv(dat.int.time, here("data", "pla_poll_interacions_time.csv"),
           row.names = FALSE)
 
 #temp interactions
-write.csv(dat.int.temp, here("Data", "pla_poll_interacions_temp.csv"),
+write.csv(dat.int.temp, here("data", "pla_poll_interacions_temp.csv"),
           row.names = FALSE)
 
 # save all results to csv
