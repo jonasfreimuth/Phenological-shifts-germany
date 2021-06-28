@@ -60,7 +60,7 @@ for (form in form_vec) {
     paste(collapse = "")
   
   # extract random variable
-  # one or more word characters preceeded by a pipe symbol and zero or one 
+  # one or more word characters preceded by a pipe symbol and zero or one 
   #   whitespace
   rnd_var <- str_extract(form, "(?<=\\|\\s?)\\w+")
   
@@ -100,17 +100,19 @@ for (form in form_vec) {
   # this is not very elegant and might break
   intercept <- glm_mod$fit$par[1]
   slope <- glm_mod$fit$par[2]
-  
-  # extract random effects, add them to overall effects to obtain proper 
+
+  # extract random effects, add them to overall effects to obtain proper
   # estimate
   rnd_eff <- ranef(glm_mod)$cond[[rnd_var]]
-  
+
   # quick bodge to get an appropriate df for the weird ways i want to fill it
   rnd_eff_out <- data.frame(row.names = 1:nrow(rnd_eff))
-  
+
   rnd_eff_out[[rnd_var]] <- row.names(rnd_eff)
   rnd_eff_out[["Intercept"]] <- rnd_eff[["(Intercept)"]] + intercept
   rnd_eff_out[[main_var]] <- rnd_eff[[main_var]] + slope
+  
+  # rnd_eff_out <- coef(glm_mod)
   
   fwrite(rnd_eff_out,
          paste0("data/glmm_rnd_eff_",
