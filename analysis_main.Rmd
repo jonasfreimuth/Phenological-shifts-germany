@@ -88,7 +88,14 @@ opts <- c()
 # #set max months of flowering threshold (redo pruning after changing)
 # thr.FlDur <- 12
 
+# static vars ------------------------------------------
 
+# which columns to select from pruned data, could save some memory
+# should only be changed in case columns are no longer needed or new ones 
+# become required
+data_cols <- c('kingdom', 'phylum', 'order', 'family', 'genus', 'species',
+               'year', 'month', 'day', 'doy', 'decade',
+               'id.grp', 'decade2', 'long', 'lat', 'temp')
 
 # Functions --------------------------------------------
 
@@ -184,17 +191,29 @@ if (file.exists(here("data", "workspace_save.RData")) & force.main == FALSE) {
 
 
 ```{r Load data, echo=FALSE}
-# load yearly mean data
-dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") 
 
-# make sure there are records for a certain fraction of years
-thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
+dat.occ <- fread("data/f_occurrences_full_pruned.csv", select = data_cols,
+                 showProgress = FALSE)
+  
+# TODO: for testing, select a random fraction of species and use those in the 
+# analysis
+all_species <- unique(dat.occ$species)
+frac_species <- sample(all_species, length(all_species) * 0.1)
 
-#exclude species that span less than x years
-dat.occ <- dat.occ %>%
-  group_by(species) %>%
-  filter(length(year) >= thr.year) %>%
-  ungroup()
+dat.occ <- dat.occ %>% 
+  filter(species %in% frac_species)
+
+
+
+# TODO: this should not be necessary for this analysis
+# # make sure there are records for a certain fraction of years
+# thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
+# 
+# #exclude species that span less than x years
+# dat.occ <- dat.occ %>%
+#   group_by(species) %>%
+#   filter(length(year) >= thr.year) %>%
+#   ungroup()
 
 
 ## Create Subsets
@@ -1898,7 +1917,12 @@ Differences between yearly mean DOYs in an Interaction over time, plotted all in
 
 ```{r Prune decadal data}
 
-dat.occ.dec <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>%
+dat.occ.dec <- dat.occ <- fread("data/f_occurrences_full_pruned.csv", select = data_cols,
+                 showProgress = FALSE) %>%
+  
+  # TODO: for testing, only use the randomly selected species from the start
+  filter(species %in% frac_species) %>% 
+  
   #exclude records without interaction data
   filter(species %in% dat.int$poll |
            species %in% dat.int$plant) %>%
