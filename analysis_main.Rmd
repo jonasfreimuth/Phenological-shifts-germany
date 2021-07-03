@@ -1455,6 +1455,8 @@ cor.tests <- do.call(rbind, cor.tests) %>%
 
 
 ggplot() +
+  
+  # raw data points and errorbars
   geom_point(aes(time.slope, temp.slope, group = id.grp),
              data = stat.spec.both,
              alpha = 0.5,
@@ -1470,12 +1472,27 @@ ggplot() +
                      xmax = time.ci.max),
                  data = stat.spec.both,
                  alpha = 0.5,
-                 col = "gray50"
-  ) +
+                 col = "gray50") +
+  
+  # lines for means down to axis for time
+  geom_segment(
+    aes(x = mean.slope.Year, xend = mean.slope.Year,
+        y = -Inf, yend = mean.slope.Temperature,
+        col = id.grp),
+    data = stat.spec.both.meta,
+    alpha = 0.8) +
+  # lines for means down to axis for temp
+  geom_segment(
+    aes(x = -Inf, xend = mean.slope.Year,
+        y = mean.slope.Temperature, yend = mean.slope.Temperature,
+        col = id.grp),
+    data = stat.spec.both.meta,
+    alpha = 0.8) +
+  
+  # group means and error bars
   geom_point(aes(mean.slope.Year, mean.slope.Temperature, col = id.grp),
              data = stat.spec.both.meta,
-             size = 3
-  ) +
+             size = 3) +
   geom_errorbar(aes(x = mean.slope.Year,
                     ymin = ci.min.Temperature,
                     ymax = ci.max.Temperature, col = id.grp),
@@ -1484,13 +1501,18 @@ ggplot() +
                      xmin = ci.min.Year,
                      xmax = ci.max.Year, col = id.grp),
                  data = stat.spec.both.meta) +
+  
+  # group sizes, correlation and stat. significance
   geom_text(data = cor.tests,
             aes(x = mean(c(min(stat.spec.both$time.ci.min), max(stat.spec.both$time.ci.max))),
                 y = ypos(stat.spec.both$temp.ci.max),
                 label = str_glue("n = {n.slope.Year}, r =  {round(cor, 2)}\n{pval.sig}")),
             col = "gray38") +
+  
+  # formatting
   facet_wrap(~ id.grp, nrow = 1) +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid = element_blank())
 
 ```
 
