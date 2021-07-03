@@ -743,36 +743,6 @@ ggplot() +
 ```
 
 
-```{r eval=FALSE, fig.height=7, fig.width=10, include=FALSE}
-
-# dat.occ.2k <- dat.occ
-dat.occ.2k <- filter(dat.occ, year >= thr.2k.min & year <= thr.2k.max)
-
-
-p.dur <- dur_plot_2k(x = year, y = duration, col = id.grp,
-                     data = dat.occ.2k,
-                     title = str_glue("Duration of activity (last - first doy) over time
-                                   ({thr.2k.min} - {thr.2k.max})"),
-                     ylab = "Duration [days]")
-
-p.first <- dur_plot_2k(x = year, y = min.doy, col = id.grp,
-                       data = dat.occ.2k,
-                       title = str_glue("First occurrence DOY over time
-                                   ({thr.2k.min} - {thr.2k.max})"),
-                       ylab = "First DOY")
-
-p.last <- dur_plot_2k(x = year, y = max.doy, col = id.grp,
-                      data = dat.occ.2k,
-                      title = str_glue("Last occurrence DOY over time
-                                   ({thr.2k.min} - {thr.2k.max})"),
-                      ylab = "Last DOY")
-
-# plot everything in one
-gridExtra::grid.arrange(p.first, p.last, p.dur, p.temp +
-                          geom_smooth(aes(year, temp), method = "auto"))
-
-```
-
 ```{r records over time, eval=FALSE, include=FALSE}
 dat.n <- dat.occ %>% 
   select(year, id.grp) %>% 
@@ -1531,6 +1501,8 @@ ggplot() +
 cat(
   "It may not be possible to calculate slopes for species in this timeframe.\nAs a result, group sizes may differ."
 )
+
+dat.occ.2k <- filter(dat.occ, year >= thr.2k.min & year <= thr.2k.max)
 
 # calculate species slopes
 stat.spec.2k.time <- slopes(dat.occ.2k, thr = 2)
