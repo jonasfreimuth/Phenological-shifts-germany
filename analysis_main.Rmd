@@ -1409,8 +1409,9 @@ cor.tests <-
   lapply(unique(stat.spec.both$id.grp), function(x, data = stat.spec.both) {
     stat.grp <- filter(data, id.grp == x)
     
-    # make sure data has enough observations for cor.test
-    if (nrow(stat.grp) > 1) {
+    # make sure data has enough finite observations for cor.test
+    if (sum(!is.na(stat.grp$time.slope)) > 2 &&
+        sum(!is.na(stat.grp$temp.slope)) > 2) {
       test <- cor.test(stat.grp$time.slope, stat.grp$temp.slope)
       
       res <- data.frame(
