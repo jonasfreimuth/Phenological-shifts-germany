@@ -1369,16 +1369,12 @@ cor.tests.plot <- cor.tests %>%
 slopes_correlation <- ggplot() +
   # zero axis (data arguments necessary, else it's acting up when trying to apply facets)
   geom_segment(
-    aes(
-      x = 0,
-      xend = 0,
+    aes(x = 0, xend = 0,
       y = -Inf,
       yend = ypos(
         stat.spec.both.plot$temp.slope,
         stat.spec.both.plot$temp.ci.max,
-        frac = 0
-      )
-    ),
+        frac = 0) ),
     data = stat.spec.both.plot,
     size = 2,
     col = "gray31",
@@ -1419,30 +1415,18 @@ slopes_correlation <- ggplot() +
   ) +
   # lines for means down to axis for time
   geom_segment(
-    aes(
-      x = mean.slope.Year,
-      xend = mean.slope.Year,
-      y = -Inf,
-      yend = mean.slope.Temperature,
-      col = id.grp
-    ),
+    aes(x = mean.slope.Year, xend = mean.slope.Year,
+      y = -Inf, yend = mean.slope.Temperature,
+      col = id.grp),
     data = spec.both.meta.plot,
-    size = 2,
-    # alpha = 0.5
-  ) +
+    size = 2) +
   # lines for means down to axis for temp
   geom_segment(
-    aes(
-      x = -Inf,
-      xend = mean.slope.Year,
-      y = mean.slope.Temperature,
-      yend = mean.slope.Temperature,
-      col = id.grp
-    ),
+    aes(x = -Inf, xend = mean.slope.Year,
+      y = mean.slope.Temperature, yend = mean.slope.Temperature,
+      col = id.grp),
     data = spec.both.meta.plot,
-    size = 2,
-    # alpha = 0.5
-  ) +
+    size = 2) +
   # group means
   geom_errorbar(
     aes(
