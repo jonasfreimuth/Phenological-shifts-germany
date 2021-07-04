@@ -14,7 +14,7 @@ source("scripts/functions.R")
 
 # do a testing run? 
 # will reduce data size and save outputs into separate directories
-test_run <- TRUE
+test_run <- FALSE
 
 # set number of cores for model fitting to maximum, not sure whether this will
 # actually help
