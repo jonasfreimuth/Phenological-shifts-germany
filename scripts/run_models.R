@@ -11,17 +11,35 @@ library("tidyr")
 
 source("scripts/functions.R")
 
+# do a testing run? 
+# will reduce data size and save outputs into separate directories
+test_run <- TRUE
+
 # set number of cores for model fitting to maximum, not sure whether this will
 # actually help
 n_cores <- detectCores()
 if (is.na(n_cores)) { n_cores <- 1}
 options(glmmTMB.cores = n_cores)
 
-# set up logging
-# TODO: make this fail save
-dir.check(here("logs"))
+# TODO: make all the path stuff relative
 
-model_log_file <- paste0("logs/models_",
+# set saving paths
+if (!test_run) {
+  log_path <- here("logs")
+  plot_path <- here("plots")
+  data_path <- here("data")
+} else {
+  log_path <- here("temp/logs")
+  plot_path <- here("temp/plots")
+  data_path <- here("temp/data")
+}
+
+# ensure paths are present
+dir.check(log_path)
+dir.check(plot_path)
+dir.check(data_path)
+
+model_log_file <- paste0(log_path, "/models_",
                          format(Sys.time(), format = "%Y%m%d_%H%M"),
                          ".log")
 
@@ -48,6 +66,16 @@ dat.occ <- fread(paste0("data/f_occurrences_full_pruned.csv"),
          year = year - mean(year),
          lat = lat - mean(lat),
          long = long - mean(long))
+
+
+if (test_run) {
+  all_species <- unique(dat.occ$species)
+  frac_species <- sample(all_species, length(all_species) * 0.01)
+  
+  dat.occ <- dat.occ %>% 
+    filter(species %in% frac_species)
+}
+
 
 # read in preset model formulas
 form_vec <- readLines("static_data/model_formulas.txt")
@@ -88,14 +116,17 @@ for (form in form_vec) {
   
   # save model to disk
   saveRDS(glm_mod,
-          file = paste("data/glmm_model_",
+          file = paste0(data_path, "/glmm_model_",
                        str_replace(simple_form, "~", "_"), "_",
-                       time_stamp, ".rds",
-                       sep = ""))
+                       time_stamp, ".rds"))
+  
   
   # save summary output to disk
   capture.output(summary(glm_mod), 
-                 file = paste("data/glmm_summary_",
+                 file = paste0(data_path, "/glmm_summary_",
+                              str_replace(simple_form, "~", "_"), "_",
+                              time_stamp, ".txt"))
+  
                               str_replace(simple_form, "~", "_"), "_",
   
   if (str_detect(form, "(?<=\\|\\s?)\\w+")) {
@@ -129,7 +160,7 @@ for (form in form_vec) {
   # rnd_eff_out <- coef(glm_mod)
   
   fwrite(rnd_eff_out,
-         paste0("data/glmm_rnd_eff_",
+           paste0(data_path, "/glmm_rnd_eff_",
                 str_replace(simple_form, "~", "_"), "_",
                 time_stamp,
                 ".csv"))
