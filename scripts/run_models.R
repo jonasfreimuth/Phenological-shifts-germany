@@ -55,6 +55,8 @@ options("log_file" = model_log_file)
 select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
                  'decade', 'id.grp', 'long', 'lat', 'temp')
 
+log_msg("Loading and centering data...")
+
 dat.occ <- fread(paste0("data/f_occurrences_full_pruned.csv"),
                  select = select_cols,
                  showProgress = FALSE) %>%
@@ -68,10 +70,17 @@ dat.occ <- fread(paste0("data/f_occurrences_full_pruned.csv"),
          lat = lat - mean(lat),
          long = long - mean(long))
 
+log_msg("... Done.")
+
 
 if (test_run) {
   all_species <- unique(dat.occ$species)
   frac_species <- sample(all_species, length(all_species) * 0.01)
+  
+  log_msg("Test run, pruning data down to species:")
+  
+  log_msg(paste(frac_species, collapse = ", "))
+  
   
   dat.occ <- dat.occ %>% 
     filter(species %in% frac_species)
