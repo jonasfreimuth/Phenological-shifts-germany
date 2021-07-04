@@ -266,8 +266,8 @@ slopes <- function(data, formula = doy ~ year,
                rsquared = sum.mod$r.squared,
                df = NA,
                fstat = NA,
-               ci.min = ci.mod[1,1],
-               ci.max = ci.mod[1,2]
+               ci.min = NA,
+               ci.max = NA
                
         )
     }

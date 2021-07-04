@@ -88,7 +88,14 @@ opts <- c()
 # #set max months of flowering threshold (redo pruning after changing)
 # thr.FlDur <- 12
 
+# static vars ------------------------------------------
 
+# which columns to select from pruned data, could save some memory
+# should only be changed in case columns are no longer needed or new ones 
+# become required
+data_cols <- c('kingdom', 'phylum', 'order', 'family', 'genus', 'species',
+               'year', 'month', 'day', 'doy', 'decade',
+               'id.grp', 'decade2', 'long', 'lat', 'temp')
 
 # Functions --------------------------------------------
 
@@ -184,17 +191,29 @@ if (file.exists(here("data", "workspace_save.RData")) & force.main == FALSE) {
 
 
 ```{r Load data, echo=FALSE}
-# load yearly mean data
-dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") 
 
-# make sure there are records for a certain fraction of years
-thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
+dat.occ <- fread("data/f_occurrences_full_pruned.csv", select = data_cols,
+                 showProgress = FALSE)
+  
+# TODO: for testing, select a random fraction of species and use those in the 
+# analysis
+all_species <- unique(dat.occ$species)
+frac_species <- sample(all_species, length(all_species) * 0.1)
 
-#exclude species that span less than x years
-dat.occ <- dat.occ %>%
-  group_by(species) %>%
-  filter(length(year) >= thr.year) %>%
-  ungroup()
+dat.occ <- dat.occ %>% 
+  filter(species %in% frac_species)
+
+
+
+# TODO: this should not be necessary for this analysis
+# # make sure there are records for a certain fraction of years
+# thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
+# 
+# #exclude species that span less than x years
+# dat.occ <- dat.occ %>%
+#   group_by(species) %>%
+#   filter(length(year) >= thr.year) %>%
+#   ungroup()
 
 
 ## Create Subsets
@@ -723,36 +742,6 @@ ggplot() +
 
 ```
 
-
-```{r eval=FALSE, fig.height=7, fig.width=10, include=FALSE}
-
-# dat.occ.2k <- dat.occ
-dat.occ.2k <- filter(dat.occ, year >= thr.2k.min & year <= thr.2k.max)
-
-
-p.dur <- dur_plot_2k(x = year, y = duration, col = id.grp,
-                     data = dat.occ.2k,
-                     title = str_glue("Duration of activity (last - first doy) over time
-                                   ({thr.2k.min} - {thr.2k.max})"),
-                     ylab = "Duration [days]")
-
-p.first <- dur_plot_2k(x = year, y = min.doy, col = id.grp,
-                       data = dat.occ.2k,
-                       title = str_glue("First occurrence DOY over time
-                                   ({thr.2k.min} - {thr.2k.max})"),
-                       ylab = "First DOY")
-
-p.last <- dur_plot_2k(x = year, y = max.doy, col = id.grp,
-                      data = dat.occ.2k,
-                      title = str_glue("Last occurrence DOY over time
-                                   ({thr.2k.min} - {thr.2k.max})"),
-                      ylab = "Last DOY")
-
-# plot everything in one
-gridExtra::grid.arrange(p.first, p.last, p.dur, p.temp +
-                          geom_smooth(aes(year, temp), method = "auto"))
-
-```
 
 ```{r records over time, eval=FALSE, include=FALSE}
 dat.n <- dat.occ %>% 
@@ -1420,8 +1409,9 @@ cor.tests <-
   lapply(unique(stat.spec.both$id.grp), function(x, data = stat.spec.both) {
     stat.grp <- filter(data, id.grp == x)
     
-    # make sure data has enough observations for cor.test
-    if (nrow(stat.grp) > 1) {
+    # make sure data has enough finite observations for cor.test
+    if (sum(!is.na(stat.grp$time.slope)) > 2 &&
+        sum(!is.na(stat.grp$temp.slope)) > 2) {
       test <- cor.test(stat.grp$time.slope, stat.grp$temp.slope)
       
       res <- data.frame(
@@ -1465,6 +1455,8 @@ cor.tests <- do.call(rbind, cor.tests) %>%
 
 
 ggplot() +
+  
+  # raw data points and errorbars
   geom_point(aes(time.slope, temp.slope, group = id.grp),
              data = stat.spec.both,
              alpha = 0.5,
@@ -1480,12 +1472,27 @@ ggplot() +
                      xmax = time.ci.max),
                  data = stat.spec.both,
                  alpha = 0.5,
-                 col = "gray50"
-  ) +
+                 col = "gray50") +
+  
+  # lines for means down to axis for time
+  geom_segment(
+    aes(x = mean.slope.Year, xend = mean.slope.Year,
+        y = -Inf, yend = mean.slope.Temperature,
+        col = id.grp),
+    data = stat.spec.both.meta,
+    alpha = 0.8) +
+  # lines for means down to axis for temp
+  geom_segment(
+    aes(x = -Inf, xend = mean.slope.Year,
+        y = mean.slope.Temperature, yend = mean.slope.Temperature,
+        col = id.grp),
+    data = stat.spec.both.meta,
+    alpha = 0.8) +
+  
+  # group means and error bars
   geom_point(aes(mean.slope.Year, mean.slope.Temperature, col = id.grp),
              data = stat.spec.both.meta,
-             size = 3
-  ) +
+             size = 3) +
   geom_errorbar(aes(x = mean.slope.Year,
                     ymin = ci.min.Temperature,
                     ymax = ci.max.Temperature, col = id.grp),
@@ -1494,13 +1501,18 @@ ggplot() +
                      xmin = ci.min.Year,
                      xmax = ci.max.Year, col = id.grp),
                  data = stat.spec.both.meta) +
+  
+  # group sizes, correlation and stat. significance
   geom_text(data = cor.tests,
             aes(x = mean(c(min(stat.spec.both$time.ci.min), max(stat.spec.both$time.ci.max))),
                 y = ypos(stat.spec.both$temp.ci.max),
                 label = str_glue("n = {n.slope.Year}, r =  {round(cor, 2)}\n{pval.sig}")),
             col = "gray38") +
+  
+  # formatting
   facet_wrap(~ id.grp, nrow = 1) +
-  theme_minimal()
+  theme_minimal() +
+  theme(panel.grid = element_blank())
 
 ```
 
@@ -1512,6 +1524,8 @@ ggplot() +
 cat(
   "It may not be possible to calculate slopes for species in this timeframe.\nAs a result, group sizes may differ."
 )
+
+dat.occ.2k <- filter(dat.occ, year >= thr.2k.min & year <= thr.2k.max)
 
 # calculate species slopes
 stat.spec.2k.time <- slopes(dat.occ.2k, thr = 2)
@@ -1898,7 +1912,12 @@ Differences between yearly mean DOYs in an Interaction over time, plotted all in
 
 ```{r Prune decadal data}
 
-dat.occ.dec <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>%
+dat.occ.dec <- dat.occ <- fread("data/f_occurrences_full_pruned.csv", select = data_cols,
+                 showProgress = FALSE) %>%
+  
+  # TODO: for testing, only use the randomly selected species from the start
+  filter(species %in% frac_species) %>% 
+  
   #exclude records without interaction data
   filter(species %in% dat.int$poll |
            species %in% dat.int$plant) %>%
