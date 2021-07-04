@@ -1641,17 +1641,22 @@ dat.int.time <- data.frame(group = NA,
 for (i in seq(1, nrow(dat.int.year))) {
   
   #generate data frame of records for one interaction
-  dat.i <- rbind(filter(dat.occ, species == as.character(dat.int.year$poll[i])) %>% droplevels(),
-                 filter(dat.occ, species == as.character(dat.int.year$plant[i])) %>% droplevels())
+  dat.i <- rbind(dat.occ %>% 
+                   filter(species == as.character(dat.int.year$poll[i])) %>%
+                   droplevels(),
+                 dat.occ %>% 
+                   filter(species == as.character(dat.int.year$plant[i])) %>%
+                   droplevels())
   
-  # if speciefied plot the phenological changes of the interaction
+  # if specified plot the phenological changes of the interaction
   if (any(c("full", "spec.int.slopes", "spec.int.slopes.time") %in% opts)) {
     
     #make sure directory exists
     dir.check(here("plots/interactions/time"))
     
-    png(here("Plots/Interactions/time", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
-                                               ".png")),
+    png(here("Plots/Interactions/time",
+             paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
+                    ".png")),
         width = 1500, height = 1000)
     
     print(
@@ -1679,7 +1684,7 @@ for (i in seq(1, nrow(dat.int.year))) {
     
   }
   
-  #generate model for estimating slopes of plant and pollinator
+  # generate model for estimating slopes of plant and pollinator
   # kingdom is used instead of species to preserve positions in the model
   sum.lm.i <- summary(lm(doy ~ year * kingdom, dat.i))
   
@@ -1692,7 +1697,8 @@ for (i in seq(1, nrow(dat.int.year))) {
               plant = dat.int.year$plant[i],
               poll = dat.int.year$poll[i],
               poll.slope = sum.lm.i[["coefficients"]][2,1],
-              plant.slope = sum.lm.i[["coefficients"]][2,1] + sum.lm.i[["coefficients"]][4,1],
+              plant.slope = sum.lm.i[["coefficients"]][2,1] +
+                sum.lm.i[["coefficients"]][4,1],
               diff.slope = plant.slope - poll.slope,
               pval = ancov.i$`Pr(>F)`[2]
     ) 
@@ -1705,7 +1711,8 @@ for (i in seq(1, nrow(dat.int.year))) {
 dat.int.time <- drop_na(dat.int.time, diff.slope)
 
 #save interaction data
-write.csv(dat.int.time, here("data", "pla_poll_interactions_time.csv"), row.names = FALSE)
+write.csv(dat.int.time, here("data", "pla_poll_interactions_time.csv"),
+          row.names = FALSE)
 
 
 
@@ -1723,19 +1730,23 @@ dat.int.temp <- data.frame(group = NA,
 for (i in seq(1, nrow(dat.int.year))) {
   
   #generate data frame of records for one interactions
-  dat.i <- rbind(filter(dat.occ, species == as.character(dat.int.year$poll[i])) %>% droplevels(),
-                 filter(dat.occ, species == as.character(dat.int.year$plant[i])) %>% droplevels())
+  dat.i <- rbind(dat.occ %>% 
+                   filter(species == as.character(dat.int.year$poll[i])) %>%
+                   droplevels(),
+                 dat.occ %>% 
+                   filter(species == as.character(dat.int.year$plant[i])) %>%
+                   droplevels())
   
-  
-  # if speciefied plot the phenological changes of the interaction
+  # if specified plot the phenological changes of the interaction
   if (any(c("full", "spec.int.slopes", "spec.int.slopes.temp") %in% opts)) {
     
     # check if the directory is present
-    # if it doesn't exist yet, create the interaction subdirectory
+    # if it doesn't exist yet, create the interaction sub directory
     dir.check(here("plots/interactions/temp"))
     
-    png(here("Plots/Interactions/temp", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
-                                               ".png")),
+    png(here("Plots/Interactions/temp",
+             paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
+                    ".png")),
         width = 1500, height = 1000)
     
     print(
@@ -1775,7 +1786,8 @@ for (i in seq(1, nrow(dat.int.year))) {
               plant = dat.int.year$plant[i],
               poll = dat.int.year$poll[i],
               poll.slope = sum.lm.i[["coefficients"]][2,1],
-              plant.slope = sum.lm.i[["coefficients"]][2,1] + sum.lm.i[["coefficients"]][4,1],
+              plant.slope = sum.lm.i[["coefficients"]][2,1] +
+                sum.lm.i[["coefficients"]][4,1],
               diff.slope = plant.slope - poll.slope,
               pval = ancov.i$`Pr(>F)`[2]
     ) 
@@ -2005,10 +2017,14 @@ for (i in seq(1, nrow(int.dec))) {
   
   # Summarizing -----------------------------------------------------
   
+  
+  # TODO: This currently does not work, as there is no longer just one temp
+  #   per year (not sure why we group by temp in the first place)
   int.i.mean <- int.i %>%
     group_by(temp, decade) %>%
     # filter decades with only one record (shouldn't be necessary any more)
     # filter(n() > 1) %>%
+    
     # calculate difference of absolute  mean doy per decade
     # within each decade and mean temperature, 
     # first should always be pollinator, last should always be plant
@@ -2019,8 +2035,8 @@ for (i in seq(1, nrow(int.dec))) {
               # also preserve info on who is earlier
               early.partner = ifelse(doy.diff/abs(doy.diff) == 1, "plant",
                                      "poll"),
-              plant = last(species, kingdom),
-              poll = first(species, kingdom),
+              plant = last(species, order_by = kingdom),
+              poll = first(species, order_by = kingdom),
               id = i,
               group = int.dec$Group[i]) %>% 
     ungroup()
