@@ -7,8 +7,15 @@ library("data.table")
 library("here")
 library("dplyr")
 library("tidyr")
+library("parallel")
 
 source("scripts/functions.R")
+
+# set number of cores for model fitting to maximum, not sure whether this will
+# actually help
+n_cores <- detectCores()
+if (is.na(n_cores)) { n_cores <- 1}
+options(glmmTMB.cores = n_cores)
 
 # set up logging
 # TODO: make this fail save
@@ -31,8 +38,8 @@ dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>
   # reduce dataset, only use relevant columns
   select(matches(select_cols)) %>% 
   
-  # for testing, only take small subset of observations
-  slice_sample(n = 1000) %>%
+  # # for testing, only take small subset of observations
+  # slice_sample(n = 1000) %>%
   
   # remove records w/o determined temp
   drop_na(temp) %>% 
