@@ -104,7 +104,12 @@ for (form in form_vec) {
   # run the model, this step takes a lot of time
   glm_mod <- glmmTMB(mod_form, family = gaussian, data = dat.occ)
   
-  log_msg("Done.")
+  
+  # TODO: do a check for false convergence and take steps for ensuring this is
+  #   not a problem
+  
+  
+  log_msg("... Done.")
   log_msg("Saving model to disk...")
   
   time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
@@ -115,6 +120,8 @@ for (form in form_vec) {
                        str_replace(simple_form, "~", "_"), "_",
                        time_stamp, ".rds"))
   
+  log_msg("... Done.")
+  log_msg("Computing summary and saving to disk...")
   
   # save summary output to disk
   capture.output(summary(glm_mod), 
@@ -122,6 +129,7 @@ for (form in form_vec) {
                               str_replace(simple_form, "~", "_"), "_",
                               time_stamp, ".txt"))
   
+  log_msg("... Done.")
                               str_replace(simple_form, "~", "_"), "_",
   
   if (str_detect(form, "(?<=\\|\\s?)\\w+")) {
