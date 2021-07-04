@@ -1359,12 +1359,13 @@ ggplot(data = stat.group.temp.meta) +
 
 ```{r Testing Differences among groups}
 
-cat("\n!!! HYMNEOPTERA AND DIPTERA EXCLUDED !!!\n")
+# cat("\n!!! HYMNEOPTERA AND DIPTERA EXCLUDED !!!\n")
 
 cat("\nAnova mean time slope:\n\n")
 
-mod.time <- aov(data = filter(stat.spec.time,
-                              !(id.grp %in% c("Hymenoptera", "Diptera"))),
+mod.time <- aov(data = stat.spec.time %>% 
+                  # filter(!(id.grp %in% c("Hymenoptera", "Diptera"))) %>% 
+                  ungroup(),
                 slope ~ id.grp)
 
 summary(mod.time)
@@ -1377,8 +1378,9 @@ cat("\n\n")
 
 cat("\nAnova mean temp slope:\n\n")
 
-mod.temp <- aov(data = filter(stat.spec.temp,
-                              !(id.grp %in% c("Hymenoptera", "Diptera"))),
+mod.temp <- aov(data = stat.spec.temp %>% 
+                  # filter(!(id.grp %in% c("Hymenoptera", "Diptera"))) %>% 
+                  ungroup(),
                 slope ~ id.grp)
 
 summary(mod.temp)
