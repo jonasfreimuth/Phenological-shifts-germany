@@ -135,7 +135,7 @@ for (form in form_vec) {
   
   # save diagnostics plot
   png(paste0(plot_path, "/glmm_diagnost_",
-                              str_replace(simple_form, "~", "_"), "_",
+            str_replace(simple_form, "~", "_"), "_",
             time_stamp, ".png"),
       width = 2000,
       height = 1200
@@ -154,40 +154,43 @@ for (form in form_vec) {
     
     # TODO: make sure this check for presence of random variable works as 
     #   intended
-  
-  log_msg("Extracting random effects for", simple_form, "model...")
-  
+    
+    log_msg("Extracting random effects for", simple_form, "model...")
+    
     # extract random variable
     # one or more word characters preceded by a pipe symbol and zero or one 
     #   whitespace
     rnd_var <- str_extract(form, "(?<=\\|\\s?)\\w+")
     
-  # extract intercept and main slope
-  # this is not very elegant and might break
-  intercept <- glm_mod$fit$par[1]
-  slope <- glm_mod$fit$par[2]
-
-  # extract random effects, add them to overall effects to obtain proper
-  # estimate
-  rnd_eff <- ranef(glm_mod)$cond[[rnd_var]]
-
-  # quick bodge to get an appropriate df for the weird ways i want to fill it
-  rnd_eff_out <- data.frame(row.names = 1:nrow(rnd_eff))
-
-  rnd_eff_out[[rnd_var]] <- row.names(rnd_eff)
-  rnd_eff_out[["Intercept"]] <- rnd_eff[["(Intercept)"]] + intercept
-  rnd_eff_out[[main_var]] <- rnd_eff[[main_var]] + slope
-  
-  # rnd_eff_out <- coef(glm_mod)
-  
-  fwrite(rnd_eff_out,
+    # extract intercept and main slope
+    # this is not very elegant and might break
+    intercept <- glm_mod$fit$par[1]
+    slope <- glm_mod$fit$par[2]
+    
+    # extract random effects, add them to overall effects to obtain proper
+    # estimate
+    rnd_eff <- ranef(glm_mod)$cond[[rnd_var]]
+    
+    # quick bodge to get an appropriate df for the weird ways i want to fill it
+    rnd_eff_out <- data.frame(row.names = 1:nrow(rnd_eff))
+    
+    rnd_eff_out[[rnd_var]] <- row.names(rnd_eff)
+    rnd_eff_out[["Intercept"]] <- rnd_eff[["(Intercept)"]] + intercept
+    rnd_eff_out[[main_var]] <- rnd_eff[[main_var]] + slope
+    
+    # rnd_eff_out <- coef(glm_mod)
+    
+    fwrite(rnd_eff_out,
            paste0(data_path, "/glmm_rnd_eff_",
-                str_replace(simple_form, "~", "_"), "_",
-                time_stamp,
-                ".csv"))
-  
+                  str_replace(simple_form, "~", "_"), "_",
+                  time_stamp,
+                  ".csv"))
+    
+    rm(rnd_eff, rnd_eff_out)
   }
   
+  # remove objects due to memory limitations
+  rm(glm_mod, simRes)
   
   log_msg("Done with", simple_form, "model...")
   
