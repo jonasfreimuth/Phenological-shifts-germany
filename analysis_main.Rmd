@@ -2960,8 +2960,16 @@ qqline(resid(lmm.doy.poll))
 ## Linear model for pollinator dependencies  
 
 ```{r Lm for PollDeps}
-#generate subset with pollination mode data
+
+# load plant trait data
+plant_traits <- fread("static_data/bioflor_traits.csv")
+
+# generate subset with pollination mode data
 dat.occ.polldep <- dat.occ %>%
+  
+  # add plant trait data
+  left_join(plant_traits, by = "species") %>% 
+  
   filter(PollDep != ""
   ) %>%
   #turn all character vectors to factor
