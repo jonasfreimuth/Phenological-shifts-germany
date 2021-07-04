@@ -1,13 +1,13 @@
 
 # Setup -------------------------------------------------------------------
 
-library("glmmTMB")
 library("stringr")
 library("data.table")
 library("here")
+library("parallel")
+library("glmmTMB")
 library("dplyr")
 library("tidyr")
-library("parallel")
 
 source("scripts/functions.R")
 
@@ -29,7 +29,10 @@ file.create(model_log_file)
 
 options("log_file" = model_log_file)
 
-# read in data
+
+# Data loading ------------------------------------------------------------
+
+# read in data, reduce columns to only those relevant here
 select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
                  'decade', 'id.grp', 'long', 'lat', 'temp')
 
