@@ -101,11 +101,19 @@ for (form in form_vec) {
   capture.output(summary(glm_mod), 
                  file = paste("data/glmm_summary_",
                               str_replace(simple_form, "~", "_"), "_",
-                              time_stamp, ".txt",
-                              sep = ""))
+  
+  if (str_detect(form, "(?<=\\|\\s?)\\w+")) {
+    
+    # TODO: make sure this check for presence of random variable works as 
+    #   intended
   
   log_msg("Extracting random effects for", simple_form, "model...")
   
+    # extract random variable
+    # one or more word characters preceded by a pipe symbol and zero or one 
+    #   whitespace
+    rnd_var <- str_extract(form, "(?<=\\|\\s?)\\w+")
+    
   # extract intercept and main slope
   # this is not very elegant and might break
   intercept <- glm_mod$fit$par[1]
@@ -130,8 +138,8 @@ for (form in form_vec) {
                 time_stamp,
                 ".csv"))
   
-  # remove model due to memory limitations
-  rm(glm_mod)
+  }
+  
   
   log_msg("Done with", simple_form, "model...")
   
