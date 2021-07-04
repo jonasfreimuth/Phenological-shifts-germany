@@ -93,11 +93,6 @@ for (form in form_vec) {
   simple_form <- mod_comps[, 1:3] %>%
     paste(collapse = "")
   
-  # extract random variable
-  # one or more word characters preceded by a pipe symbol and zero or one 
-  #   whitespace
-  rnd_var <- str_extract(form, "(?<=\\|\\s?)\\w+")
-  
   # extract main independent var
   main_var <- mod_comps[, 3]
   
