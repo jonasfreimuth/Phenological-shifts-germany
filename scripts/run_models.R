@@ -36,13 +36,9 @@ options("log_file" = model_log_file)
 select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
                  'decade', 'id.grp', 'long', 'lat', 'temp')
 
-dat.occ <- readRDS("data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") %>% 
-  
-  # reduce dataset, only use relevant columns
-  select(matches(select_cols)) %>% 
-  
-  # # for testing, only take small subset of observations
-  # slice_sample(n = 1000) %>%
+dat.occ <- fread(paste0("data/f_occurrences_full_pruned.csv"),
+                 select = select_cols,
+                 showProgress = FALSE) %>%
   
   # remove records w/o determined temp
   drop_na(temp) %>% 
