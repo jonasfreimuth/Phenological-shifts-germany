@@ -133,3 +133,8 @@ for (form in form_vec) {
   log_msg("Done with", simple_form, "model...")
   
 }
+
+log_msg("All done.")
+
+# reset logging file
+options("log_file" = NULL)
