@@ -140,23 +140,6 @@ for (form in form_vec) {
                               time_stamp, ".txt"))
   
   log_msg("... Done.")
-  log_msg("Generating and saving diagnostics plots...")
-  
-  # save diagnostics plot
-  png(paste0(plot_path, "/glmm_diagnost_",
-            str_replace(simple_form, "~", "_"), "_",
-            time_stamp, ".png"),
-      width = 2000,
-      height = 1200
-      )
-  
-  
-  # generate residuals and plot
-  simRes <- simulateResiduals(glm_mod, plot = TRUE)
-  
-  dev.off()
-  
-  log_msg("... Done.")
   
   
   if (str_detect(form, "(?<=\\|\\s?)\\w+")) {
@@ -196,10 +179,32 @@ for (form in form_vec) {
                   ".csv"))
     
     rm(rnd_eff, rnd_eff_out)
+  
+    log_msg("... Done.")
   }
   
+  log_msg("Generating and saving diagnostics plots...")
+  
+  # generate residuals
+  simRes <- simulateResiduals(glm_mod)
+  
+  # remove model object
+  rm(glm_mod)
+  
+  # save diagnostics plot
+  png(paste0(plot_path, "/glmm_diagnost_",
+             str_replace(simple_form, "~", "_"), "_",
+             time_stamp, ".png"),
+      width = 2000,
+      height = 1200
+  )
+  
+  plot(simRes)
+  
+  dev.off()
+  
   # remove objects due to memory limitations
-  rm(glm_mod, simRes)
+  rm(simRes)
   
   log_msg("Done with", simple_form, "model...")
   
