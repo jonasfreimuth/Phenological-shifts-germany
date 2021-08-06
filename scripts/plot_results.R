@@ -164,7 +164,7 @@ ggsave(
       legend.background = element_rect(fill = "transparent"), 
       legend.box.background = element_rect(fill = "transparent") 
     ),
-  filename = here("Plots", "Germany temperature over time.png"), width = 22, height = 14,
+  filename = here("plots", "Germany temperature over time.png"), width = 22, height = 14,
   bg = "transparent"
 )
 
@@ -201,7 +201,7 @@ ggsave(
           strip.text = element_text(size = text_size_large, color = col.note),
           plot.margin = unit(c(0, 64, 0, 0), "bigpts")
     ),
-  filename = here("Plots", "group_record_numbers_time.png"),
+  filename = here("plots", "group_record_numbers_time.png"),
   width = 20, height = 20
 )
 
@@ -209,7 +209,7 @@ ggsave(
 
 # Plot 1: group trends over time ------------------------------------------
 # 
-# png(here("Plots", "group_trends_time.png"), width = 1600, height = 1000)
+# png(here("plots", "group_trends_time.png"), width = 1600, height = 1000)
 # 
 # print(
 #   #plot trends of collection day in relation to year by group
@@ -240,7 +240,7 @@ ggsave(
 # 
 # dev.off()
 # 
-# png(here("Plots", "group_trends_temp.png"), width = 1600, height = 1000)
+# png(here("plots", "group_trends_temp.png"), width = 1600, height = 1000)
 # 
 # print(
 #   #plot trends of collection day in relation to temp by group
@@ -313,7 +313,7 @@ ggsave(
           strip.text = element_text(size = text_size_large, color = col.note),
           plot.margin = unit(c(0, 64, 0, 0), "bigpts")
     ),
-  filename = here("Plots", "group_trends_time_orders.png"), width = 20, height = 12.5
+  filename = here("plots", "group_trends_time_orders.png"), width = 20, height = 12.5
 )
 
 ggsave(
@@ -358,13 +358,13 @@ ggsave(
           strip.text = element_text(size = text_size_large, color = col.note),
           plot.margin = unit(c(0, 64, 0, 0), "bigpts")
     ),
-  filename = here("Plots", "group_trends_temp_orders.png"), width = 20, height = 12.5
+  filename = here("plots", "group_trends_temp_orders.png"), width = 20, height = 12.5
   
 )
 
 # # same again but controling for orders
 # 
-# png(here("Plots", "group_trends_time_orders_cont.png"), width = 1600, height = 1000)
+# png(here("plots", "group_trends_time_orders_cont.png"), width = 1600, height = 1000)
 # 
 # print(
 #   ggplot(data = dat.occ, 
@@ -398,7 +398,7 @@ ggsave(
 # dev.off()
 # 
 # 
-# png(here("Plots", "group_trends_temp_orders_cont.png"), width = 1600, height = 1000)
+# png(here("plots", "group_trends_temp_orders_cont.png"), width = 1600, height = 1000)
 # 
 # print(
 #   ggplot(data = dat.occ, 
@@ -434,7 +434,7 @@ ggsave(
 # Plant order trends over time --------------------------------------------
 
 
-png(here("Plots", "Plant order trends over time.png"), width = 2500, height = 1750)
+png(here("plots", "Plant order trends over time.png"), width = 2500, height = 1750)
 
 print(
   #plot trends of collection day in relation to year
@@ -468,7 +468,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "Plant order trends over temp.png"), width = 2500, height = 1750)
+png(here("plots", "Plant order trends over temp.png"), width = 2500, height = 1750)
 
 print(
   
@@ -505,7 +505,7 @@ dev.off()
 # Pollinator order trends -------------------------------------------------
 
 
-png(here("Plots", "Pollinator order trends over time.png"), width = 1600, height = 1000)
+png(here("plots", "Pollinator order trends over time.png"), width = 1600, height = 1000)
 
 print(
   #plot trends of collection day in relation to year
@@ -541,7 +541,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "Pollinator order trends over temp.png"), width = 1600, height = 1000)
+png(here("plots", "Pollinator order trends over temp.png"), width = 1600, height = 1000)
 
 print(
   #plot trends of collection day in relation to mean temperature
@@ -588,7 +588,7 @@ if (any(c("full", "species") %in% opts)) {
     
     dat.occ.s <- filter(dat.occ, species == s)
     
-    png(here("Plots/species", paste("doy_year_", s, ".png")), width = 1700, height = 1000)
+    png(here("plots/species", paste("doy_year_", s, ".png")), width = 1700, height = 1000)
     
     print(
       ggplot(dat.occ.s,
@@ -637,7 +637,7 @@ if (any(c("full", "species") %in% opts)) {
 
 
 # plot for year
-dur_mikado_plot(here("Plots", "species_mikado_year.png"), width = 1500, height = 1000,
+dur_mikado_plot(here("plots", "species_mikado_year.png"), width = 1500, height = 1000,
                 # rename id.grp to trivial name and exclude groups with to few species
                 data = dat.occ %>% 
                   mutate(id.grp = recode_factor(id.grp, !!! recode.vec)) %>% 
@@ -645,7 +645,7 @@ dur_mikado_plot(here("Plots", "species_mikado_year.png"), width = 1500, height =
                 xlab = "Year", ylab = "Day of the Year")
 
 # plot for decade
-dur_mikado_plot(here("Plots", "species_mikado_decade.png"), width = 1500, height = 1000,
+dur_mikado_plot(here("plots", "species_mikado_decade.png"), width = 1500, height = 1000,
                 # rename id.grp to trivial name and exclude groups with to few species
                 data = dat.occ.dur.dec %>% 
                   mutate(id.grp = recode_factor(id.grp, !!! recode.vec)) %>% 
@@ -673,7 +673,7 @@ stat.all.dur <- bind_rows(stat.spec.dur,
   mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
 
 
-png(here("Plots", "group_shifts_occurrence_duration.png"), width = 1600, height = 1000)
+png(here("plots", "group_shifts_occurrence_duration.png"), width = 1600, height = 1000)
 
 print(
   dur_slope_plot_save(xlab = "Group",
@@ -686,7 +686,7 @@ dev.off()
 
 
 
-png(here("Plots", "group_shifts_first_occurrence.png"), width = 1600, height = 1000)
+png(here("plots", "group_shifts_first_occurrence.png"), width = 1600, height = 1000)
 
 print(
   dur_slope_plot_save(y = slope.first,
@@ -699,7 +699,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "group_shifts_last_occurrence.png"), width = 1600, height = 1000)
+png(here("plots", "group_shifts_last_occurrence.png"), width = 1600, height = 1000)
 
 print(
   dur_slope_plot_save(y = slope.last,
@@ -714,7 +714,7 @@ dev.off()
 
 
 ggsave(
-  filename = here("Plots", "group_shifts_diff_occurrence.png"),
+  filename = here("plots", "group_shifts_diff_occurrence.png"),
   plot = dur_slope_plot_save(
     y = slope.diff,
     ymeta = mean.slope.diff,
@@ -737,7 +737,7 @@ ggsave(
 
 # Dirty Forest Plot Plants ------------------------------------------------
 
-png(here("Plots", "forest_plot_plants_time.png"), width = 1000, height = 1700)
+png(here("plots", "forest_plot_plants_time.png"), width = 1000, height = 1700)
 
 
 print(
@@ -783,7 +783,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "forest_plot_plants_temp.png"), width = 1000, height = 1700)
+png(here("plots", "forest_plot_plants_temp.png"), width = 1000, height = 1700)
 
 print(
   #dirty forest for temp
@@ -831,7 +831,7 @@ dev.off()
 # Dirty Forest Plot Pollinators -------------------------------------------
 
 
-png(here("Plots", "forest_plot_pollinators_time.png"), width = 1000, height = 1700)
+png(here("plots", "forest_plot_pollinators_time.png"), width = 1000, height = 1700)
 
 print(
   #dirty forest for time
@@ -882,7 +882,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "forest_plot_pollinators_temp.png"), width = 1000, height = 1700)
+png(here("plots", "forest_plot_pollinators_temp.png"), width = 1000, height = 1700)
 
 print(
   #dirty forest for temp
@@ -936,7 +936,7 @@ dev.off()
 # Boxplot Slope distribution ----------------------------------------------
 
 
-png(here("Plots", "Boxplot Slope distribution time.png"), width = 1600, height = 1000)
+png(here("plots", "Boxplot Slope distribution time.png"), width = 1600, height = 1000)
 
 print(
   #plot regression slopes for both kingdoms
@@ -963,7 +963,7 @@ print(
 
 dev.off()
 
-png(here("Plots", "Boxplot Slope distribution temp.png"), width = 1600, height = 1000)
+png(here("plots", "Boxplot Slope distribution temp.png"), width = 1600, height = 1000)
 
 print(
   #plot regression slopes for both kingdoms
@@ -994,7 +994,7 @@ dev.off()
 # Barplot group slope numbers ---------------------------------------------
 
 
-png(here("Plots", "Barplot group slope numbers.png"), width = 1600, height = 1000)
+png(here("plots", "Barplot group slope numbers.png"), width = 1600, height = 1000)
 
 print(
   ggplot(stat.spec.temp.meta, aes(x = kingdom, y = n.slope)) +
@@ -1024,7 +1024,7 @@ dev.off()
 #  Mean CI plot of TTests -------------------------------------------------
 
 
-png(here("Plots", "Mean_CI_time.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_time.png"), width = 1000, height = 1000)
 
 print(
   #for time
@@ -1092,7 +1092,7 @@ print(
 dev.off() 
 
 
-png(here("Plots", "Mean_CI_temp.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_temp.png"), width = 1000, height = 1000)
 
 print(
   #for temp
@@ -1162,7 +1162,7 @@ dev.off()
 #without raw data ++++++++++++++++++++++++++++++++++++++++
 
 
-png(here("Plots", "Mean_CI_time_nopts.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_time_nopts.png"), width = 1000, height = 1000)
 
 print(
   #for time
@@ -1219,7 +1219,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "Mean_CI_temp_nopts.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_temp_nopts.png"), width = 1000, height = 1000)
 
 print(
   #for temp
@@ -1317,7 +1317,7 @@ ggsave(
   slope_plot_save(xlab = "Group", ylab = "Mean shift [days/decade] (\u00B1 95% CI)",
                   title = "Phenological shifts over time",
                   data_points = TRUE, scale_y_10 = TRUE),
-  filename = here("Plots", "group_mean_slopes_time.png"), width = 20, height = 15,
+  filename = here("plots", "group_mean_slopes_time.png"), width = 20, height = 15,
   bg = "transparent"
 )
 
@@ -1326,7 +1326,7 @@ ggsave(
   slope_plot_save(data = stat.all.temp, metadata = all.temp.meta,
                   xlab = "Group", ylab = "Mean shift [days/\u00B0C] (\u00B1 95% CI)",
                   data_points = TRUE, scale_y_10 = FALSE),
-  filename = here("Plots", "group_mean_slopes_temp.png"), width = 20, height = 15,
+  filename = here("plots", "group_mean_slopes_temp.png"), width = 20, height = 15,
   bg = "transparent"
 )
 
@@ -1336,7 +1336,7 @@ ggsave(
   slope_plot_save(xlab = "Group", ylab = "Mean shift [days/decade] (\u00B1 95% CI)",
                   title = "Phenological shifts over time",
                   data_points = FALSE, scale_y_10 = TRUE),
-  filename = here("Plots", "group_mean_slopes_time_nopts.png"), width = 20, height = 15,
+  filename = here("plots", "group_mean_slopes_time_nopts.png"), width = 20, height = 15,
   bg = "transparent"
 )
 
@@ -1344,7 +1344,7 @@ ggsave(
   slope_plot_save(data = stat.all.temp, metadata = all.temp.meta,
                   xlab = "Group", ylab = "Mean shift [days/\u00B0C] (\u00B1 95% CI)",
                   data_points = FALSE, scale_y_10 = FALSE),
-  filename = here("Plots", "group_mean_slopes_temp_nopts.png"), width = 20, height = 15,
+  filename = here("plots", "group_mean_slopes_temp_nopts.png"), width = 20, height = 15,
   bg = "transparent"
 )
 
@@ -1581,12 +1581,12 @@ ggsave(
           strip.text = element_text(size = text_size_large, color = col.note),
           plot.margin = unit(c(0, 64, 0, 0), "bigpts")
     ),
-  filename = here("Plots", "PollDep overall trends over time.png"), width = 20, height = 12.5,
+  filename = here("plots", "PollDep overall trends over time.png"), width = 20, height = 12.5,
   bg = "transparent"
 )
 
 
-png(here("Plots", "PollDep overall trends over temp.png"), width = 1600, height = 1000)
+png(here("plots", "PollDep overall trends over temp.png"), width = 1600, height = 1000)
 
 print(
   #plot trends of collection day in relation to year by group
@@ -1623,7 +1623,7 @@ print(
 dev.off()
 
 # 
-# png(here("Plots", "PollDep species trends over time.png"), width = 1600, height = 1000)
+# png(here("plots", "PollDep species trends over time.png"), width = 1600, height = 1000)
 # 
 # print(
 #   #plot trends of collection day in relation to year
@@ -1659,7 +1659,7 @@ dev.off()
 #  dev.off()
 # 
 # 
-# png(here("Plots", "PollDep species trends over temp.png"), width = 1600, height = 1000)
+# png(here("plots", "PollDep species trends over temp.png"), width = 1600, height = 1000)
 # 
 # print(
 #   #plot trends of collection day in relation to year
@@ -1700,7 +1700,7 @@ dev.off()
 
 stat.spec.time.PollDep$PollDep <- fct_relevel(stat.spec.time.PollDep$PollDep, "Yes", "Intermediate", "No")
 
-png(here("Plots", "Forest_PollDep_time.png"), width = 900, height = 1250)
+png(here("plots", "Forest_PollDep_time.png"), width = 900, height = 1250)
 
 print(
   #for time
@@ -1750,7 +1750,7 @@ dev.off()
 
 stat.spec.temp.PollDep$PollDep <- fct_relevel(stat.spec.temp.PollDep$PollDep, "Yes", "Intermediate", "No")
 
-png(here("Plots", "Forest_PollDep_temp.png"), width = 900, height = 1250)
+png(here("plots", "Forest_PollDep_temp.png"), width = 900, height = 1250)
 
 print(
   #for temp
@@ -1799,7 +1799,7 @@ dev.off()
 
 # Mean CI of DOY PollDep --------------------------------------------------
 
-png(here("Plots", "Mean_CI_PollDep_mean_doy.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_PollDep_mean_doy.png"), width = 1000, height = 1000)
 
 print(
   # plot differences
@@ -1868,7 +1868,7 @@ dev.off()
 stat.spec.time.PollDep.meta$PollDep <- fct_relevel(stat.spec.time.PollDep.meta$PollDep,
                                                    "Yes", "Intermediate", "No")
 
-png(here("Plots", "Mean_CI_PollDep_time.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_PollDep_time.png"), width = 1000, height = 1000)
 
 print(
   #for time
@@ -1944,7 +1944,7 @@ dev.off()
 
 stat.spec.temp.PollDep.meta$PollDep <- fct_relevel(stat.spec.temp.PollDep.meta$PollDep, "Yes", "Intermediate", "No")
 
-png(here("Plots", "Mean_CI_PollDep_temp.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_PollDep_temp.png"), width = 1000, height = 1000)
 
 print(
   
@@ -2024,7 +2024,7 @@ dev.off()
 # without raw data +++++++++++++++++++++++++++++++++++++
 
 
-png(here("Plots", "Mean_CI_PollDep_time_nopts.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_PollDep_time_nopts.png"), width = 1000, height = 1000)
 
 print(
   #for time
@@ -2089,7 +2089,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "Mean_CI_PollDep_temp_nopts.png"), width = 1000, height = 1000)
+png(here("plots", "Mean_CI_PollDep_temp_nopts.png"), width = 1000, height = 1000)
 
 print(
   #for temp
@@ -2170,7 +2170,7 @@ if (any(c("full", "traits") %in% opts)) {
 traitplot("mnflmnt")
 
 #plot mean flowering month plot properly
-png(here("Plots/traits",
+png(here("plots/traits",
          "Mean_CI_mnflmnt_time.png"), width = 1600, height = 1000)
 
 plots_mnflmnt[[1]] +
@@ -2182,7 +2182,7 @@ dev.off()
 
 
 
-png(here("Plots", "group_decadal_slopes.png"), width = 1600, height = 1000)
+png(here("plots", "group_decadal_slopes.png"), width = 1600, height = 1000)
 
 print(
   ggplot(
@@ -2233,7 +2233,7 @@ dev.off()
 # Interactions: Slope differences -----------------------------------------
 
 
-png(here("Plots", "mean_slope_differences_time.png"), width = 1000, height = 1000)
+png(here("plots", "mean_slope_differences_time.png"), width = 1000, height = 1000)
 
 print(
   #plot results for time
@@ -2308,7 +2308,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "mean_slope_differences_temp.png"), width = 1000, height = 1000)
+png(here("plots", "mean_slope_differences_temp.png"), width = 1000, height = 1000)
 
 print(
   #plot results for temp
@@ -2386,7 +2386,7 @@ dev.off()
 
 
 
-png(here("Plots", "mean_slope_differences_time_nopts.png"), width = 1000, height = 1000)
+png(here("plots", "mean_slope_differences_time_nopts.png"), width = 1000, height = 1000)
 
 print(
   #plot results for time
@@ -2454,7 +2454,7 @@ print(
 dev.off()
 
 
-png(here("Plots", "mean_slope_differences_temp_nopts.png"), width = 1000, height = 1000)
+png(here("plots", "mean_slope_differences_temp_nopts.png"), width = 1000, height = 1000)
 
 print(
   #plot results for temp
@@ -2530,7 +2530,7 @@ recode_vec_int_long <- c("Hoverfly" = "Hoverfly - Plant", "Bee" = "Bee - Plant",
                          "Butterfly" = "Butterfly - Plant")
 
 
-# png(here("Plots", "mean_doy_differences_overspec.png"), width = 1600, height = 1000)
+# png(here("plots", "mean_doy_differences_overspec.png"), width = 1600, height = 1000)
 # 
 # print(
 #   #all interaction plots in one
@@ -2669,7 +2669,7 @@ mean_doy_differences_overall_facet <- ggplot(int.spec.dec.plot,
 
 ggsave(
   mean_doy_differences_overall_facet,
-  filename = here("Plots", "mean_doy_differences_overall_facet.png"), height = 20, width = 16
+  filename = here("plots", "mean_doy_differences_overall_facet.png"), height = 20, width = 16
 )
 
 # plot fractions of interactions with insect earlier than plant
@@ -2739,7 +2739,7 @@ ggsave(
 )
 
 # 
-# png(here("Plots", "mean_doy_differences_overall_decade_means.png"), height = 1000, width = 1600)
+# png(here("plots", "mean_doy_differences_overall_decade_means.png"), height = 1000, width = 1600)
 # 
 # print(
 #   #group means of interactions
@@ -2785,7 +2785,7 @@ ggsave(
 # dev.off()
 # 
 # 
-# png(here("Plots", "mean_doy_differences_overall_all_in_one.png"), width = 1600, height = 1000)
+# png(here("plots", "mean_doy_differences_overall_all_in_one.png"), width = 1600, height = 1000)
 # 
 # print(
 #   #both together
@@ -2851,7 +2851,7 @@ for (s in sort(unique(int.spec.dec$poll))) {
   
   int.s.dec <- filter(int.spec.dec, poll == s)
   
-  png(here("Plots/interactions/doy_diff", paste("mean_doy_differences", s, ".png")), width = 1600, height = 1000)
+  png(here("plots/interactions/doy_diff", paste("mean_doy_differences", s, ".png")), width = 1600, height = 1000)
   
   print(
     ggplot(int.s.dec, aes(x = decade, y = synchrony, group = plant)) +
@@ -2999,7 +2999,7 @@ scale_color_manual(
 
 ggsave(
   group_mean_doy_differences,
-  filename = here("Plots", "group_mean_doy_differences.png"), width = 20, height = 12.5,
+  filename = here("plots", "group_mean_doy_differences.png"), width = 20, height = 12.5,
   bg = "transparent"
 )
 
@@ -3103,7 +3103,7 @@ ggsave(
       legend.background = element_rect(fill = "transparent"), 
       legend.box.background = element_rect(fill = "transparent") 
     ),
-  filename = here("Plots", "group_mean_doy_differences_abstract.png"), width = 20, height = 15,
+  filename = here("plots", "group_mean_doy_differences_abstract.png"), width = 20, height = 15,
   bg = "transparent"
 )
 
@@ -3201,7 +3201,7 @@ ggsave(
       legend.background = element_rect(fill = "transparent"), 
       legend.box.background = element_rect(fill = "transparent") 
     ),
-  filename = here("Plots", "group_mean_doy_differences_nopts.png"), width = 20, height = 15,
+  filename = here("plots", "group_mean_doy_differences_nopts.png"), width = 20, height = 15,
   bg = "transparent"
 )
 

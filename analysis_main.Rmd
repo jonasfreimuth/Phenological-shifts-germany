@@ -92,7 +92,7 @@ opts <- c()
 
 # Functions --------------------------------------------
 
-source(here('Scripts', 'functions.R'))
+source(here('scripts', 'functions.R'))
 
 ```
 
@@ -154,13 +154,13 @@ if(run.occ.get |
 ```{r control running of the rest}
 
 # check if it is necessary to run the whole script in principle
-if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
+if (file.exists(here("data", "workspace_save.RData")) & force.main == FALSE) {
   
   # now check whether there were changes in the data i.e. we had to run the occurrence getting script
   # if not, it should be save to just load the previous data and stop
   if (! run.occ.get) {
     
-    load(here("Data", "workspace_save.RData"))
+    load(here("data", "workspace_save.RData"))
     
     # beep to notify we've stopped
     beep()
@@ -185,7 +185,7 @@ if (file.exists(here("Data", "workspace_save.RData")) & force.main == FALSE) {
 
 ```{r Load data, echo=FALSE}
 # load yearly mean data
-dat.occ <- fread(here("Data", "occurrences_species_yearly_mean_doy_pruned.csv")) 
+dat.occ <- fread(here("data", "occurrences_species_yearly_mean_doy_pruned.csv")) 
 
 # make sure there are records for a certain fraction of years
 thr.year <- round(thr.perc * (max(dat.occ$year) - min(dat.occ$year)))
@@ -1639,7 +1639,7 @@ for (i in seq(1, nrow(dat.int.year))) {
     #make sure directory exists
     dir.check(here("plots/interactions/time"))
     
-    png(here("Plots/Interactions/time", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
+    png(here("plots/Interactions/time", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
                                                ".png")),
         width = 1500, height = 1000)
     
@@ -1695,7 +1695,7 @@ for (i in seq(1, nrow(dat.int.year))) {
 dat.int.time <- drop_na(dat.int.time, diff.slope)
 
 #save interaction data
-write.csv(dat.int.time, here("Data", "pla_poll_interactions_time.csv"), row.names = FALSE)
+write.csv(dat.int.time, here("data", "pla_poll_interactions_time.csv"), row.names = FALSE)
 
 
 
@@ -1724,7 +1724,7 @@ for (i in seq(1, nrow(dat.int.year))) {
     # if it doesn't exist yet, create the interaction subdirectory
     dir.check(here("plots/interactions/temp"))
     
-    png(here("Plots/Interactions/temp", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
+    png(here("plots/Interactions/temp", paste0(i, "_", paste(unique(dat.i$species), collapse = ""),
                                                ".png")),
         width = 1500, height = 1000)
     
@@ -1779,7 +1779,7 @@ for (i in seq(1, nrow(dat.int.year))) {
 dat.int.temp <- drop_na(dat.int.temp, diff.slope)
 
 #save interaction data
-fwrite(dat.int.temp, here("Data", "pla_poll_interactions_temp.csv"))
+fwrite(dat.int.temp, here("data", "pla_poll_interactions_temp.csv"))
 
 ```
 
@@ -2084,9 +2084,9 @@ for (i in seq(1, nrow(int.dec))) {
   if (any(c("full", "int.spec.dec") %in% opts)) {
     
     # make sure subdir exists
-    dir.check(here("Plots/Interactions/decadal/time"))
+    dir.check(here("plots/Interactions/decadal/time"))
     
-    png(here("Plots/Interactions/decadal/time",
+    png(here("plots/Interactions/decadal/time",
              paste(i, unique(int.i.mean$poll),
                    unique(int.i.mean$plant),
                    "doy_diff.png",
@@ -2124,9 +2124,9 @@ for (i in seq(1, nrow(int.dec))) {
     dev.off()
     
     # make sure subdir exists
-    dir.check(here("Plots/Interactions/decadal/temp"))
+    dir.check(here("plots/Interactions/decadal/temp"))
     
-    png(here("Plots/Interactions/decadal/temp",
+    png(here("plots/Interactions/decadal/temp",
              paste(i, unique(int.i.mean$poll),
                    unique(int.i.mean$plant),
                    "doy_diff.png",
@@ -3315,17 +3315,17 @@ analyse.trait(data = mutate(dat.occ.plant, meanFlMonth = floor((FlStart + FlEnd)
 ```{r Run Plot saving Script}
 
 #run script to save plots with different graphic parameters for publication
-source(here("Scripts", "plot_results.R"))
+source(here("scripts", "plot_results.R"))
 
 if (any(c("full", "all.spec") %in% opts)){
   
-  source(here("Scripts", "plot_all_species_in_one.R"))
+  source(here("scripts", "plot_all_species_in_one.R"))
   
 }
 
 if (any(c("full", "adiitional") %in% opts)){
   
-  source(here("Scripts", "plot_occurrence_distribution.R.R"))
+  source(here("scripts", "plot_occurrence_distribution.R.R"))
   
 }
 
@@ -3334,23 +3334,23 @@ if (any(c("full", "adiitional") %in% opts)){
 ```{r Save stat tables}
 
 #save species over time table
-write.csv(stat.spec.time, here("Data", "species_reaction_over_time.csv"),
+write.csv(stat.spec.time, here("data", "species_reaction_over_time.csv"),
           row.names = FALSE)
 
 #save species with temperature table
-write.csv(stat.spec.temp, here("Data", "species_reaction_with_temp.csv"),
+write.csv(stat.spec.temp, here("data", "species_reaction_with_temp.csv"),
           row.names = FALSE)
 
 #save group meta stat table
-write.csv(stat.group.meta, here("Data", "group_mean_slopes.csv"),
+write.csv(stat.group.meta, here("data", "group_mean_slopes.csv"),
           row.names = FALSE)
 
 #time interactions
-write.csv(dat.int.time, here("Data", "pla_poll_interacions_time.csv"),
+write.csv(dat.int.time, here("data", "pla_poll_interacions_time.csv"),
           row.names = FALSE)
 
 #temp interactions
-write.csv(dat.int.temp, here("Data", "pla_poll_interacions_temp.csv"),
+write.csv(dat.int.temp, here("data", "pla_poll_interacions_temp.csv"),
           row.names = FALSE)
 
 # save all results to csv

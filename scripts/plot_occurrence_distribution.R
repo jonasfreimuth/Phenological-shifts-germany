@@ -5,7 +5,7 @@
 
 ###########################################################################
 
-library(raster)
+library("raster")
 
 
 dir.check(here("plots/additional"))
@@ -25,7 +25,7 @@ col.group = c("Coleoptera" = "chartreuse",
 
 #load data
 dat.occ <- fread(
-  here("Data", "occurrences_full_refined.csv")) %>% 
+  here("data", "occurrences_full_refined.csv")) %>% 
   
   #remove records without determined species
   filter(species != "") %>%
@@ -49,7 +49,7 @@ for (ins in unique(filter(dat.occ,
                           !is.na(decimalLongitude))$institutionCode)) {
   
   # plot spatial distribution and save plot
-  png(here("Plots/additional",
+  png(here("plots/additional",
            paste("occurrences_spatial_distribution_",
                  gsub("[[:punct:]]", "_", ins), ".png", sep = "")),
       width = 3000, height = 3000)
@@ -99,7 +99,7 @@ for (ins in unique(filter(dat.occ,
 
 
 # plot spatial distribution of all in one
-png(here("Plots/additional",
+png(here("plots/additional",
          paste("occurrences_spatial_distribution_all.png", sep = "")),
     width = 3000, height = 3000)
 
@@ -156,7 +156,7 @@ for (dec in sort(unique(dat.occ$decade))) {
              !is.na(decimalLongitude))
   
   # plot that onto germany
-  png(here("Plots/additional",
+  png(here("plots/additional",
            paste("occurrences_doy_distribution_decadal_", dec, ".png", sep = "")),
       width = 1500, height = 1000)
   
@@ -204,7 +204,7 @@ for (dec in sort(unique(dat.occ$decade))) {
 for (ins in unique(dat.occ$institutionCode)) {
   
   # plot spatial distribution and save plot
-  png(here("Plots/additional",
+  png(here("plots/additional",
            paste("occurrences_doy_distribution_",
                  gsub("[[:punct:]]", "_", ins), ".png", sep = "")),
       width = 1500, height = 1000)
@@ -244,7 +244,7 @@ for (ins in unique(dat.occ$institutionCode)) {
                      id.grp, year)
   
   # plot record number distribution and save
-  png(here("Plots/additional",
+  png(here("plots/additional",
            paste("occurrences_nrec_distribution_",
                  gsub("[[:punct:]]", "_", ins), ".png", sep = "")),
       width = 1500, height = 1000)
@@ -287,7 +287,7 @@ for (ins in unique(dat.occ$institutionCode)) {
 }
 
 # plot doy distribution and save plot
-png(here("Plots/additional",
+png(here("plots/additional",
          paste("occurrences_doy_distribution_overall.png", sep = "")),
     width = 1500, height = 1000)
 

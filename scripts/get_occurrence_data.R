@@ -87,18 +87,18 @@ if (run.occ.refine) {
     
     # check if we already have an extracted occurrence file
     # if not then download + extract + delete zip
-    if (! file.exists(here("Download",  paste0("occurrence_", k, ".txt")))) {
+    if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
       
       # retrieve compiled dataset
-      occ_download_get(k, here("Download"), overwrite = TRUE)
+      occ_download_get(k, here("download"), overwrite = TRUE)
       
       # extract occurence.txt
-      unzip(here("Download", paste0(k, ".zip")),
-            file = "occurrence.txt", exdir = here("Download"), overwrite = TRUE)
+      unzip(here("download", paste0(k, ".zip")),
+            file = "occurrence.txt", exdir = here("download"), overwrite = TRUE)
       
       # give the extracted file the name of its key
-      file.rename(from = here("Download", "occurrence.txt"),
-                  to = here("Download",  paste0("occurrence_", k, ".txt")))
+      file.rename(from = here("download", "occurrence.txt"),
+                  to = here("download",  paste0("occurrence_", k, ".txt")))
       
       # remove the zip file
       file.remove(here("download", paste0(k, ".zip")))
@@ -119,7 +119,7 @@ if (run.occ.refine) {
     }
     
     #read extracted occurence.txt
-    exp <- fread(here("Download", paste0("occurrence_", k, ".txt")),
+    exp <- fread(here("download", paste0("occurrence_", k, ".txt")),
                  quote = "", showProgress = FALSE,
                  select = c("kingdom", "phylum", "order", "family", "genus",
                             "species", "institutionCode", "collectionCode",
@@ -157,14 +157,14 @@ if (run.occ.refine) {
     if (exp$kingdom[1] == "Plantae") {
       
       #save to csv
-      fwrite(exp, here("Data", "occurrences_full.csv"),
+      fwrite(exp, here("data", "occurrences_full.csv"),
              append = TRUE)
       
       
     } else  if (exp$kingdom[1] == "Animalia") {
       
       #save to csv
-      fwrite(exp, here("Data", "occurrences_full.csv"),
+      fwrite(exp, here("data", "occurrences_full.csv"),
              append = TRUE)
       
     }
@@ -232,7 +232,7 @@ if (run.pruning |
   if (!(exists("dat.occ"))) {
     
     #load full dataset
-    dat.occ <- fread(here("Data", "occurrences_full_refined.csv"), showProgress = FALSE)
+    dat.occ <- fread(here("data", "occurrences_full_refined.csv"), showProgress = FALSE)
     
   }
   
@@ -312,7 +312,7 @@ if (run.pruning |
   
   #save full dataset 
   fwrite(dat.occ,
-         here("Data", "occurrences_full_pruned.csv"),
+         here("data", "occurrences_full_pruned.csv"),
          showProgress = FALSE)
   
   
@@ -323,7 +323,7 @@ if (run.pruning |
     nInsects = as.numeric(count(dat.occ, kingdom)[1,2]),
     fracGeoref = sum(!is.na(dat.occ$decimalLatitude))/nrow(dat.occ)
   ) %>%
-    fwrite(here("Data", "occurrence_full_meta.csv"))
+    fwrite(here("data", "occurrence_full_meta.csv"))
   
   #remove dat.occ again for memory reasons
   rm(dat.occ)
@@ -335,7 +335,7 @@ if (run.pruning |
 
 
 #calculate species means
-dat.occ.mean <- fread(here("Data", "occurrences_full_pruned.csv"),
+dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
                       showProgress = FALSE,
                       select = c("kingdom",
                                  "phylum",
@@ -373,7 +373,7 @@ dat.occ.mean <- fread(here("Data", "occurrences_full_pruned.csv"),
             by = c("year")) %>%
   #save species yearly mean doy data
   fwrite(
-    here("Data", "occurrences_species_yearly_mean_doy_pruned.csv"),
+    here("data", "occurrences_species_yearly_mean_doy_pruned.csv"),
     showProgress = FALSE,
     na = NA
   )
@@ -383,7 +383,7 @@ dat.occ.mean <- fread(here("Data", "occurrences_full_pruned.csv"),
 # Calculate decadal means -------------------------------------------------
 
 #load data again and dlete years before decadal cutoff 
-dat.occ.dec <- fread(here("Data", "occurrences_full_pruned.csv"),
+dat.occ.dec <- fread(here("data", "occurrences_full_pruned.csv"),
                      showProgress = FALSE,
                      select = c("kingdom",
                                 "phylum",
@@ -444,9 +444,9 @@ if (any(c("data.quality.assessment") %in% opts)) {
   
   dir.check(here("plots"))
   
-  dat.occ <- fread(here("Data", "occurrences_full_pruned.csv"), showProgress = FALSE)
+  dat.occ <- fread(here("data", "occurrences_full_pruned.csv"), showProgress = FALSE)
   
-  png(here("Plots", "raw_plant_distribution.png"), height = 5000, width = 8000)
+  png(here("plots", "raw_plant_distribution.png"), height = 5000, width = 8000)
   
   print(
     ggplot(filter(dat.occ, kingdom == "Plantae")) +
@@ -468,7 +468,7 @@ if (any(c("data.quality.assessment") %in% opts)) {
   
   dev.off()
   
-  png(here("Plots", "raw_insect_distribution.png"), height = 5000, width = 8000)
+  png(here("plots", "raw_insect_distribution.png"), height = 5000, width = 8000)
   
   print(
     ggplot(filter(dat.occ, kingdom == "Animalia")) +
@@ -491,4 +491,3 @@ if (any(c("data.quality.assessment") %in% opts)) {
   dev.off()
   
   rm(dat.occ)
-}

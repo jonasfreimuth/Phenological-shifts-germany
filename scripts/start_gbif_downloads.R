@@ -16,7 +16,7 @@ library("tidyverse")
 
 
 #load pollinator taxa
-polltax <- read.delim(here("Data", "pollinator_taxa_all.txt"), header = FALSE) %>%
+polltax <- read.delim(here("data", "pollinator_taxa_all.txt"), header = FALSE) %>%
   transmute(taxon = as.character(V1))
 
 #get taxon keys from species list
@@ -34,7 +34,7 @@ n.keys.poll <- str_count(keys.poll, ",") + 1
 # Select plant species ---------------------------------
 
 #load plant traits data set
-plant_traits <- read.csv(here("Data", "bioflor_traits.csv")) %>%
+plant_traits <- read.csv(here("data", "bioflor_traits.csv")) %>%
   mutate(species = as.character(species),
          SciName = as.character(AccName)) 
 
@@ -116,7 +116,7 @@ do.call(occ_download_queue, dpreps)
 
 #write last keys into file
 write.csv(occ_download_list(limit = ceiling(n.keys.plant / key.n) + 1)[["results"]]$key,
-          here("Data", "last_keys.txt"), row.names = FALSE)
+          here("data", "last_keys.txt"), row.names = FALSE)
 
 #beep for being done
 beep()

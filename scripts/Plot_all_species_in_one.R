@@ -34,7 +34,7 @@ source(here('scripts', 'functions.R'))
 
 # Plot species over time --------------------------------------------------
 
-huge_plot(path = here("Plots", "huge_all_species.png"),
+huge_plot(path = here("plots", "huge_all_species.png"),
           x = year,
           y = mean.doy,
           col = id.grp,
@@ -44,7 +44,7 @@ huge_plot(path = here("Plots", "huge_all_species.png"),
           ylab = "DOY"
 )
 
-huge_plot(here("Plots", "huge_plant_species.png"),
+huge_plot(here("plots", "huge_plant_species.png"),
           x = year,
           y = mean.doy,
           col = order,
@@ -56,7 +56,7 @@ huge_plot(here("Plots", "huge_plant_species.png"),
           )
 
 
-huge_plot(here("Plots", "huge_insect_species.png"),
+huge_plot(here("plots", "huge_insect_species.png"),
           width = 9000, height = 6000,
           x = year,
           y = mean.doy,
@@ -72,7 +72,7 @@ huge_plot(here("Plots", "huge_insect_species.png"),
 
 dir.check(here("plots/print"))
 
-huge_plot_print(path = here("Plots/print", "huge_all_species.png"),
+huge_plot_print(path = here("plots/print", "huge_all_species.png"),
           x = year,
           y = mean.doy,
           col = id.grp,
@@ -82,7 +82,7 @@ huge_plot_print(path = here("Plots/print", "huge_all_species.png"),
           ylab = "DOY"
 )
 
-huge_plot_print(here("Plots/print", "huge_plant_species.png"),
+huge_plot_print(here("plots/print", "huge_plant_species.png"),
           x = year,
           y = mean.doy,
           col = order,
@@ -94,7 +94,7 @@ huge_plot_print(here("Plots/print", "huge_plant_species.png"),
 )
 
 
-huge_plot_print(here("Plots/print", "huge_insect_species.png"),
+huge_plot_print(here("plots/print", "huge_insect_species.png"),
           width = 9000, height = 6000,
           x = year,
           y = mean.doy,
@@ -108,7 +108,7 @@ huge_plot_print(here("Plots/print", "huge_insect_species.png"),
 
 # Plot species with temperature -------------------------------------------
 
-huge_plot(path = here("Plots", "huge_all_species_temp.png"),
+huge_plot(path = here("plots", "huge_all_species_temp.png"),
           x = y_mean_temp,
           y = mean.doy,
           col = id.grp,
@@ -120,7 +120,7 @@ huge_plot(path = here("Plots", "huge_all_species_temp.png"),
 
 
 
-huge_plot(path = here("Plots", "huge_plant_species_temp.png"),
+huge_plot(path = here("plots", "huge_plant_species_temp.png"),
           x = y_mean_temp,
           y = mean.doy,
           col = order,
@@ -131,7 +131,7 @@ huge_plot(path = here("Plots", "huge_plant_species_temp.png"),
           data = filter(dat.occ.plot, kingdom == "Plantae")
 )
 
-huge_plot(path = here("Plots", "huge_insect_species_temp.png"),
+huge_plot(path = here("plots", "huge_insect_species_temp.png"),
           width = 9000, height = 6000,
           x = y_mean_temp,
           y = mean.doy,
@@ -144,7 +144,7 @@ huge_plot(path = here("Plots", "huge_insect_species_temp.png"),
 )
 
 # print versions
-huge_plot_print(path = here("Plots/print", "huge_all_species_temp.png"),
+huge_plot_print(path = here("plots/print", "huge_all_species_temp.png"),
           x = y_mean_temp,
           y = mean.doy,
           col = id.grp,
@@ -156,7 +156,7 @@ huge_plot_print(path = here("Plots/print", "huge_all_species_temp.png"),
 
 
 
-huge_plot_print(path = here("Plots/print", "huge_plant_species_temp.png"),
+huge_plot_print(path = here("plots/print", "huge_plant_species_temp.png"),
           x = y_mean_temp,
           y = mean.doy,
           col = order,
@@ -167,7 +167,7 @@ huge_plot_print(path = here("Plots/print", "huge_plant_species_temp.png"),
           data = filter(dat.occ.plot, kingdom == "Plantae")
 )
 
-huge_plot_print(path = here("Plots/print", "huge_insect_species_temp.png"),
+huge_plot_print(path = here("plots/print", "huge_insect_species_temp.png"),
           width = 9000, height = 6000,
           x = y_mean_temp,
           y = mean.doy,
