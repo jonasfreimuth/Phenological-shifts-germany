@@ -1510,13 +1510,13 @@ slopes_correlation <- ggplot() +
 
 slopes_correlation_pic <- ggdraw() +
   draw_plot(slopes_correlation) +
-  draw_image(image = here('assets', 'beetle.png'),
+  draw_image(image = here('assets', 'Beetle.png'),
              x = 0.22, y = 0.90,
              scale = 0.2, hjust = 0.5, vjust = 0.5) +
-  draw_image(image = here('assets', 'butterfly.png'),
+  draw_image(image = here('assets', 'Butterfly.png'),
              x = 0.54, y = 0.90,
              scale = 0.2, hjust = 0.5, vjust = 0.5) +
-  draw_image(image = here('assets', 'plant.png'),
+  draw_image(image = here('assets', 'Plant.png'),
              x = 0.86, y = 0.90,
              scale = 0.2, hjust = 0.5, vjust = 0.5)
 
