@@ -19,7 +19,7 @@ library("stringr")
 
 
 #load pollinator taxa
-polltax <- read.delim(here("data", "pollinator_taxa_all.txt"), header = FALSE) %>%
+polltax <- read.delim(here("static_data", "pollinator_taxa_all.txt"), header = FALSE) %>%
   transmute(taxon = as.character(V1))
 
 #get taxon keys from species list
