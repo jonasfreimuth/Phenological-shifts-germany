@@ -25,7 +25,13 @@ library("multcompView")
 library("rgbif")
 library("raster")
 library("rlang")
-library("tidyverse")
+library("data.table")
+library("ggplot2")
+library("tidyr")
+library("dplyr")
+library("stringr")
+library("forcats")
+
 
 
 # Vars ----------------------------------------------------

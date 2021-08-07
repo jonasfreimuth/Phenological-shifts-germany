@@ -3,8 +3,10 @@
 
 library("here")
 library("rvest")
-library("tidyverse")
+library("dplyr")
+library("tidyr")
 library("taxize")
+library("stringr")
 library("rgbif")
 library("beepr")
 

@@ -5,7 +5,9 @@
 library("rdwd")
 library("RCurl") # important to get a current index for selectDWD
 library("data.table")
-library("tidyverse")
+library("dplyr")
+library("tidyr")
+library("stringr")
 
 # supress dplyr::summarise() message about leftover groups
 options(dplyr.summarise.inform = FALSE) 
