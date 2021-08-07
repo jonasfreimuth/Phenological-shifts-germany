@@ -257,8 +257,12 @@ write.csv(plant_traits, here("static_data", "bioflor_traits.csv"),
 
 # Add degrees of pollinator dependence ------------------------------------
 
-#load plant trait table
-plant_traits <- read.csv(here("static_data", "bioflor_traits.csv"))
+if (! exists(plant_traits)){
+  
+  #load plant trait table
+  plant_traits <- read.csv(here("static_data", "bioflor_traits.csv"))
+  
+}
 
 #define function for calculating pollinator dependence
 poll_dep <- function(data,
