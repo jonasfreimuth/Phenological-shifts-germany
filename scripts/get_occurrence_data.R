@@ -84,6 +84,27 @@ if (run.occ.refine) {
   # create file for storing occurrences in (overwrites previous file)
   file.create(here("data", "occurrences_full.csv"))
   
+  # create file for keeping track which occurrence finished processing when
+  sink(here("data", "download_ran.txt"))
+  
+  cat("# Do not delete this file.\n")
+  cat("# Re-executing the occurrence getting script will take needlessly long...\n")
+  cat("key\tfinish_time\n")
+  
+  sink()
+  
+  # generate curl handle
+  dl_handle <- curl::new_handle()
+  dl_handle <- curl::handle_setopt(timeout_ms = 20000, dl_handle)
+  
+  # check if k exists and if so trim keys down to have k as its firs entry
+  # this is a rudimentary way to be able to just restart the script and
+  # have the downloads continue
+  if (exists("k")) {
+    k_ind <- which(keys == k)
+    keys <- keys[k_ind:length(keys)]
+  }
+  
   #start for loop for each key
   for (k in keys) {
     
@@ -108,15 +129,9 @@ if (run.occ.refine) {
       file.remove(here("download", paste0(k, ".zip")))
       
       # create/overwrite the file for download status
-      sink(here("data", "download_ran.txt"))
+      sink(here("data", "download_ran.txt"), append = TRUE)
       
-      cat("The last key downloaded was:"); k
-      
-      cat("\nOccurrences were downloaded last from gbif at: ")
-      
-      date()
-      
-      cat("\n\nPlease don't delete this file.\nYour script will take needlessly long...")
+      cat(format(Sys.time(), "%Y%m%d_%H%M%S"), "\t", k, "\n")
       
       sink()
       
@@ -497,3 +512,4 @@ if (any(c("data.quality.assessment") %in% opts)) {
   dev.off()
   
   rm(dat.occ)
+}
