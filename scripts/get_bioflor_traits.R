@@ -21,9 +21,9 @@ source(here('scripts', 'functions.R'))
 plant_traits <- setNames(data.frame(
   matrix(ncol = 19,
          nrow = 4000)),
-  c("AccName", "GbifKey", "OrigName", "species", "bioflor_id",  "LifeForm", "LifeSpan", "FlStart", "FlEnd",
-    "FlDur", "ReprType", "Dicliny", "Dichogamy", "SelfComp", "PollVec", "PollVecGrp",
-    "BreedSys", "FlowClass", "Habitat"))
+  c("AccName", "GbifKey", "OrigName", "species", "bioflor_id",  "LifeForm",
+    "LifeSpan", "FlStart", "FlEnd", "FlDur", "ReprType", "Dicliny", "Dichogamy",
+    "SelfComp", "PollVec", "PollVecGrp", "BreedSys", "FlowClass", "Habitat"))
 
 i <- 0
 
@@ -41,39 +41,46 @@ for (i in seq(i,
   
   # download bioflor page
   # if an error occurs, catch that and continue
-  pagetext <- tryCatch(read_html(paste("https://www.ufz.de/biolflor/taxonomie/taxonomie.jsp?ID_Taxonomie=",
-                                       i, sep = ""),
-                                 options = c("NOERROR", "RECOVER")) %>%
-                         html_text(),
-                       error = function(e) {cat("Error while retreiving page, end probably reached")}
+  pagetext <- tryCatch(read_html(
+    paste("https://www.ufz.de/biolflor/taxonomie/taxonomie.jsp?ID_Taxonomie=",
+          i, sep = ""),
+    options = c("NOERROR", "RECOVER")) %>%
+      html_text(),
+    error = function(e) {
+      cat("Error while retreiving page, end probably reached")
+      }
   )
   
-  # if the error actually means the end is reached and we don't have a pagetext, stop
+  # if the error actually means the end is reached and we
+  #   don't have a pagetext, stop
   if(is.null(pagetext)) {
   
     # wait half a minute and try again
     Sys.sleep(30)
     
-    pagetext <- tryCatch(read_html(paste("https://www.ufz.de/biolflor/taxonomie/taxonomie.jsp?ID_Taxonomie=",
-                                         i, sep = ""),
-                                   options = c("NOERROR", "RECOVER")) %>%
-                           html_text(),
-                         error = function(e) {cat("Error while retreiving page, end probably reached")}
+    pagetext <- tryCatch(read_html(
+      paste("https://www.ufz.de/biolflor/taxonomie/taxonomie.jsp?ID_Taxonomie=",
+            i, sep = ""),
+      options = c("NOERROR", "RECOVER")) %>%
+        html_text(),
+      error = function(e) {
+        cat("Error while retreiving page, end probably reached")
+        }
     )
     
     #if it's still null stop the loop
-    if (is.null(pagetext)) break
+    if (is.null(pagetext)) { break }
     
     }
   
   #use right set of regex for the language,
   #check if the end of bioflor is reached
-  if (str_detect(pagetext, "(?<=german name\\(s\\)\n\t\t\t\n\t\t\t\n\t\t\t\t).+")) {
+  if (str_detect(
+    pagetext, "(?<=german name\\(s\\)\n\t\t\t\n\t\t\t\n\t\t\t\t).+")) {
     
     #extract scientific name
     OrigName <- pagetext %>%
       str_extract_all(
-        # "(?<=Deutsche\\(r\\) Name\\(n\\)\n\t\t\t\n\t\t\t\n\t\t\t\t).+"
         "(?<=german name\\(s\\)\n\t\t\t\n\t\t\t\n\t\t\t\t).+"
       ) %>% 
       paste() %>%
@@ -104,7 +111,8 @@ for (i in seq(i,
         )
       )
     
-  } else if (str_detect(pagetext, "(?<=Deutsche\\(r\\) Name\\(n\\)\n\t\t\t\n\t\t\t\n\t\t\t\t).+")) {
+  } else if (str_detect(
+    pagetext, "(?<=Deutsche\\(r\\) Name\\(n\\)\n\t\t\t\n\t\t\t\n\t\t\t\t).+")) {
     
     #extract scientific name
     OrigName <- pagetext %>%
@@ -142,14 +150,16 @@ for (i in seq(i,
   } 
   
   
-  if (any(grep("agg\\.", OrigName))) { # next if the taxon is a conglomerate
+  if (any(grep("agg\\.", OrigName))) { 
     
+    # next if the taxon is a conglomerate
     plant_traits$OrigName[p] <- OrigName
     
     next
     
-  } else if (any(grep("sect\\.", OrigName))) { # next if the taxon is a section of something
+  } else if (any(grep("sect\\.", OrigName))) { 
     
+    # next if the taxon is a section of something
     plant_traits$OrigName[p] <- OrigName
     
     next
@@ -161,35 +171,52 @@ for (i in seq(i,
   keyname <- get_gbifid_(OrigName, messages = FALSE)[[1]]
   
   if (nrow(keyname) == 0) {
+    
     #no names found, return NAs
     keyname <- data.frame(AccName = NA,
                           GbifKey = NA,
                           stringsAsFactors = FALSE)
+    
   } else {
+    
     #get just the first row of the results
     data <- keyname[1, ]
+    
     if (anyNA(data$rank) | data$rank != "species") {
+      
       #if we have a NA or not a species, return NA
-      keyname <- data.frame(AccName = NA,
-                            GbifKey = NA,
-                            stringsAsFactors = FALSE)
+      keyname <- data.frame(
+        AccName = NA,
+        GbifKey = NA,
+        stringsAsFactors = FALSE)
+      
     } else if (data$status == "ACCEPTED") {
+      
       #it's an accepted name! Let's write that down!
-      keyname <- data.frame(AccName = as.character(data$scientificname),
-                            GbifKey = as.character(data$usagekey),
-                            stringsAsFactors = FALSE)
+      keyname <- data.frame(
+        AccName = as.character(data$scientificname),
+        GbifKey = as.character(data$usagekey),
+        stringsAsFactors = FALSE)
+      
     } else if (any(data$status == "SYNONYM", data$status == "DOUBTFUL") &
                data$matchtype == "EXACT") {
+      
       #if its an exact match, but the status is doubtful, get the usageKey 
       #and with that, determine the accepted name
-      keyname <- data.frame(AccName = as.character(name_usage(key = data$specieskey)$data$scientificName),
-                            GbifKey = as.character(data$specieskey),
-                            stringsAsFactors = FALSE)
+      keyname <- data.frame(
+        AccName = as.character(name_usage(
+          key = data$specieskey)$data$scientificName),
+        GbifKey = as.character(data$specieskey),
+        stringsAsFactors = FALSE)
+      
     } else {
+      
       #nothing above worked? return NA
-      keyname <- data.frame(AccName = NA,
-                            GbifKey = NA,
-                            stringsAsFactors = FALSE)
+      keyname <- data.frame(
+        AccName = NA,
+        GbifKey = NA,
+        stringsAsFactors = FALSE)
+      
     }
   }
   
@@ -224,7 +251,8 @@ plant_traits <- na_if(plant_traits, "")
 plant_traits <- filter(plant_traits, !duplicated(species))
 
 #save trait table
-write.csv(plant_traits, here("static_data", "bioflor_traits.csv"), row.names=FALSE)
+write.csv(plant_traits, here("static_data", "bioflor_traits.csv"),
+          row.names=FALSE)
 
 
 # Add degrees of pollinator dependence ------------------------------------
@@ -233,8 +261,13 @@ write.csv(plant_traits, here("static_data", "bioflor_traits.csv"), row.names=FAL
 plant_traits <- read.csv(here("static_data", "bioflor_traits.csv"))
 
 #define function for calculating pollinator dependence
-poll_dep <- function(data, ReprType = data$ReprType, Dicliny = data$Dicliny, Dichogamy = data$Dichogamy,
-                     SelfComp = data$SelfComp, PollVec = data$PollVec, PollVecGrp = data$PollVecGrp,
+poll_dep <- function(data,
+                     ReprType = data$ReprType,
+                     Dicliny = data$Dicliny,
+                     Dichogamy = data$Dichogamy,
+                     SelfComp = data$SelfComp,
+                     PollVec = data$PollVec,
+                     PollVecGrp = data$PollVecGrp,
                      BreedSys = data$BreedSys) {
 
   PollDep <- vector(mode = "character", length = nrow(data))
@@ -288,15 +321,17 @@ plant_traits$PollDep <- poll_dep(plant_traits)
 # Simplyfiy trait data ----------------------------------------------------
 
 #simplify trait data: Only get upper Habitat levels
-plant_traits$Habitat <- vapply(strsplit(as.character(plant_traits$Habitat), ", "),
-                                 function(x) {
-
-                                   y <- regmatches(x, regexpr("[[:alpha:]][[:digit:]]+", x))
-                                   paste(unique(y), collapse = ", ")
-
-                                 },
-                                 character(1L)) %>%
+plant_traits$Habitat <- vapply(
+  strsplit(as.character(plant_traits$Habitat), ", "),
+  function(x) {
+    
+    y <- regmatches(x, regexpr("[[:alpha:]][[:digit:]]+", x))
+    paste(unique(y), collapse = ", ")
+    
+  },
+  character(1L)) %>%
   na_if("")
 
 #save again
-write.csv(plant_traits, here("static_data", "bioflor_traits.csv"), row.names=FALSE)
+write.csv(plant_traits, here("static_data", "bioflor_traits.csv"),
+          row.names=FALSE)

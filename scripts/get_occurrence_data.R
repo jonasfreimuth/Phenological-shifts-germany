@@ -77,7 +77,9 @@ if (run.occ.refine) {
   
   #set keys (uids of my datasets used, order is pollinators, plants)
   # keys <- occ_download_list(limit = 13)[["results"]][["key"]]
-  keys <- read.delim(here("static_data", "last_keys.txt"), sep = " ", stringsAsFactors = FALSE)[,1]
+  keys <- read.delim(here("static_data", "last_keys.txt"),
+                     sep = " ",
+                     stringsAsFactors = FALSE)[,1]
   
   # create file for storing occurrences in (overwrites previous file)
   file.create(here("data", "occurrences_full.csv"))
@@ -89,8 +91,10 @@ if (run.occ.refine) {
     # if not then download + extract + delete zip
     if (! file.exists(here("download",  paste0("occurrence_", k, ".txt")))) {
       
+      
       # retrieve compiled dataset
-      occ_download_get(k, here("download"), overwrite = TRUE)
+      occ_download_get(k, here("download"),
+                       overwrite = TRUE)
       
       # extract occurence.txt
       unzip(here("download", paste0(k, ".zip")),
@@ -118,13 +122,15 @@ if (run.occ.refine) {
       
     }
     
+    
     #read extracted occurence.txt
     exp <- fread(here("download", paste0("occurrence_", k, ".txt")),
                  quote = "", showProgress = FALSE,
                  select = c("kingdom", "phylum", "order", "family", "genus",
                             "species", "institutionCode", "collectionCode",
                             "datasetName","decimalLatitude", "decimalLongitude",
-                            "year", "month", "day", "eventDate", "hasGeospatialIssues", "issue")
+                            "year", "month", "day", "eventDate",
+                            "hasGeospatialIssues", "issue")
     ) 
     
     
