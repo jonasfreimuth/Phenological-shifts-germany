@@ -16,13 +16,6 @@
       "Repository": "CRAN",
       "Hash": "e4c04affc2cac20c8fec18385cd14691"
     },
-    "DBI": {
-      "Package": "DBI",
-      "Version": "1.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "030aaec5bc6553f35347cbb1e70b1a17"
-    },
     "DHARMa": {
       "Package": "DHARMa",
       "Version": "0.4.1",
@@ -233,13 +226,6 @@
       "Repository": "CRAN",
       "Hash": "5346f76a33eb7417812c270b04a5581b"
     },
-    "callr": {
-      "Package": "callr",
-      "Version": "3.5.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b7d7f1e926dfcd57c74ce93f5c048e80"
-    },
     "car": {
       "Package": "car",
       "Version": "3.0-10",
@@ -317,13 +303,6 @@
       "Repository": "CRAN",
       "Hash": "b418e8423699d11c7f2087c2bfd07da2"
     },
-    "cowplot": {
-      "Package": "cowplot",
-      "Version": "1.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b418e8423699d11c7f2087c2bfd07da2"
-    },
     "cpp11": {
       "Package": "cpp11",
       "Version": "0.2.7",
@@ -358,13 +337,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "d1b8b1a821ee564a3515fa6c6d5c52dc"
-    },
-    "dbplyr": {
-      "Package": "dbplyr",
-      "Version": "2.1.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "f30247ffeeebe8d9842dc68fe63e043b"
     },
     "digest": {
       "Package": "digest",
@@ -660,13 +632,6 @@
       "Repository": "CRAN",
       "Hash": "b0edacc02f7a3dad41a1afc385e929f4"
     },
-    "lubridate": {
-      "Package": "lubridate",
-      "Version": "1.7.10",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "1ebfdc8a3cfe8fe19184f5481972b092"
-    },
     "magick": {
       "Package": "magick",
       "Version": "2.7.1",
@@ -734,13 +699,6 @@
       "RemoteRef": "HEAD",
       "RemoteSha": "038ffe95bbb32caaa53586f58fb5bc3cfd0ea28a",
       "Hash": "5ae53ac057e840bb05c3fda1dae15738"
-    },
-    "modelr": {
-      "Package": "modelr",
-      "Version": "0.1.8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "9fd59716311ee82cba83dc2826fc5577"
     },
     "multcompView": {
       "Package": "multcompView",
@@ -861,13 +819,6 @@
       "Repository": "CRAN",
       "Hash": "95ef9167b75dde9d2ccc3c7528393e7e"
     },
-    "processx": {
-      "Package": "processx",
-      "Version": "3.5.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "605f57cffff369dabc0b6c344e9b4492"
-    },
     "progress": {
       "Package": "progress",
       "Version": "1.2.2",
@@ -881,13 +832,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "4ab2c43adb4d4699cf3690acd378d75d"
-    },
-    "ps": {
-      "Package": "ps",
-      "Version": "1.6.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "32620e2001c1dce1af49c49dccbb9420"
     },
     "purrr": {
       "Package": "purrr",
@@ -931,13 +875,6 @@
       "Repository": "CRAN",
       "Hash": "a3ded548110163cf499d63c3932dd499"
     },
-    "raster": {
-      "Package": "raster",
-      "Version": "3.4-13",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "4543b272b756a4ff0f80370c886ef90a"
-    },
     "rdwd": {
       "Package": "rdwd",
       "Version": "1.4.0",
@@ -979,13 +916,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "1c3ef87cbb81c23ac96797781ec7aecc"
-    },
-    "reprex": {
-      "Package": "reprex",
-      "Version": "1.0.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "cb4d6f77f163b8d685833f2a59e7cb4c"
     },
     "reshape": {
       "Package": "reshape",
@@ -1056,13 +986,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "55d1e670be93862f48f0c4f645516d7c"
-    },
-    "rstudioapi": {
-      "Package": "rstudioapi",
-      "Version": "0.13",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "06c85365a03fdaf699966cc1d3cf53ea"
     },
     "rvest": {
       "Package": "rvest",
@@ -1252,13 +1175,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "caf4781c674ffa549a4676d2d77b13cc"
-    },
-    "wk": {
-      "Package": "wk",
-      "Version": "0.4.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "f7e41a60d8b19cf505ffa06bf578c7bd"
     },
     "wk": {
       "Package": "wk",
