@@ -23,7 +23,12 @@ library("rlang")
 library("rgbif")
 library("multcompView")
 library("data.table")
-library("tidyverse")
+library("ggplot2")
+library("tidyr")
+library("dplyr")
+library("stringr")
+library("forcats")
+
 
 
 # Vars --------------------------------------------

@@ -12,7 +12,10 @@ library("here")
 library("beepr")
 library("rgbif")
 library("taxize")
-library("tidyverse")
+library("dplyr")
+library("tidyr")
+library("stringr")
+
 
 
 #load pollinator taxa
