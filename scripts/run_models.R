@@ -14,7 +14,7 @@ source("scripts/functions.R")
 
 # do a testing run? 
 # will reduce data size and save outputs into separate directories
-test_run <- FALSE
+test_run <- TRUE
 
 # set number of cores for model fitting to maximum, not sure whether this will
 # actually help
@@ -47,6 +47,11 @@ model_log_file <- paste0(log_path, "/models_",
 file.create(model_log_file)
 
 options("log_file" = model_log_file)
+
+# TODO
+#   give residual vs fitted
+#   give res vs fit for random groups
+#   give cooks distances
 
 
 # Data loading ------------------------------------------------------------
@@ -149,36 +154,15 @@ for (form in form_vec) {
     
     log_msg("Extracting random effects for", simple_form, "model...")
     
-    # extract random variable
-    # one or more word characters preceded by a pipe symbol and zero or one 
-    #   whitespace
-    rnd_var <- str_extract(form, "(?<=\\|\\s?)\\w+")
+    rnd_eff <- tidy(glm_mod, c("ran_vals"))
     
-    # extract intercept and main slope
-    # this is not very elegant and might break
-    intercept <- glm_mod$fit$par[1]
-    slope <- glm_mod$fit$par[2]
-    
-    # extract random effects, add them to overall effects to obtain proper
-    # estimate
-    rnd_eff <- ranef(glm_mod)$cond[[rnd_var]]
-    
-    # quick bodge to get an appropriate df for the weird ways i want to fill it
-    rnd_eff_out <- data.frame(row.names = 1:nrow(rnd_eff))
-    
-    rnd_eff_out[[rnd_var]] <- row.names(rnd_eff)
-    rnd_eff_out[["Intercept"]] <- rnd_eff[["(Intercept)"]] + intercept
-    rnd_eff_out[[main_var]] <- rnd_eff[[main_var]] + slope
-    
-    # rnd_eff_out <- coef(glm_mod)
-    
-    fwrite(rnd_eff_out,
+    fwrite(rnd_eff,
            paste0(data_path, "/glmm_rnd_eff_",
                   str_replace(simple_form, "~", "_"), "_",
                   time_stamp,
                   ".csv"))
     
-    rm(rnd_eff, rnd_eff_out)
+    rm(rnd_eff)
   
     log_msg("... Done.")
   }
@@ -186,28 +170,35 @@ for (form in form_vec) {
   log_msg("Generating and saving diagnostics plots...")
   
   # generate residuals
-  simRes <- simulateResiduals(glm_mod)
+  glm_resid <- residuals(glm_mod)
   
   # remove model object
   rm(glm_mod)
   
   # save diagnostics plot
-  png(paste0(plot_path, "/glmm_diagnost_",
+  png(paste0(plot_path, "/glmm_qq_overall_",
              str_replace(simple_form, "~", "_"), "_",
              time_stamp, ".png"),
       width = 2000,
       height = 1200
   )
   
-  plot(simRes)
+  qqnorm(scale(glm_resid))
+  abline(0, 1)
   
   dev.off()
   
   # remove objects due to memory limitations
-  rm(simRes)
+  rm(glm_resid)
   
   log_msg("Done with", simple_form, "model...")
   
+}
+
+# if we are doing a test run, also save the dataset used
+if (test_run) {
+  fwrite(dat.occ, paste0(data_path, "/occurrences_temp_", time_stamp,
+                         ".csv"))
 }
 
 log_msg("All done.")
