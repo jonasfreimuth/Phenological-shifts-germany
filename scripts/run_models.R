@@ -120,6 +120,8 @@ if (test_run) {
 # loop through all preset models
 for (form in form_vec) {
   
+  # Formula stuff ---------------------
+  
   # split model formula into constituents
   mod_comps <- str_split(form, " ", simplify = TRUE)
   
@@ -130,10 +132,14 @@ for (form in form_vec) {
   # extract main independent var
   main_var <- mod_comps[, 3]
   
-  log_msg("Starting", simple_form, "model...")
-  
   # convert formula string to proper formula
   mod_form <- as.formula(form)
+  
+  # Model running ---------------------
+  
+  log_msg("Starting", simple_form, "model...")
+  
+  time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
   # run the model, this step takes a lot of time
   glm_mod <- glmmTMB(mod_form, family = gaussian, data = dat.occ)
@@ -142,30 +148,30 @@ for (form in form_vec) {
   # TODO: do a check for false convergence and take steps for ensuring this is
   #   not a problem
   
-  
   log_msg("... Done.")
   log_msg("Saving model to disk...")
-  
-  time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
   # save model to disk
   saveRDS(glm_mod,
           file = paste0(data_path, "/glmm_model_",
-                       str_replace(simple_form, "~", "_"), "_",
-                       time_stamp, ".rds"))
+                        str_replace(simple_form, "~", "_"), "_",
+                        time_stamp, ".rds"))
   
   log_msg("... Done.")
+  
+  # Model results extraction ----------
+  
   log_msg("Computing summary and saving to disk...")
   
   # save summary output to disk
   capture.output(summary(glm_mod), 
                  file = paste0(data_path, "/glmm_summary_",
-                              str_replace(simple_form, "~", "_"), "_",
-                              time_stamp, ".txt"))
+                               str_replace(simple_form, "~", "_"), "_",
+                               time_stamp, ".txt"))
   
   log_msg("... Done.")
   
-  
+  # if a random effect is present, extract the coefficients for it
   if (str_detect(form, "(?<=\\|\\s?)\\w+")) {
     
     # TODO: make sure this check for presence of random variable works as 
@@ -182,7 +188,7 @@ for (form in form_vec) {
                   ".csv"))
     
     rm(rnd_eff)
-  
+    
     log_msg("... Done.")
   }
   
