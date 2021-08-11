@@ -40,8 +40,9 @@ dir.check(log_path)
 dir.check(plot_path)
 dir.check(data_path)
 
-model_log_file <- paste0(log_path, "/models_",
+model_log_file <- paste0(log_path, "/",
                          format(Sys.time(), format = "%Y%m%d_%H%M"),
+                         "_models",
                          ".log")
 
 file.create(model_log_file)
@@ -86,7 +87,6 @@ if (!(test_run && exists("dat.occ"))) {
     log_msg("Test run, pruning data down to species:")
     
     log_msg(paste(frac_species, collapse = ", "))
-    
     
     dat.occ <- dat.occ %>% 
       filter(species %in% frac_species)
@@ -147,9 +147,11 @@ for (form in form_vec) {
   
   # save model to disk
   saveRDS(glm_mod,
-          file = paste0(data_path, "/glmm_model_",
-                        str_replace(simple_form, "~", "_"), "_",
-                        time_stamp, ".rds"))
+          file = paste0(data_path, "/", 
+                        time_stamp, "_",
+                        "glmm_model_",
+                        str_replace(simple_form, "~", "_"),
+                        ".rds"))
   
   log_msg("... Done.")
   
@@ -159,9 +161,11 @@ for (form in form_vec) {
   
   # save summary output to disk
   capture.output(summary(glm_mod), 
-                 file = paste0(data_path, "/glmm_summary_",
-                               str_replace(simple_form, "~", "_"), "_",
-                               time_stamp, ".txt"))
+                 file = paste0(data_path, "/",
+                               time_stamp, "_",
+                               "glmm_summary_",
+                               str_replace(simple_form, "~", "_"),
+                               ".txt"))
   
   log_msg("... Done.")
   
@@ -176,9 +180,10 @@ for (form in form_vec) {
     rnd_eff <- tidy(glm_mod, c("ran_vals"))
     
     fwrite(rnd_eff,
-           paste0(data_path, "/glmm_rnd_eff_",
-                  str_replace(simple_form, "~", "_"), "_",
-                  time_stamp,
+           paste0(data_path, "/", 
+                  time_stamp, "_",
+                  "glmm_rnd_eff_",
+                  str_replace(simple_form, "~", "_"),
                   ".csv"))
     
     rm(rnd_eff)
@@ -200,9 +205,11 @@ for (form in form_vec) {
     log_msg("Generating and saving diagnostics plots...")
     
     # save diagnostics plot
-    png(paste0(plot_path, "/glmm_generic_diagnostic_",
-               str_replace(simple_form, "~", "_"), "_",
-               time_stamp, ".png"),
+    png(paste0(plot_path, "/", 
+               time_stamp, "_",
+               "glmm_generic_diagnostic_",
+               str_replace(simple_form, "~", "_"),
+               ".png"),
         width = 2000,
         height = 1200
     )
@@ -212,9 +219,11 @@ for (form in form_vec) {
     dev.off()
     
     # save resid vs fitted
-    ggsave(paste0(plot_path, "/glmm_resid_fit_",
-                   str_replace(simple_form, "~", "_"), "_",
-                   time_stamp, ".png"),
+    ggsave(paste0(plot_path, "/",
+                   time_stamp, "_",
+                  "glmm_resid_fit_",
+                   str_replace(simple_form, "~", "_"),
+                  ".png"),
            lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp),
            width = 20, height = 12)
     
