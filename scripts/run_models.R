@@ -195,10 +195,13 @@ for (form in form_vec) {
   
   if (plot_diagnostics) {
     
-    log_msg("Extracting residuals and fitted values...")
+    log_msg("Extracting plotting data...")
     
     mod_resid <- residuals(glm_mod)
     mod_fitvl <- fitted   (glm_mod)
+    mod_diagn <- modelDiagnostics(glm_mod)
+    
+    rm(glm_mod)
     
     log_msg("... Done.")
     
@@ -214,7 +217,7 @@ for (form in form_vec) {
         height = 1200
     )
     
-    plot(modelDiagnostics(glm_mod), nrow = 3, ncol = 2, ask = FALSE)
+    plot(mod_diagn, nrow = 3, ncol = 2, ask = FALSE)
     
     dev.off()
     
