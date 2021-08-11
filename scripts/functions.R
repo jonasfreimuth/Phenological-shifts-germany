@@ -1639,3 +1639,41 @@ append.df <- function(name, value, multiplier = NULL, formattedValue = NULL,  ta
   return(target)
   
 }
+
+
+# Lmm functions -----------------------------------------------------------
+
+# function to plot precomputed residuals and fitted values of a lm against
+#   each other using ggplot. Formalized as a function mainly for consistency
+lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL) {
+  
+  if (is.null(col_vec)) {
+    plot <- ggplot(data.frame(fit = mod_fit,
+                              resid = mod_resid),
+                   aes(fit, resid))
+  } else {
+    plot <- ggplot(data.frame(fit = mod_fit,
+                              resid = mod_resid,
+                              cols = col_vec),
+                   aes(fit, resid, col = cols))
+  }
+  
+  plot <- plot + 
+    geom_point() +
+    geom_hline(yintercept = 0) +
+    geom_smooth()
+  
+  
+  if (!is.null(col_vec)) {
+    # if we have a separated line for groups, also add an overall line
+    plot <- plot + 
+      geom_smooth(aes(fit, resid),
+                  group = "overall", col = "red")
+  }
+  
+  plot <- plot +
+    theme_minimal() +
+    theme(panel.grid = element_blank())
+  
+  return(plot)
+}
