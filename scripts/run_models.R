@@ -81,7 +81,7 @@ if (!(test_run && exists("dat.occ"))) {
     
     # if we do a test run, restrict data to subset of species
     all_species <- unique(dat.occ$species)
-    frac_species <- sample(all_species, length(all_species) * 0.01)
+    frac_species <- sample(all_species, length(all_species) * 0.005)
     
     log_msg("Test run, pruning data down to species:")
     
@@ -108,8 +108,6 @@ if (test_run) {
   form_vec <- readLines("static_data/model_formulas.txt")
   
 }
-
-
 
 # Model loop --------------------------------------------------------------
 
@@ -220,8 +218,9 @@ for (form in form_vec) {
            lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp),
            width = 20, height = 12)
     
-    # TODO: plot residuals vs every predictor
-    # TODO: plot residuals for every 
+    # TODO: plot residuals vs every fixed effect 
+    #   (should happen in modelDiagostics)
+    # TODO: plot residuals for every random effect
     
     # hist residuals
     # resid vs predictors
