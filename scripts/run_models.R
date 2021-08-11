@@ -4,11 +4,9 @@
 library("stringr")
 library("data.table")
 library("here")
-library("parallel")
 library("lme4")
 library("JWileymisc")
-# library("multilevelTools")
-library("DHARMa")
+library("multilevelTools")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
@@ -23,12 +21,6 @@ test_run <- TRUE
 # save diagnostics plots
 # will take a very long time on the full dataset
 plot_diagnostics <- TRUE
-
-# set number of cores for model fitting to maximum, not sure whether this will
-# actually help
-n_cores <- detectCores()
-if (is.na(n_cores)) { n_cores <- 1}
-options(glmmTMB.cores = n_cores)
 
 # TODO: make all the path stuff relative
 
