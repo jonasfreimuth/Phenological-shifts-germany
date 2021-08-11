@@ -248,12 +248,6 @@ for (form in form_vec) {
   
 }
 
-# if we are doing a test run, also save the dataset used
-if (test_run) {
-  fwrite(dat.occ, paste0(data_path, "/occurrences_temp_", time_stamp,
-                         ".csv"))
-}
-
 log_msg("All done.")
 
 # reset logging file
