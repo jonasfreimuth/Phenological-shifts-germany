@@ -20,6 +20,10 @@ source("scripts/functions.R")
 # will reduce data size and save outputs into separate directories
 test_run <- TRUE
 
+# save diagnostics plots
+# will take a very long time on the full dataset
+plot_diagnostics <- TRUE
+
 # set number of cores for model fitting to maximum, not sure whether this will
 # actually help
 n_cores <- detectCores()
@@ -192,29 +196,53 @@ for (form in form_vec) {
     log_msg("... Done.")
   }
   
-  log_msg("Generating and saving diagnostics plots...")
+  # Diagnostic plots ------------------
   
-  # generate residuals
-  glm_resid <- residuals(glm_mod)
-  
-  # remove model object
-  rm(glm_mod)
-  
-  # save diagnostics plot
-  png(paste0(plot_path, "/glmm_qq_overall_",
-             str_replace(simple_form, "~", "_"), "_",
-             time_stamp, ".png"),
-      width = 2000,
-      height = 1200
-  )
-  
-  qqnorm(scale(glm_resid))
-  abline(0, 1)
-  
-  dev.off()
-  
-  # remove objects due to memory limitations
-  rm(glm_resid)
+  if (plot_diagnostics) {
+    
+    log_msg("Extracting residuals and fitted values...")
+    
+    mod_resid <- residuals(glm_mod)
+    mod_fitvl <- fitted   (glm_mod)
+    
+    log_msg("... Done.")
+    
+    log_msg("Generating and saving diagnostics plots...")
+    
+    # save diagnostics plot
+    png(paste0(plot_path, "/glmm_generic_diagnostic_",
+               str_replace(simple_form, "~", "_"), "_",
+               time_stamp, ".png"),
+        width = 2000,
+        height = 1200
+    )
+    
+    plot(modelDiagnostics(glm_mod), nrow = 3, ncol = 2, ask = FALSE)
+    
+    dev.off()
+    
+    # save resid vs fitted
+    ggsave(paste0(plot_path, "/glmm_resid_fit_",
+                   str_replace(simple_form, "~", "_"), "_",
+                   time_stamp, ".png"),
+           lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp),
+           width = 20, height = 12)
+    
+    # TODO: plot residuals vs every predictor
+    # TODO: plot residuals for every 
+    
+    # hist residuals
+    # resid vs predictors
+    
+    # TODO: check if everything is removed that needs to be
+    rm(mod_resid, mod_fitvl)
+    
+  } else {
+    
+    # remove model object
+    rm(glm_mod)
+    
+  }
   
   log_msg("Done with", simple_form, "model...")
   
