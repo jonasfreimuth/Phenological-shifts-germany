@@ -66,38 +66,53 @@ select_cols <- c('kingdom', 'order', 'family', 'species', 'year', 'doy',
 
 log_msg("Loading and centering data...")
 
-dat.occ <- fread(paste0("data/f_occurrences_full_pruned.csv"),
-                 select = select_cols,
-                 showProgress = FALSE) %>%
+if (!(test_run && exists("dat.occ"))) {
   
-  # remove records w/o determined temp
-  drop_na(temp) %>% 
+  dat.occ <- fread(paste0("data/f_occurrences_full_pruned.csv"),
+                   select = select_cols,
+                   showProgress = FALSE) %>%
+    
+    # remove records w/o determined temp
+    drop_na(temp) %>% 
+    
+    # center main independent variables to a mean of 0
+    mutate(temp = temp - mean(temp),
+           year = year - mean(year),
+           lat = lat - mean(lat),
+           long = long - mean(long))
   
-  # center main independent variables to a mean of 0
-  mutate(temp = temp - mean(temp),
-         year = year - mean(year),
-         lat = lat - mean(lat),
-         long = long - mean(long))
+  if (test_run) {
+    
+    # if we do a test run, restrict data to subset of species
+    all_species <- unique(dat.occ$species)
+    frac_species <- sample(all_species, length(all_species) * 0.01)
+    
+    log_msg("Test run, pruning data down to species:")
+    
+    log_msg(paste(frac_species, collapse = ", "))
+    
+    
+    dat.occ <- dat.occ %>% 
+      filter(species %in% frac_species)
+    
+  }
+} 
 
 log_msg("... Done.")
 
 
 if (test_run) {
-  all_species <- unique(dat.occ$species)
-  frac_species <- sample(all_species, length(all_species) * 0.01)
   
-  log_msg("Test run, pruning data down to species:")
+  # read in preset model formulas
+  form_vec <- readLines("static_data/model_formulas_test.txt")
   
-  log_msg(paste(frac_species, collapse = ", "))
+} else {
   
+  # read in preset model formulas
+  form_vec <- readLines("static_data/model_formulas.txt")
   
-  dat.occ <- dat.occ %>% 
-    filter(species %in% frac_species)
 }
 
-
-# read in preset model formulas
-form_vec <- readLines("static_data/model_formulas.txt")
 
 
 # Model loop --------------------------------------------------------------
