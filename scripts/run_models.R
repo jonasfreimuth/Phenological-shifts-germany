@@ -146,7 +146,7 @@ for (form in form_vec) {
   time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
   # run the model, this step takes a lot of time
-  glm_mod <- glmmTMB(mod_form, family = gaussian, data = dat.occ)
+  glm_mod <- lmer(mod_form, data = dat.occ)
   
   
   # TODO: do a check for false convergence and take steps for ensuring this is
