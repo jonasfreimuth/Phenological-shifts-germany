@@ -732,7 +732,7 @@ sum_df <- function(df, group_vars) {
 # function for printing a log message starting with date and time
 log_msg <- function(...) {
   msg <- paste(toString(format(Sys.time())), ...)
-  print(msg)
+  cat(msg, "\n")
   
   # optionally log also to file, if that is given
   if (!is.null(getOption("log_file"))) {
