@@ -132,6 +132,7 @@ for (form in form_vec) {
   
   # extract which components are fixed and which are random effects:
   #   TODO: consider effects of minus properly
+  #   TODO: set this to only run when plots are enabled
   
   #   extract all independent vars
   ind_vars <- str_extract(form, "(?<=~).*")
@@ -254,6 +255,8 @@ for (form in form_vec) {
 
     dev.off()
     
+    # TODO: Proper axis labels and titles
+    
     # save resid vs fitted
     ggsave(paste0(plot_path, "/",
                    time_stamp, "_",
@@ -262,6 +265,67 @@ for (form in form_vec) {
                   ".png"),
            lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp),
            width = 20, height = 12)
+    
+    
+    # save resid histogram
+    ggsave(paste0(plot_path, "/",
+                  time_stamp, "_",
+                  "glmm_resid_hist_",
+                  str_replace(simple_form, "~", "_"),
+                  ".png"),
+           ggplot(data = data.frame(resid = mod_resid),
+                  aes(resid)) +
+             geom_histogram() + 
+             theme_minimal() +
+             theme(panel.grid = element_blank()),
+           width = 20, height = 12)
+    
+    for (fix_var in fix_vars) {
+      # save resid vs fixed effects
+      ggsave(paste0(plot_path, "/",
+                    time_stamp, "_",
+                    "glmm_resid_fix_eff_", fix_var, "_",
+                    str_replace(simple_form, "~", "_"),
+                    ".png"),
+             ggplot(data = data.frame(resid = mod_resid,
+                                      fix_var = dat.occ[[fix_var]],
+                                      id.grp = dat.occ$id.grp),
+                    aes(fix_var, resid, col = id.grp)) +
+               geom_point() + 
+               geom_hline(yintercept = 0) +
+               geom_smooth() +
+               labs(title = fix_var,
+                    x = fix_var) +
+               theme_minimal() +
+               theme(panel.grid = element_blank()),
+             width = 20, height = 12)
+    }
+    
+    # plot resid against levels of rnd eff
+    # TODO: hard code less
+    for (rnd_var in rnd_vars) {
+      for (rnd_val in unique(dat.occ[[rnd_var]])) {
+        select_vec <- which(dat.occ[[rnd_var]] == rnd_val)
+        
+        ggsave(paste0(plot_path, "/",
+                      time_stamp, "_",
+                      "glmm_resid_rnd_eff_", rnd_var, "_",
+                      "level_", rnd_val,
+                      str_replace(simple_form, "~", "_"),
+                      ".png"),
+               ggplot(data = data.frame(
+                 resid = mod_resid[select_vec],
+                 rnd_var = dat.occ[[rnd_var]][select_vec]),
+                 aes(rnd_var, resid)) +
+                   geom_boxplot() + 
+                   geom_jitter(alpha = 0.5, width = 0.1) +
+                   labs(title = rnd_val,
+                        x = rnd_var) +
+                   theme_minimal() +
+                   theme(panel.grid = element_blank()),
+                 width = 20, height = 12)
+      }
+    }
     
     # TODO: plot residuals vs every fixed effect
     # TODO: plot residuals for every random effect
