@@ -46,8 +46,6 @@ model_log_file <- paste0(log_path, "/",
                          "_models",
                          ".log")
 
-file.create(model_log_file)
-
 options("log_file" = model_log_file)
 
 # TODO
