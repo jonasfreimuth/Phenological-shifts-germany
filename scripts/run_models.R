@@ -20,6 +20,9 @@ test_run <- TRUE
 # will take a very long time on the full dataset
 plot_diagnostics <- TRUE
 
+# set pattern for recognition of random effects in formulas
+ranef_pattern <- "(?<=\\|\\s?)\\w+"
+
 # TODO: make all the path stuff relative
 
 # set saving paths
@@ -168,7 +171,8 @@ for (form in form_vec) {
   log_msg("... Done.")
   
   # if a random effect is present, extract the coefficients for it
-  if (str_detect(form, "(?<=\\|\\s?)\\w+")) {
+  #  Currently, the script will not accept models without random effects anyway
+  if (str_detect(form, ranef_pattern)) {
     
     # TODO: make sure this check for presence of random variable works as 
     #   intended
