@@ -136,8 +136,21 @@ for (form in form_vec) {
   
   time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
-  # run the model, this step takes a lot of time
-  glm_mod <- lmer(mod_form, data = dat.occ)
+  # Check if the formula contains random effects, and if so use the right
+  #   function (lmer acts up without random effect)
+  # WARNING: This is potentially very stupid as lmer and lm return different 
+  #   objects
+  if (str_detect(form, ranef_pattern)) {
+    
+    # run the model, this step may take a lot of time
+    #  although plotting will probably take longer
+    glm_mod <- lmer(mod_form, data = dat.occ)
+    
+  } else {
+    
+    glm_mod <- lm(mod_form, dat.occ)
+    
+  }
   
   
   # TODO: do a check for false convergence and take steps for ensuring this is
