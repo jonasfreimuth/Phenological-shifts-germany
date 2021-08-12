@@ -18,30 +18,8 @@ specplot <-  function(data, spec) {
 # and if it doesn't create it along with its parents 
 dir.check <- function(path) {
   
-  # check if dir exists
-  xist <- dir.exists(path)
-  
-  # get parent directory (there might be a better way, right now it takes )
-  parent <- str_sub(string = path,
-                    end = str_locate(path, "/(?=\\w+$)")[1,2] - 1)
-  
-  # if yes stop and do nothing
-  if(xist) {
-    
-  } else if (dir.exists(parent)) { # check if parent exists
-    
-    # if yes create the directory in the parent
-    dir.create(path)
-    
-  } else { 
-    
-    # if the parent also doesn't exist, repeat the process
-    # with the parent
-    dir.check(parent)
-    
-    # now try it again with the actual path
-    dir.check(path)
-    
+  if (!dir.exists(path)) {
+    dir.create(path, recursive = TRUE)
   }
   
 }
