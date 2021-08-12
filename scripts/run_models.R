@@ -130,6 +130,24 @@ for (form in form_vec) {
   # convert formula string to proper formula
   mod_form <- as.formula(form)
   
+  # extract which components are fixed and which are random effects:
+  #   TODO: consider effects of minus properly
+  
+  #   extract all independent vars
+  ind_vars <- str_extract(form, "(?<=~).*")
+  
+  #   extract random variables
+  rnd_vars <- str_extract_all(ind_vars, "(?<=\\().*(?=\\))")
+  rnd_vars <- str_extract    (rnd_vars, "(?<=\\|\\s?)[\\w\\.]+")
+  rnd_vars <- unique(rnd_vars)
+  
+  #   extract fixed variables
+  #   WARNING: Interaction terms will be reduced to just their constituents
+  fix_vars <- str_replace_all(ind_vars, "[\\s+]*\\(.*\\)", "")
+  fix_vars <- str_replace_all(fix_vars, "\\s", "")
+  fix_vars <- str_split(fix_vars, "[:+-]+")
+  fix_vars <- unique(fix_vars)
+  
   # Model running ---------------------
   
   log_msg("Starting", simple_form, "model...")
