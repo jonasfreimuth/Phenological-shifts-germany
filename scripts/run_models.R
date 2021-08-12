@@ -5,8 +5,6 @@ library("stringr")
 library("data.table")
 library("here")
 library("lme4")
-library("JWileymisc")
-library("multilevelTools")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
@@ -199,7 +197,6 @@ for (form in form_vec) {
     
     mod_resid <- residuals(glm_mod)
     mod_fitvl <- fitted   (glm_mod)
-    mod_diagn <- modelDiagnostics(glm_mod)
     
     rm(glm_mod)
     
@@ -207,18 +204,19 @@ for (form in form_vec) {
     
     log_msg("Generating and saving diagnostics plots...")
     
-    # save diagnostics plot
-    png(paste0(plot_path, "/", 
+    # save qq plot
+    png(paste0(plot_path, "/",
                time_stamp, "_",
-               "glmm_generic_diagnostic_",
+               "glmm_qq_",
                str_replace(simple_form, "~", "_"),
                ".png"),
         width = 2000,
         height = 1200
     )
-    
-    plot(mod_diagn, nrow = 3, ncol = 2, ask = FALSE)
-    
+
+    qqnorm(scale(mod_resid), ylab = "Scaled sample quantiles")
+    abline(0, 1)
+
     dev.off()
     
     # save resid vs fitted
@@ -230,8 +228,7 @@ for (form in form_vec) {
            lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp),
            width = 20, height = 12)
     
-    # TODO: plot residuals vs every fixed effect 
-    #   (should happen in modelDiagostics)
+    # TODO: plot residuals vs every fixed effect
     # TODO: plot residuals for every random effect
     
     # hist residuals
