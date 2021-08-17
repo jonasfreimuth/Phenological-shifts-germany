@@ -144,7 +144,7 @@ for (form in form_vec) {
   #   WARNING: Interaction terms will be reduced to just their constituents
   fix_vars <- str_replace_all(ind_vars, "[\\s+]*\\(.*\\)", "")
   fix_vars <- str_replace_all(fix_vars, "\\s", "")
-  fix_vars <- str_split(fix_vars, "[:+-]+")[[1]]
+  fix_vars <- str_split(fix_vars, "[*:+-]+")[[1]]
   fix_vars <- unique(fix_vars)
   
   # Model running ---------------------
