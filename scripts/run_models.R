@@ -52,9 +52,6 @@ model_log_file <- paste0(run_path,
 
 options("log_file" = model_log_file)
 
-# TODO
-#   give cooks distances
-
 
 # Data loading ------------------------------------------------------------
 
@@ -180,7 +177,6 @@ for (form in form_vec) {
     
   }
   
-  
   # TODO: do a check for false convergence and take steps for ensuring this is
   #   not a problem
   
@@ -263,7 +259,8 @@ for (form in form_vec) {
         height = 1200
     )
 
-    qqnorm(scale(mod_resid), ylab = "Scaled sample quantiles")
+    qqnorm(scale(mod_resid), ylab = "Scaled sample quantiles",
+           sub = form)
     abline(0, 1)
 
     dev.off()
@@ -276,7 +273,8 @@ for (form in form_vec) {
                   "lmm_resid_fit_",
                    str_replace(simple_form, "~", "_"),
                   ".png"),
-           lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp),
+           lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp,
+                        sub = form),
            width = 20, height = 12)
     
     
@@ -289,6 +287,7 @@ for (form in form_vec) {
            ggplot(data = data.frame(resid = mod_resid),
                   aes(resid)) +
              geom_histogram() + 
+             labs(sub = form) +
              theme_minimal() +
              theme(panel.grid = element_blank()),
            width = 20, height = 12)
@@ -309,36 +308,47 @@ for (form in form_vec) {
                geom_smooth() +
                labs(title = fix_var,
                     x = fix_var) +
+               labs(sub = form) +
                theme_minimal() +
                theme(panel.grid = element_blank()),
              width = 20, height = 12)
     }
     
     # plot resid against levels of rnd eff
-    # TODO: hard code less
     for (rnd_var in rnd_vars) {
-      for (rnd_val in unique(dat.occ[[rnd_var]])) {
-        select_vec <- which(dat.occ[[rnd_var]] == rnd_val)
-        
-        ggsave(paste0(plot_path, "/",
-                      time_stamp, "_",
-                      "lmm_resid_rnd_eff_", rnd_var, "_",
-                      "level_", rnd_val,
-                      str_replace(simple_form, "~", "_"),
-                      ".png"),
-               ggplot(data = data.frame(
-                 resid = mod_resid[select_vec],
-                 rnd_var = dat.occ[[rnd_var]][select_vec]),
-                 aes(rnd_var, resid)) +
-                   geom_boxplot() + 
-                   geom_jitter(alpha = 0.5, width = 0.1) +
-                   labs(title = rnd_val,
-                        x = rnd_var) +
-                   theme_minimal() +
-                   theme(panel.grid = element_blank()),
-                 width = 20, height = 12)
-      }
+      
+      ggsave(paste0(plot_path, "/",
+                    time_stamp, "_",
+                    "lmm_resid_rnd_eff_", rnd_var, "_",
+                    str_replace(simple_form, "~", "_"),
+                    ".png"),
+             ggplot(data = data.frame(
+               resid = mod_resid,
+               rnd_var = dat.occ[[rnd_var]]),
+               aes(rnd_var, resid)) +
+               geom_boxplot() +
+               # geom_jitter(alpha = 0.5) +
+               labs(title = rnd_var,
+                    x = rnd_var) +
+               geom_hline(yintercept = 0) +
+               geom_text(data = data.frame(
+                 rnd_var = sort(unique(dat.occ[[rnd_var]])),
+                 lab = paste0("n = ", table(dat.occ[[rnd_var]])),
+                 ypos = ypos(mod_resid)
+               ), 
+               aes(rnd_var, ypos, label = lab)
+               ) +
+               facet_wrap(~ rnd_var, scale = "free_x") +
+               labs(sub = form) +
+               theme_minimal() +
+               theme(panel.grid = element_blank(),
+                     axis.text.x = element_blank()),
+             width = 20, height = 12)
+  
     }
+    
+    # TODO
+    #   give cooks distances
     
     # TODO: check if everything is removed that needs to be
     rm(mod_resid, mod_fitvl)
