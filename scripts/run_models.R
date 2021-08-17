@@ -187,8 +187,34 @@ for (form in form_vec) {
     
   }
   
-  # TODO: do a check for false convergence and take steps for ensuring this is
-  #   not a problem
+  if (any(str_detect(names(last.warning), "Model failed to converge"))) {
+    
+    log_msg("Convergence failure found!")
+    log_msg("Attempting to restart model fitting with current parameters...")
+    
+    # TODO Disable testing stuff
+    saveRDS(lm_mod,
+            file = paste0(mod_path,
+                          time_stamp, "_",
+                          "lmm_model_CONVFAIL_",
+                          str_replace(simple_form, "~", "_"),
+                          ".rds"))
+    
+    if (has_ranef) {
+      
+      params <- getME(lm_mod, "theta")
+      lm_mod <- update(lm_mod, start = params)
+      
+    } else {
+      
+      # Not sure whether convergence warnings are a thing with lms
+      warning("Convergence failure mitigation not implemented for regular lms!")
+      
+    }
+    
+    log_msg("... Restart done.")
+    
+  }
   
   log_msg("... Done.")
   log_msg("Saving model to disk...")
