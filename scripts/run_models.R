@@ -142,7 +142,7 @@ for (form in form_vec) {
   #   to improve it
   if (! any(sapply(rnd_vars,
                    function (x) {identical(x, character(0))}
-                   ))) {
+  ))) {
     
     rnd_vars <- str_extract    (rnd_vars, "(?<=\\|\\s?)[\\w\\.]+")
     rnd_vars <- unique(rnd_vars) 
@@ -294,20 +294,20 @@ for (form in form_vec) {
         width = 2000,
         height = 1200
     )
-
+    
     qqnorm(scale(mod_resid), ylab = "Scaled sample quantiles",
            sub = form)
     abline(0, 1)
-
+    
     dev.off()
     
     # TODO: Proper axis labels and titles
     
     # save resid vs fitted
     ggsave(paste0(plot_path, "/",
-                   time_stamp, "_",
+                  time_stamp, "_",
                   "lmm_resid_fit_",
-                   str_replace(simple_form, "~", "_"),
+                  str_replace(simple_form, "~", "_"),
                   ".png"),
            lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp,
                         sub = form),
