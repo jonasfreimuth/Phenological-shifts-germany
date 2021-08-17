@@ -19,6 +19,9 @@ test_run <- TRUE
 # will take a very long time on the full dataset
 plot_diagnostics <- TRUE
 
+# set number of times a model with failed convergence will attempt to restart
+n_restart <- 5
+
 # Directory structure:
 #   - timestamp script start
 #     - model formulas for script
@@ -187,33 +190,63 @@ for (form in form_vec) {
     
   }
   
-  if (any(str_detect(names(last.warning), "Model failed to converge"))) {
+  # print(warnings())
+  
+  # It is probably not wise to set this bit up extracting stuff from deep within
+  #   the model object, but i cant be asked to do it properly right now
+  if (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
+                     "Model failed to converge"))) {
     
-    log_msg("Convergence failure found!")
-    log_msg("Attempting to restart model fitting with current parameters...")
+    i <- 1
     
-    # TODO Disable testing stuff
-    saveRDS(lm_mod,
-            file = paste0(mod_path,
-                          time_stamp, "_",
-                          "lmm_model_CONVFAIL_",
-                          str_replace(simple_form, "~", "_"),
-                          ".rds"))
+    log_msg("  Convergence failure found!")
+    log_msg("  Attempting to restart model fitting with current parameters...")
     
-    if (has_ranef) {
+    max_grad_old <- as.numeric(str_extract(lm_mod@optinfo$conv$lme4$messages,
+                                       "(?<=max\\|grad\\| = )[0-9\\.]+"))
+    max_grad_new <- max_grad_old
+    
+    while (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
+                          "Model failed to converge")) &&
+           i <= n_restart) {
       
-      params <- getME(lm_mod, "theta")
-      lm_mod <- update(lm_mod, start = params)
+      # TODO Disable testing stuff
+      saveRDS(lm_mod,
+              file = paste0(mod_path,
+                            time_stamp, "_",
+                            "lmm_model_CONVFAIL_i_",
+                            str_replace(simple_form, "~", "_"),
+                            ".rds"))
       
-    } else {
       
-      # Not sure whether convergence warnings are a thing with lms
-      warning("Convergence failure mitigation not implemented for regular lms!")
+      
+      if (has_ranef) {
+        
+        params <- getME(lm_mod, "theta")
+        lm_mod <- update(lm_mod, start = params)
+        
+      } else {
+        
+        # Not sure whether convergence warnings are a thing with lms
+        warning("Convergence failure mitigation not implemented for regular lms!")
+        
+        break
+        
+      }
+      
+      max_grad_old <- max_grad_new
+      max_grad_new <- as.numeric(str_extract(lm_mod@optinfo$conv$lme4$messages,
+                                              "(?<=max\\|grad\\| = )[0-9\\.]+"))
+      
+      i <- i + 1
       
     }
     
-    log_msg("... Restart done.")
-    
+    if (i == n_restart && max_grad_old <= max_grad_new) {
+      log_msg("    Out of tries but no improvement, continuing.")
+    } else {
+      log_msg("    Restart sucessfull")
+    }
   }
   
   log_msg("... Done.")
