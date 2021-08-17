@@ -7,9 +7,11 @@
 # script generated folders
 data
 download
-plots
 DWDdata
 logs
+models
+plots
+temp_models
 
 # Rmd outputs
 *.nb.html

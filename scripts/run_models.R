@@ -22,24 +22,31 @@ plot_diagnostics <- TRUE
 # set pattern for recognition of random effects in formulas
 ranef_pattern <- "(?<=\\|\\s?)\\w+"
 
+# Directory structure:
+#   - timestamp script start
+#     - model formulas for script
+#     - timestamp (and formula) of model start
+#       - model data
+#       - plot folder
+
 # set saving paths
 if (!test_run) {
-  log_path <- "logs"
-  plot_path <- "plots"
-  data_path <- "data"
+  model_root <- "models/"
 } else {
-  log_path <- "temp/logs"
-  plot_path <- "temp/plots"
-  data_path <- "temp/data"
+  model_root <- "temp_models/"
 }
 
-# ensure paths are present
-dir.check(log_path)
-dir.check(plot_path)
-dir.check(data_path)
+#  ensure path exists
+dir.check(model_root)
 
-model_log_file <- paste0(log_path, "/",
-                         format(Sys.time(), format = "%Y%m%d_%H%M"),
+# set up dir for this script run
+script_time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
+run_path <- paste0(model_root, script_time_stamp, "_model_data/")
+dir.check(run_path)
+
+# set up log file inside script run dir
+model_log_file <- paste0(run_path,
+                         script_time_stamp,
                          "_models",
                          ".log")
 
@@ -103,10 +110,13 @@ if (test_run) {
   
 }
 
+
 # Model loop --------------------------------------------------------------
 
 # loop through all preset models
 for (form in form_vec) {
+  
+  time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
   # Formula stuff ---------------------
   
@@ -142,11 +152,17 @@ for (form in form_vec) {
   fix_vars <- str_split(fix_vars, "[*:+-]+")[[1]]
   fix_vars <- unique(fix_vars)
   
+  
+  # Directory stuff -------------------
+  
+  mod_path <- paste0(run_path, time_stamp, "_",
+                     str_replace(simple_form, "~", "_"), "/")
+  
+  dir.check(mod_path)
+  
   # Model running ---------------------
   
   log_msg("Starting", simple_form, "model...")
-  
-  time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
   # Check if the formula contains random effects, and if so use the right
   #   function (lmer acts up without random effect)
@@ -156,11 +172,11 @@ for (form in form_vec) {
     
     # run the model, this step may take a lot of time
     #  although plotting will probably take longer
-    glm_mod <- lmer(mod_form, data = dat.occ)
+    lm_mod <- lmer(mod_form, data = dat.occ)
     
   } else {
     
-    glm_mod <- lm(mod_form, dat.occ)
+    lm_mod <- lm(mod_form, dat.occ)
     
   }
   
@@ -172,10 +188,10 @@ for (form in form_vec) {
   log_msg("Saving model to disk...")
   
   # save model to disk
-  saveRDS(glm_mod,
-          file = paste0(data_path, "/", 
+  saveRDS(lm_mod,
+          file = paste0(mod_path,
                         time_stamp, "_",
-                        "glmm_model_",
+                        "lmm_model_",
                         str_replace(simple_form, "~", "_"),
                         ".rds"))
   
@@ -186,10 +202,10 @@ for (form in form_vec) {
   log_msg("Computing summary and saving to disk...")
   
   # save summary output to disk
-  capture.output(summary(glm_mod), 
-                 file = paste0(data_path, "/",
+  capture.output(summary(lm_mod), 
+                 file = paste0(mod_path,
                                time_stamp, "_",
-                               "glmm_summary_",
+                               "lmm_summary_",
                                str_replace(simple_form, "~", "_"),
                                ".txt"))
   
@@ -204,12 +220,12 @@ for (form in form_vec) {
     
     log_msg("Extracting random effects for", simple_form, "model...")
     
-    rnd_eff <- tidy(glm_mod, c("ran_vals"))
+    rnd_eff <- tidy(lm_mod, c("ran_vals"))
     
     fwrite(rnd_eff,
-           paste0(data_path, "/", 
+           paste0(mod_path, 
                   time_stamp, "_",
-                  "glmm_rnd_eff_",
+                  "lmm_rnd_eff_",
                   str_replace(simple_form, "~", "_"),
                   ".csv"))
     
@@ -222,12 +238,16 @@ for (form in form_vec) {
   
   if (plot_diagnostics) {
     
+    # generate plotting dir
+    plot_path <- paste0(mod_path, "plots/")
+    dir.check(plot_path)
+    
     log_msg("Extracting plotting data...")
     
-    mod_resid <- residuals(glm_mod)
-    mod_fitvl <- fitted   (glm_mod)
+    mod_resid <- residuals(lm_mod)
+    mod_fitvl <- fitted   (lm_mod)
     
-    rm(glm_mod)
+    rm(lm_mod)
     
     log_msg("... Done.")
     
@@ -236,7 +256,7 @@ for (form in form_vec) {
     # save qq plot
     png(paste0(plot_path, "/",
                time_stamp, "_",
-               "glmm_qq_",
+               "lmm_qq_",
                str_replace(simple_form, "~", "_"),
                ".png"),
         width = 2000,
@@ -253,7 +273,7 @@ for (form in form_vec) {
     # save resid vs fitted
     ggsave(paste0(plot_path, "/",
                    time_stamp, "_",
-                  "glmm_resid_fit_",
+                  "lmm_resid_fit_",
                    str_replace(simple_form, "~", "_"),
                   ".png"),
            lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp),
@@ -263,7 +283,7 @@ for (form in form_vec) {
     # save resid histogram
     ggsave(paste0(plot_path, "/",
                   time_stamp, "_",
-                  "glmm_resid_hist_",
+                  "lmm_resid_hist_",
                   str_replace(simple_form, "~", "_"),
                   ".png"),
            ggplot(data = data.frame(resid = mod_resid),
@@ -277,7 +297,7 @@ for (form in form_vec) {
       # save resid vs fixed effects
       ggsave(paste0(plot_path, "/",
                     time_stamp, "_",
-                    "glmm_resid_fix_eff_", fix_var, "_",
+                    "lmm_resid_fix_eff_", fix_var, "_",
                     str_replace(simple_form, "~", "_"),
                     ".png"),
              ggplot(data = data.frame(resid = mod_resid,
@@ -302,7 +322,7 @@ for (form in form_vec) {
         
         ggsave(paste0(plot_path, "/",
                       time_stamp, "_",
-                      "glmm_resid_rnd_eff_", rnd_var, "_",
+                      "lmm_resid_rnd_eff_", rnd_var, "_",
                       "level_", rnd_val,
                       str_replace(simple_form, "~", "_"),
                       ".png"),
@@ -326,7 +346,7 @@ for (form in form_vec) {
   } else {
     
     # remove model object
-    rm(glm_mod)
+    rm(lm_mod)
     
   }
   
