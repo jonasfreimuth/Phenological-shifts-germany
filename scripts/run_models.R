@@ -20,7 +20,7 @@ test_run <- TRUE
 plot_diagnostics <- TRUE
 
 # set number of times a model with failed convergence will attempt to restart
-n_restart <- 5
+n_restart <- 3
 
 # Directory structure:
 #   - timestamp script start
@@ -62,35 +62,34 @@ select_cols <- c('family', 'species', 'year', 'doy',
 log_msg("Loading and centering data...")
 
 if (!(test_run && exists("dat.occ"))) {
-  
+
   dat.occ <- fread(paste0("data/f_occurrences_full_pruned.csv"),
                    select = select_cols,
                    showProgress = FALSE) %>%
-    
+
     # remove records w/o determined temp
-    drop_na(temp) %>% 
-    
+    drop_na(temp) %>%
+
     # center main independent variables to a mean of 0
     mutate(temp = temp - mean(temp),
            year = year - mean(year),
            lat = lat - mean(lat),
            long = long - mean(long))
-  
+
   if (test_run) {
-    
+
     # if we do a test run, restrict data to subset of species
     all_species <- unique(dat.occ$species)
     frac_species <- sample(all_species, length(all_species) * 0.005)
-    
-    log_msg("Test run, pruning data down to species:")
-    
-    log_msg(paste(frac_species, collapse = ", "))
-    
-    dat.occ <- dat.occ %>% 
+
+    log_msg("Test run, pruning data down to species: ",
+            paste(frac_species, collapse = ", "))
+
+    dat.occ <- dat.occ %>%
       filter(species %in% frac_species)
-    
+
   }
-} 
+}
 
 log_msg("... Done.")
 
@@ -210,6 +209,8 @@ for (form in form_vec) {
                           "Model failed to converge")) &&
            i <= n_restart) {
       
+      log_msg("  ... Attempt ", i, " of ", n_restart, "...")
+      
       # TODO Disable testing stuff
       saveRDS(lm_mod,
               file = paste0(mod_path,
@@ -243,9 +244,9 @@ for (form in form_vec) {
     }
     
     if (i == n_restart && max_grad_old <= max_grad_new) {
-      log_msg("    Out of tries but no improvement, continuing.")
+      log_msg("  ... Out of tries but no improvement, continuing.")
     } else {
-      log_msg("    Restart sucessfull")
+      log_msg("  ... Restart sucessfull")
     }
   }
   
