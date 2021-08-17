@@ -3,7 +3,6 @@
 
 library("stringr")
 library("data.table")
-library("here")
 library("lme4")
 library("dplyr")
 library("tidyr")
@@ -27,13 +26,13 @@ ranef_pattern <- "(?<=\\|\\s?)\\w+"
 
 # set saving paths
 if (!test_run) {
-  log_path <- here("logs")
-  plot_path <- here("plots")
-  data_path <- here("data")
+  log_path <- "logs"
+  plot_path <- "plots"
+  data_path <- "data"
 } else {
-  log_path <- here("temp/logs")
-  plot_path <- here("temp/plots")
-  data_path <- here("temp/data")
+  log_path <- "temp/logs"
+  plot_path <- "temp/plots"
+  data_path <- "temp/data"
 }
 
 # ensure paths are present
