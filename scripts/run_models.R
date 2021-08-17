@@ -22,8 +22,6 @@ plot_diagnostics <- TRUE
 # set pattern for recognition of random effects in formulas
 ranef_pattern <- "(?<=\\|\\s?)\\w+"
 
-# TODO: make all the path stuff relative
-
 # set saving paths
 if (!test_run) {
   log_path <- "logs"
@@ -48,8 +46,6 @@ model_log_file <- paste0(log_path, "/",
 options("log_file" = model_log_file)
 
 # TODO
-#   give residual vs fitted
-#   give res vs fit for random groups
 #   give cooks distances
 
 
@@ -323,12 +319,6 @@ for (form in form_vec) {
                  width = 20, height = 12)
       }
     }
-    
-    # TODO: plot residuals vs every fixed effect
-    # TODO: plot residuals for every random effect
-    
-    # hist residuals
-    # resid vs predictors
     
     # TODO: check if everything is removed that needs to be
     rm(mod_resid, mod_fitvl)
