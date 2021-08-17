@@ -19,9 +19,6 @@ test_run <- TRUE
 # will take a very long time on the full dataset
 plot_diagnostics <- TRUE
 
-# set pattern for recognition of random effects in formulas
-ranef_pattern <- "(?<=\\|\\s?)\\w+"
-
 # Directory structure:
 #   - timestamp script start
 #     - model formulas for script
@@ -132,15 +129,28 @@ for (form in form_vec) {
   
   # extract which components are fixed and which are random effects:
   #   TODO: consider effects of minus properly
-  #   TODO: set this to only run when plots are enabled
   
   #   extract all independent vars
   ind_vars <- str_extract(form, "(?<=~).*")
   
   #   extract random variables
   rnd_vars <- str_extract_all(ind_vars, "(?<=\\().*(?=\\))")
-  rnd_vars <- str_extract    (rnd_vars, "(?<=\\|\\s?)[\\w\\.]+")
-  rnd_vars <- unique(rnd_vars)
+  
+  has_ranef <- FALSE
+  
+  # this check if rnd_vars is empty is rather convoluted, but i dont know how 
+  #   to improve it
+  if (! any(sapply(rnd_vars,
+                   function (x) {identical(x, character(0))}
+                   ))) {
+    
+    rnd_vars <- str_extract    (rnd_vars, "(?<=\\|\\s?)[\\w\\.]+")
+    rnd_vars <- unique(rnd_vars) 
+    
+    # save whether ranef was found
+    has_ranef <- TRUE 
+    
+  }
   
   #   extract fixed variables
   #   WARNING: Interaction terms will be reduced to just their constituents
@@ -165,7 +175,7 @@ for (form in form_vec) {
   #   function (lmer acts up without random effect)
   # WARNING: This is potentially very stupid as lmer and lm return different 
   #   objects
-  if (str_detect(form, ranef_pattern)) {
+  if (has_ranef) {
     
     # run the model, this step may take a lot of time
     #  although plotting will probably take longer
@@ -209,7 +219,7 @@ for (form in form_vec) {
   
   # if a random effect is present, extract the coefficients for it
   #  Currently, the script will not accept models without random effects anyway
-  if (str_detect(form, ranef_pattern)) {
+  if (has_ranef) {
     
     # TODO: make sure this check for presence of random variable works as 
     #   intended
@@ -314,37 +324,41 @@ for (form in form_vec) {
              width = 20, height = 12)
     }
     
-    # plot resid against levels of rnd eff
-    for (rnd_var in rnd_vars) {
+    
+    if (has_ranef) {
       
-      ggsave(paste0(plot_path, "/",
-                    time_stamp, "_",
-                    "lmm_resid_rnd_eff_", rnd_var, "_",
-                    str_replace(simple_form, "~", "_"),
-                    ".png"),
-             ggplot(data = data.frame(
-               resid = mod_resid,
-               rnd_var = dat.occ[[rnd_var]]),
-               aes(rnd_var, resid)) +
-               geom_boxplot() +
-               # geom_jitter(alpha = 0.5) +
-               labs(title = rnd_var,
-                    x = rnd_var) +
-               geom_hline(yintercept = 0) +
-               geom_text(data = data.frame(
-                 rnd_var = sort(unique(dat.occ[[rnd_var]])),
-                 lab = paste0("n = ", table(dat.occ[[rnd_var]])),
-                 ypos = ypos(mod_resid)
-               ), 
-               aes(rnd_var, ypos, label = lab)
-               ) +
-               facet_wrap(~ rnd_var, scale = "free_x") +
-               labs(sub = form) +
-               theme_minimal() +
-               theme(panel.grid = element_blank(),
-                     axis.text.x = element_blank()),
-             width = 20, height = 12)
-  
+      # plot resid against levels of rnd eff
+      for (rnd_var in rnd_vars) {
+        
+        ggsave(paste0(plot_path, "/",
+                      time_stamp, "_",
+                      "lmm_resid_rnd_eff_", rnd_var, "_",
+                      str_replace(simple_form, "~", "_"),
+                      ".png"),
+               ggplot(data = data.frame(
+                 resid = mod_resid,
+                 rnd_var = dat.occ[[rnd_var]]),
+                 aes(rnd_var, resid)) +
+                 geom_boxplot() +
+                 labs(title = rnd_var,
+                      x = rnd_var) +
+                 geom_hline(yintercept = 0) +
+                 geom_text(data = data.frame(
+                   rnd_var = sort(unique(dat.occ[[rnd_var]])),
+                   lab = paste0("n = ", table(dat.occ[[rnd_var]])),
+                   ypos = ypos(mod_resid)
+                 ), 
+                 aes(rnd_var, ypos, label = lab)
+                 ) +
+                 facet_wrap(~ rnd_var, scale = "free_x") +
+                 labs(sub = form) +
+                 theme_minimal() +
+                 theme(panel.grid = element_blank(),
+                       axis.text.x = element_blank()),
+               width = 20, height = 12)
+        
+      }
+      
     }
     
     # TODO
