@@ -390,6 +390,8 @@ for (form in form_vec) {
       # plot resid against levels of rnd eff
       for (rnd_var in rnd_vars) {
         
+        n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
+        
         ggsave(paste0(plot_path, "/",
                       time_stamp, "_",
                       "lmm_resid_rnd_eff_", rnd_var, "_",
@@ -415,7 +417,7 @@ for (form in form_vec) {
                  theme_minimal() +
                  theme(panel.grid = element_blank(),
                        axis.text.x = element_blank()),
-               width = 20, height = 12)
+               width = 3 * sqrt(n_rnd_var), height = 3 * sqrt(n_rnd_var))
         
       }
       
