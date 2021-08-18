@@ -362,26 +362,40 @@ for (form in form_vec) {
              theme(panel.grid = element_blank()),
            width = 20, height = 12)
     
+    # plot residuals vs each fixed effect
     for (fix_var in fix_vars) {
-      # save resid vs fixed effects
+      
+      fix_var_plot <- ggplot(data.frame(resid = mod_resid,
+                                        fix_var = dat.occ[[fix_var]],
+                                        id.grp = dat.occ$id.grp),
+                             aes(fix_var, resid, col = id.grp)) 
+      
+      if (is.numeric(dat.occ[[fix_var]])){
+        fix_var_plot <- fix_var_plot +
+          geom_point() + 
+          geom_smooth()
+      } else {
+        fix_var_plot <- fix_var_plot +
+          geom_boxplot()
+      }
+        
+        fix_var_plot <- fix_var_plot + 
+          geom_hline(yintercept = 0) +
+          labs(title = fix_var,
+               x = fix_var) +
+          labs(sub = form) +
+          theme_minimal() +
+          theme(panel.grid = element_blank())
+        
+      # save plot
       ggsave(paste0(plot_path, "/",
                     time_stamp, "_",
                     "lmm_resid_fix_eff_", fix_var, "_",
                     str_replace(simple_form, "~", "_"),
                     ".png"),
-             ggplot(data = data.frame(resid = mod_resid,
-                                      fix_var = dat.occ[[fix_var]],
-                                      id.grp = dat.occ$id.grp),
-                    aes(fix_var, resid, col = id.grp)) +
-               geom_point() + 
-               geom_hline(yintercept = 0) +
-               geom_smooth() +
-               labs(title = fix_var,
-                    x = fix_var) +
-               labs(sub = form) +
-               theme_minimal() +
-               theme(panel.grid = element_blank()),
+             fix_var_plot,
              width = 20, height = 12)
+      
     }
     
     
