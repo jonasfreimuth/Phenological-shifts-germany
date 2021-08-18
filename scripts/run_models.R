@@ -6,6 +6,7 @@ library("data.table")
 library("lme4")
 library("dplyr")
 library("tidyr")
+library("tidyselect")
 library("ggplot2")
 library("broom.mixed")
 
@@ -68,13 +69,7 @@ if (!(test_run && exists("dat.occ"))) {
                    showProgress = FALSE) %>%
 
     # remove records w/o determined temp
-    drop_na(temp) %>%
-
-    # center main independent variables to a mean of 0
-    mutate(temp = temp - mean(temp),
-           year = year - mean(year),
-           lat = lat - mean(lat),
-           long = long - mean(long))
+    drop_na(temp)
 
   if (test_run) {
 
@@ -89,6 +84,23 @@ if (!(test_run && exists("dat.occ"))) {
       filter(species %in% frac_species)
 
   }
+  
+  # save mean and sd of dat occ as it is for later rescaling of data
+  fwrite(dat.occ %>%
+           summarise(across(tidyselect:::where(is.numeric),
+                            list(mean = mean, sd = sd))),
+         paste0(run_path,
+                script_time_stamp,
+                "_data_summary.csv"))
+  
+  dat.occ <- dat.occ %>%
+    
+    # center main independent variables to a mean of 0
+    mutate(temp = (temp - mean(temp)) / sd(temp),
+           year = (year - mean(year)) / sd(year),
+           lat  = (lat  - mean(lat )) / sd(lat ),
+           long = (long - mean(long)) / sd(long))
+  
 }
 
 log_msg("... Done.")
@@ -97,7 +109,7 @@ log_msg("... Done.")
 if (test_run) {
   
   # read in preset model formulas
-  form_vec <- readLines("static_data/model_formulas_test.txt")
+  form_vec <- readLines("static_data/model_formulas_txt.txt")
   
 } else {
   
