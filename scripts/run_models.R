@@ -109,7 +109,7 @@ log_msg("... Done.")
 if (test_run) {
   
   # read in preset model formulas
-  form_vec <- readLines("static_data/model_formulas_txt.txt")
+  form_vec <- readLines("static_data/model_formulas_test.txt")
   
 } else {
   
@@ -183,7 +183,7 @@ for (form in form_vec) {
   
   # Model running ---------------------
   
-  log_msg("Starting", simple_form, "model...")
+  log_msg("Starting model", form, "...")
   
   # Check if the formula contains random effects, and if so use the right
   #   function (lmer acts up without random effect)
@@ -227,7 +227,7 @@ for (form in form_vec) {
       saveRDS(lm_mod,
               file = paste0(mod_path,
                             time_stamp, "_",
-                            "lmm_model_CONVFAIL_i_",
+                            "lmm_model_CONVFAIL_", i, "_",
                             str_replace(simple_form, "~", "_"),
                             ".rds"))
       
@@ -241,7 +241,8 @@ for (form in form_vec) {
       } else {
         
         # Not sure whether convergence warnings are a thing with lms
-        warning("Convergence failure mitigation not implemented for regular lms!")
+        warning(paste0("Convergence failure mitigation ",
+                       "not implemented for regular lms!"))
         
         break
         
@@ -296,7 +297,7 @@ for (form in form_vec) {
     # TODO: make sure this check for presence of random variable works as 
     #   intended
     
-    log_msg("Extracting random effects for", simple_form, "model...")
+    log_msg("Extracting random effects for model", form, "...")
     
     rnd_eff <- tidy(lm_mod, c("ran_vals"))
     
@@ -462,7 +463,7 @@ for (form in form_vec) {
     
   }
   
-  log_msg("Done with", simple_form, "model...")
+  log_msg("Done with model", form, "...")
   
 }
 
