@@ -213,10 +213,6 @@ for (form in form_vec) {
     log_msg("  Convergence failure found!")
     log_msg("  Attempting to restart model fitting with current parameters...")
     
-    max_grad_old <- as.numeric(str_extract(lm_mod@optinfo$conv$lme4$messages,
-                                       "(?<=max\\|grad\\| = )[0-9\\.]+"))
-    max_grad_new <- max_grad_old
-    
     while (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
                           "Model failed to converge")) &&
            i <= n_restart) {
@@ -248,15 +244,14 @@ for (form in form_vec) {
         
       }
       
-      max_grad_old <- max_grad_new
-      max_grad_new <- as.numeric(str_extract(lm_mod@optinfo$conv$lme4$messages,
-                                              "(?<=max\\|grad\\| = )[0-9\\.]+"))
-      
       i <- i + 1
       
     }
     
-    if (i == n_restart && max_grad_old <= max_grad_new) {
+    # log whether restarting succeeded
+    if (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
+                       "Model failed to converge")) &&
+        i >= n_restart) {
       log_msg("  ... Out of tries but no improvement, continuing.")
     } else {
       log_msg("  ... Restart sucessfull")
