@@ -328,7 +328,7 @@ for (form in form_vec) {
     log_msg("Generating and saving diagnostics plots...")
     
     # save qq plot
-    png(paste0(plot_path, "/",
+    png(paste0(plot_path,
                time_stamp, "_",
                "lmm_qq_",
                str_replace(simple_form, "~", "_"),
@@ -346,7 +346,7 @@ for (form in form_vec) {
     # TODO: Proper axis labels and titles
     
     # save resid vs fitted
-    ggsave(paste0(plot_path, "/",
+    ggsave(paste0(plot_path,
                   time_stamp, "_",
                   "lmm_resid_fit_",
                   str_replace(simple_form, "~", "_"),
@@ -357,7 +357,7 @@ for (form in form_vec) {
     
     
     # save resid histogram
-    ggsave(paste0(plot_path, "/",
+    ggsave(paste0(plot_path,
                   time_stamp, "_",
                   "lmm_resid_hist_",
                   str_replace(simple_form, "~", "_"),
@@ -396,7 +396,7 @@ for (form in form_vec) {
           theme(panel.grid = element_blank())
         
       # save plot
-      ggsave(paste0(plot_path, "/",
+      ggsave(paste0(plot_path,
                     time_stamp, "_",
                     "lmm_resid_fix_eff_", fix_var, "_",
                     str_replace(simple_form, "~", "_"),
