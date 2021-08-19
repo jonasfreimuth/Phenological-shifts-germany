@@ -415,14 +415,15 @@ for (form in form_vec) {
         n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
         
         png(paste0(plot_path,
-                   time_stamp, "_",
-                   "lmm_resid_rnd_eff_", rnd_var, "_",
+                   time_stamp,
+                   "_lmm_resid_rnd_eff_", rnd_var, "_",
                    str_replace(simple_form, "~", "_"),
                    ".png"),
             width  = 250 * ceiling(sqrt(n_rnd_var)),
             height = 250 * ceiling(sqrt(n_rnd_var)))
         
-        ggplot(data = data.frame(
+        print(
+          ggplot(data = data.frame(
           resid = mod_resid,
           rnd_var = dat.occ[[rnd_var]]),
           aes(rnd_var, resid)) +
@@ -442,6 +443,7 @@ for (form in form_vec) {
           theme_minimal() +
           theme(panel.grid = element_blank(),
                 axis.text.x = element_blank())
+          )
         
         dev.off()
         
