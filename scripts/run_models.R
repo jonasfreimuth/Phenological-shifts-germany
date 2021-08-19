@@ -414,32 +414,36 @@ for (form in form_vec) {
         
         n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
         
-        ggsave(paste0(plot_path, "/",
-                      time_stamp, "_",
-                      "lmm_resid_rnd_eff_", rnd_var, "_",
-                      str_replace(simple_form, "~", "_"),
-                      ".png"),
-               ggplot(data = data.frame(
-                 resid = mod_resid,
-                 rnd_var = dat.occ[[rnd_var]]),
-                 aes(rnd_var, resid)) +
-                 geom_boxplot() +
-                 labs(title = rnd_var,
-                      x = rnd_var) +
-                 geom_hline(yintercept = 0) +
-                 geom_text(data = data.frame(
-                   rnd_var = sort(unique(dat.occ[[rnd_var]])),
-                   lab = paste0("n = ", table(dat.occ[[rnd_var]])),
-                   ypos = ypos(mod_resid)
-                 ), 
-                 aes(rnd_var, ypos, label = lab)
-                 ) +
-                 facet_wrap(~ rnd_var, scale = "free_x") +
-                 labs(sub = form) +
-                 theme_minimal() +
-                 theme(panel.grid = element_blank(),
-                       axis.text.x = element_blank()),
-               width = 3 * sqrt(n_rnd_var), height = 3 * sqrt(n_rnd_var))
+        png(paste0(plot_path,
+                   time_stamp, "_",
+                   "lmm_resid_rnd_eff_", rnd_var, "_",
+                   str_replace(simple_form, "~", "_"),
+                   ".png"),
+            width  = 250 * ceiling(sqrt(n_rnd_var)),
+            height = 250 * ceiling(sqrt(n_rnd_var)))
+        
+        ggplot(data = data.frame(
+          resid = mod_resid,
+          rnd_var = dat.occ[[rnd_var]]),
+          aes(rnd_var, resid)) +
+          geom_boxplot() +
+          labs(title = rnd_var,
+               x = rnd_var) +
+          geom_hline(yintercept = 0) +
+          geom_text(data = data.frame(
+            rnd_var = sort(unique(dat.occ[[rnd_var]])),
+            lab = paste0("n = ", table(dat.occ[[rnd_var]])),
+            ypos = ypos(mod_resid)
+          ), 
+          aes(rnd_var, ypos, label = lab)
+          ) +
+          facet_wrap(~ rnd_var, scale = "free_x") +
+          labs(sub = form) +
+          theme_minimal() +
+          theme(panel.grid = element_blank(),
+                axis.text.x = element_blank())
+        
+        dev.off()
         
       }
       
