@@ -219,16 +219,6 @@ for (form in form_vec) {
       
       log_msg("  ... Attempt ", i, " of ", n_restart, "...")
       
-      # TODO Disable testing stuff
-      saveRDS(lm_mod,
-              file = paste0(mod_path,
-                            time_stamp, "_",
-                            "lmm_model_CONVFAIL_", i, "_",
-                            str_replace(simple_form, "~", "_"),
-                            ".rds"))
-      
-      
-      
       if (has_ranef) {
         
         params <- getME(lm_mod, "theta")
