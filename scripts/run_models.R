@@ -90,8 +90,8 @@ if (!(test_run && exists("dat.occ"))) {
            summarise(across(tidyselect:::where(is.numeric),
                             list(mean = mean, sd = sd))),
          paste0(run_path,
-                script_time_stamp,
-                "_data_summary.csv"))
+                "data_summary", "_",
+                script_time_stamp, ".csv"))
   
   dat.occ <- dat.occ %>%
     
@@ -176,8 +176,9 @@ for (form in form_vec) {
   
   # Directory stuff -------------------
   
-  mod_path <- paste0(run_path, time_stamp, "_",
-                     str_replace(simple_form, "~", "_"), "/")
+  mod_path <- paste0(run_path,
+                     str_replace(simple_form, "~", "_"), "_",
+                     time_stamp, "/")
   
   dir.check(mod_path)
   
@@ -254,9 +255,9 @@ for (form in form_vec) {
   # save model to disk
   saveRDS(lm_mod,
           file = paste0(mod_path,
-                        time_stamp, "_",
                         "lmm_model_",
-                        str_replace(simple_form, "~", "_"),
+                        str_replace(simple_form, "~", "_"), "_",
+                        time_stamp,
                         ".rds"))
   
   log_msg("... Done.")
@@ -268,9 +269,9 @@ for (form in form_vec) {
   # save summary output to disk
   capture.output(summary(lm_mod), 
                  file = paste0(mod_path,
-                               time_stamp, "_",
                                "lmm_summary_",
-                               str_replace(simple_form, "~", "_"),
+                               str_replace(simple_form, "~", "_"), "_",
+                               time_stamp,
                                ".txt"))
   
   log_msg("... Done.")
@@ -288,9 +289,9 @@ for (form in form_vec) {
     
     fwrite(rnd_eff,
            paste0(mod_path, 
-                  time_stamp, "_",
                   "lmm_rnd_eff_",
-                  str_replace(simple_form, "~", "_"),
+                  str_replace(simple_form, "~", "_"), "_",
+                  time_stamp,
                   ".csv"))
     
     rm(rnd_eff)
@@ -319,9 +320,9 @@ for (form in form_vec) {
     
     # save qq plot
     png(paste0(plot_path,
-               time_stamp, "_",
-               "lmm_qq_",
-               str_replace(simple_form, "~", "_"),
+               "lmm_resid_qq_",
+               str_replace(simple_form, "~", "_"), "_",
+               time_stamp,
                ".png"),
         width = 2000,
         height = 1200
@@ -337,9 +338,9 @@ for (form in form_vec) {
     
     # save resid vs fitted
     ggsave(paste0(plot_path,
-                  time_stamp, "_",
                   "lmm_resid_fit_",
-                  str_replace(simple_form, "~", "_"),
+                  str_replace(simple_form, "~", "_"), "_",
+                  time_stamp,
                   ".png"),
            lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp,
                         sub = form),
@@ -348,9 +349,9 @@ for (form in form_vec) {
     
     # save resid histogram
     ggsave(paste0(plot_path,
-                  time_stamp, "_",
                   "lmm_resid_hist_",
-                  str_replace(simple_form, "~", "_"),
+                  str_replace(simple_form, "~", "_"), "_",
+                  time_stamp,
                   ".png"),
            ggplot(data = data.frame(resid = mod_resid),
                   aes(resid)) +
@@ -387,9 +388,9 @@ for (form in form_vec) {
         
       # save plot
       ggsave(paste0(plot_path,
-                    time_stamp, "_",
                     "lmm_resid_fix_eff_", fix_var, "_",
-                    str_replace(simple_form, "~", "_"),
+                    str_replace(simple_form, "~", "_"), "_",
+                    time_stamp,
                     ".png"),
              fix_var_plot,
              width = 20, height = 12)
@@ -405,9 +406,10 @@ for (form in form_vec) {
         n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
         
         png(paste0(plot_path,
-                   time_stamp,
-                   "_lmm_resid_rnd_eff_", rnd_var, "_",
+                   "lmm_resid_rnd_eff_", rnd_var, "_",
                    str_replace(simple_form, "~", "_"),
+                   "_", 
+                   time_stamp,
                    ".png"),
             width  = 250 * ceiling(sqrt(n_rnd_var)),
             height = 250 * ceiling(sqrt(n_rnd_var)))
