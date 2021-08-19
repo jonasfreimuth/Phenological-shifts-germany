@@ -96,10 +96,10 @@ if (!(test_run && exists("dat.occ"))) {
   dat.occ <- dat.occ %>%
     
     # center main independent variables to a mean of 0
-    mutate(temp = (temp - mean(temp)) / sd(temp),
-           year = (year - mean(year)) / sd(year),
-           lat  = (lat  - mean(lat )) / sd(lat ),
-           long = (long - mean(long)) / sd(long))
+    mutate(temp = (temp - mean(temp)),
+           year = (year - mean(year)),
+           lat  = (lat  - mean(lat )), 
+           long = (long - mean(long)))
   
 }
 
