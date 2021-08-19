@@ -124,7 +124,11 @@ if (test_run) {
 # loop through all preset models
 for (form in form_vec) {
   
+  # model setup -----------------------
+  
+  # get timestamp identifying this model
   time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
+  
   
   # Formula stuff ---------------------
   
@@ -181,6 +185,12 @@ for (form in form_vec) {
                      time_stamp, "/")
   
   dir.check(mod_path)
+  
+  # save model formula in folder
+  writeLines(form, paste0(mod_path,
+                          "model_formula_",
+                          time_stamp,
+                          ".txt"))
   
   # Model running ---------------------
   
