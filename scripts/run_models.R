@@ -20,6 +20,9 @@ test_run <- TRUE
 # will take a very long time on the full dataset
 plot_diagnostics <- TRUE
 
+# additionally save facetted plots
+plot_diagnostics_facet <- TRUE
+
 # save plot of random regression slopes over data?
 # will add additional running time, increasing with # of data points
 plot_rnd_slopes <- TRUE
@@ -429,16 +432,32 @@ for (form in form_vec) {
     # TODO: Proper axis labels and titles
     
     # save resid vs fitted
+    lm_res_fit_plot <- lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
+                                    col_vec = dat.occ$id.grp,
+                                    sub = form)
+    
     ggsave(paste0(plot_path,
                   "lmm_resid_fit_",
                   str_replace(simple_form, "~", "_"), "_",
                   time_stamp,
                   ".png"),
-           lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
-                        dat.occ$id.grp,
-                        sub = form),
+           lm_res_fit_plot,
            width = 20, height = 12)
     
+    if (plot_diagnostics_facet) {
+      
+      ggsave(paste0(plot_path,
+                    "lmm_resid_fit_facet_",
+                    str_replace(simple_form, "~", "_"), "_",
+                    time_stamp,
+                    ".png"),
+             lm_res_fit_plot +
+               facet_wrap( ~ cols ),
+             width = 20, height = 12)
+      
+    }
+    
+    rm(lm_res_fit_plot)
     
     # save resid histogram
     ggsave(paste0(plot_path,
@@ -488,8 +507,20 @@ for (form in form_vec) {
              fix_var_plot,
              width = 20, height = 12)
       
+      
+      if (plot_diagnostics_facet && is.numeric(dat.occ[[fix_var]])) {
+        
+        ggsave(paste0(plot_path,
+                      "lmm_resid_fix_eff_", fix_var, "_facet_",
+                      str_replace(simple_form, "~", "_"), "_",
+                      time_stamp,
+                      ".png"),
+               fix_var_plot + 
+                 facet_wrap( ~id.grp ),
+               width = 20, height = 12)
+        
+      }
     }
-    
     
     if (has_ranef) {
       
