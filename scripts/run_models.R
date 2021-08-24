@@ -71,12 +71,12 @@ log_msg("Loading and centering data...")
 
 if (!(test_run && exists("dat.occ"))) {
 
-  dat.occ <- fread(paste0("data/f_occurrences_full_pruned.csv"),
+  dat.occ <- fread(paste0("data/f_occurrences_full_pruned_elev.csv"),
                    select = select_cols,
                    showProgress = FALSE) %>%
 
     # remove records w/o determined temp
-    drop_na(temp)
+    drop_na(temp, elev)
 
   if (test_run) {
 
@@ -106,7 +106,8 @@ if (!(test_run && exists("dat.occ"))) {
     mutate(temp = (temp - mean(temp)),
            year = (year - mean(year)),
            lat  = (lat  - mean(lat )), 
-           long = (long - mean(long)))
+           long = (long - mean(long)),
+           elev = (elev - mean(elev)))
   
 }
 
