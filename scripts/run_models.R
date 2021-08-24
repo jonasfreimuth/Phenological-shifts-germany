@@ -20,6 +20,10 @@ test_run <- TRUE
 # will take a very long time on the full dataset
 plot_diagnostics <- TRUE
 
+# save plot of random regression slopes over data?
+# will add additional running time, increasing with # of data points
+plot_rnd_slopes <- TRUE
+
 # set number of times a model with failed convergence will attempt to restart
 n_restart <- 3
 
@@ -141,6 +145,9 @@ for (form in form_vec) {
   
   # extract main independent var
   main_var <- mod_comps[, 3]
+  
+  # extract the dependent var
+  dep_var <- mod_comps[, 1]
   
   # convert formula string to proper formula
   mod_form <- as.formula(form)
@@ -327,6 +334,57 @@ for (form in form_vec) {
                   str_replace(simple_form, "~", "_"), "_",
                   time_stamp,
                   ".csv"))
+    
+    if (plot_rnd_slopes) {
+      
+      # generate plotting dir
+      plot_path <- paste0(mod_path, "plots/")
+      dir.check(plot_path)
+      
+      log_msg("Plotting slopes for random variables...")
+      
+      for (rnd_var in rnd_vars) {
+        
+        log_msg("  ... for variable ", rnd_var, "...")
+        
+        n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
+        
+        png(paste0(plot_path,
+                   "lmm_rnd_var_slopes_", rnd_var, "_",
+                   str_replace(simple_form, "~", "_"), "_",
+                   time_stamp,
+                   ".png"),
+            width  = 250 * ceiling(sqrt(n_rnd_var)),
+            height = 250 * ceiling(sqrt(n_rnd_var)))
+        
+        print(
+          ggplot() +
+            geom_point(data = data.frame(dep_var = dat.occ[[dep_var]],
+                                         main_var = dat.occ[[main_var]],
+                                         
+                                         # TODO: change this in case col name for
+                                         #    rnd_eff is changed
+                                         species = dat.occ[[rnd_var]],
+                                         
+                                         # TODO: make this variable
+                                         group = dat.occ[["id.grp"]]),
+                       
+                       aes(main_var, dep_var,
+                           col = group)) +
+            geom_abline(data = rnd_eff,
+                        aes(intercept = intercept,
+                            slope = slope)) +
+            labs(title = rnd_var, subtitle = form,
+                 xlab = main_var, ylab = dep_var) +
+            facet_wrap( ~ species) +
+            theme_minimal()
+        )
+        
+        dev.off()
+      }
+      
+      log_msg("  ... Done.")
+    }
     
     rm(rnd_eff)
     
