@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.0",
+    "Version": "4.1.1",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -85,13 +85,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "2042cd9759cc89a453c4aefef0ce9aae"
-    },
-    "TMB": {
-      "Package": "TMB",
-      "Version": "1.7.20",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "db241456677ae165b3095b6df5d79009"
     },
     "WikidataR": {
       "Package": "WikidataR",
@@ -200,10 +193,10 @@
     },
     "broom": {
       "Package": "broom",
-      "Version": "0.7.5",
+      "Version": "0.7.9",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "d5ab8846336cfb2e3c17e5a806eb3045"
+      "Hash": "9b1e2c1f75b349e3ffa7e9c69eec0c52"
     },
     "broom.mixed": {
       "Package": "broom.mixed",
@@ -408,13 +401,6 @@
       "Repository": "CRAN",
       "Hash": "3eb6477d01eb5bbdc03f7d5f70f2733e"
     },
-    "glmmTMB": {
-      "Package": "glmmTMB",
-      "Version": "1.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "a80f2daa365634591bb6861752de269e"
-    },
     "glue": {
       "Package": "glue",
       "Version": "1.4.2",
@@ -617,18 +603,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "eaee7d2a6f3ed4491df868611cb064cc"
-    },
-    "mixedup": {
-      "Package": "mixedup",
-      "Version": "0.3.9",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "mixedup",
-      "RemoteUsername": "m-clark",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "038ffe95bbb32caaa53586f58fb5bc3cfd0ea28a",
-      "Hash": "5ae53ac057e840bb05c3fda1dae15738"
     },
     "multcompView": {
       "Package": "multcompView",
@@ -1031,10 +1005,10 @@
     },
     "viridisLite": {
       "Package": "viridisLite",
-      "Version": "0.4.0",
+      "Version": "0.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "55e157e2aa88161bdb0754218470d204"
+      "Hash": "ce4f6271baa94776db692f1cb2055bee"
     },
     "wellknown": {
       "Package": "wellknown",
