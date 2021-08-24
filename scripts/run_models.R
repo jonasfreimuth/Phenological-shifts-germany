@@ -194,7 +194,7 @@ for (form in form_vec) {
   
   # Model running ---------------------
   
-  log_msg("Starting model", form, "...")
+  log_msg("Starting model ", form, "...")
   
   # Check if the formula contains random effects, and if so use the right
   #   function (lmer acts up without random effect)
@@ -293,7 +293,7 @@ for (form in form_vec) {
     # TODO: make sure this check for presence of random variable works as 
     #   intended
     
-    log_msg("Extracting random effects for model", form, "...")
+    log_msg("Extracting random effects for model ", form, "...")
     
     rnd_eff <- tidy(lm_mod, c("ran_vals"))
     
@@ -466,7 +466,7 @@ for (form in form_vec) {
     
   }
   
-  log_msg("Done with model", form, "...")
+  log_msg("Done with model ", form, "...")
   
 }
 
