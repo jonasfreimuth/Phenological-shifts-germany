@@ -4,6 +4,8 @@ library("dplyr")
 library("tidyr")
 library("data.table")
 
+source("scripts/functions.R")
+
 dat.occ <- fread("data/f_occurrences_full_pruned.csv") %>% 
   rename(decimalLatitude = lat, decimalLongitude = long) %>% 
   as.data.frame()
@@ -20,12 +22,13 @@ dat.occ.sp <- SpatialPoints(coords = as.matrix(dat.occ %>%
 dat.occ.elev <- raster::extract(elev, dat.occ.sp)
 dat.occ <- mutate(dat.occ, elev = dat.occ.elev)
 
+dir.check("temp")
 fwrite(dat.occ, "temp/f_occurrences_full_pruned_elev.csv")
 
 if (sys.nframe() == 0) {
   library(ggplot2)
   
-  germany <- getData(country = "DEU", level = 1)
+  germany <- getData(country = "DEU", level = 2)
   
   ggplot() + 
     geom_polygon(data = germany,
