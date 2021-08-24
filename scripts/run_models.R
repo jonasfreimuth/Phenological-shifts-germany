@@ -276,13 +276,18 @@ for (form in form_vec) {
   
   log_msg("Computing summary and saving to disk...")
   
+  mod_sum  <- summary(lm_mod)
+  mod_coef <- mod_sum$coefficients
+  
   # save summary output to disk
-  capture.output(summary(lm_mod), 
+  capture.output(mod_sum, 
                  file = paste0(mod_path,
                                "lmm_summary_",
                                str_replace(simple_form, "~", "_"), "_",
                                time_stamp,
                                ".txt"))
+  
+  rm(mod_sum)
   
   log_msg("... Done.")
   
@@ -295,7 +300,26 @@ for (form in form_vec) {
     
     log_msg("Extracting random effects for model ", form, "...")
     
-    rnd_eff <- tidy(lm_mod, c("ran_vals"))
+    rnd_eff <- tidy(lm_mod, c("ran_vals")) %>% 
+      
+      # alternatively also include std.err in values from
+      #   left out as overall intercept and slope will be added, which might 
+      #   be confusing (to what does the std.err belong)
+      pivot_wider(id_cols = c(level, group), names_from = term,
+                  values_from = c(estimate)) %>% 
+      mutate(main_var = main_var) 
+    
+    # hacky way to rename everything based on formulas
+    # needs to be coded custom to the way the order of names is
+    names(rnd_eff)[1] <- rnd_vars[1]
+    names(rnd_eff)[3] <- "intercept"
+    names(rnd_eff)[4] <- "slope"
+    # names(rnd_eff)[5] <- "intercept_std_err"
+    # names(rnd_eff)[6] <- "slope_std_err"
+    
+    # add overall slope and intercept to rnd slope and intercept
+    rnd_eff$intercept <- rnd_eff$intercept + mod_coef[1,1]
+    rnd_eff$slope     <- rnd_eff$slope     + mod_coef[2,1]
     
     fwrite(rnd_eff,
            paste0(mod_path, 
