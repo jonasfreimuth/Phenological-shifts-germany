@@ -20,8 +20,8 @@ dat.occ.sp <- SpatialPoints(coords = as.matrix(dat.occ %>%
 dat.occ.elev <- raster::extract(elev, dat.occ.sp)
 dat.occ <- mutate(dat.occ, elev = dat.occ.elev)
 
-dir.check("temp")
-fwrite(dat.occ, "temp/f_occurrences_full_pruned_elev.csv")
+dir.check("data")
+fwrite(dat.occ, "data/f_occurrences_full_pruned_elev.csv")
 
 if (sys.nframe() == 0) {
   library(ggplot2)
