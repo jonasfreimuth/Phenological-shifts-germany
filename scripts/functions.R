@@ -1624,7 +1624,8 @@ append.df <- function(name, value, multiplier = NULL, formattedValue = NULL,  ta
 # function to plot precomputed residuals and fitted values of a lm against
 #   each other using ggplot. Formalized as a function mainly for consistency
 lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL, 
-                         main = NULL, sub = NULL, xlab = NULL, ylab = NULL) {
+                         main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
+                         facet = FALSE) {
   
   if (is.null(col_vec)) {
     plot <- ggplot(data.frame(fit = mod_fit,
@@ -1649,6 +1650,11 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
     plot <- plot + 
       geom_smooth(aes(fit, resid),
                   group = "overall", col = "red")
+  }
+  
+  if (facet && !is.null(col_vec)) {
+    plot <- plot + 
+      facet_wrap( ~ cols)
   }
   
   plot <- plot +
