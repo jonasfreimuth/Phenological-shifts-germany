@@ -434,7 +434,8 @@ for (form in form_vec) {
                   str_replace(simple_form, "~", "_"), "_",
                   time_stamp,
                   ".png"),
-           lmResFitPlot(mod_resid, mod_fitvl, dat.occ$id.grp,
+           lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
+                        dat.occ$id.grp,
                         sub = form),
            width = 20, height = 12)
     
@@ -543,7 +544,7 @@ for (form in form_vec) {
     
   } else {
     
-    # remove model object
+    # remove stuff kept for potential plotting
     rm(lm_mod)
     
   }
