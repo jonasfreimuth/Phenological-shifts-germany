@@ -7,16 +7,14 @@ library("data.table")
 source("scripts/functions.R")
 
 dat.occ <- fread("data/f_occurrences_full_pruned.csv") %>% 
-  rename(decimalLatitude = lat, decimalLongitude = long) %>% 
   as.data.frame()
 
 elev <- getData("alt", country = "DEU")
 
 dat.occ.sp <- SpatialPoints(coords = as.matrix(dat.occ %>% 
-                                                 drop_na(decimalLatitude) %>% 
-                                                 select(decimalLongitude, 
-                                                        decimalLatitude)
-                                               ),
+                                                 drop_na(lat) %>% 
+                                                 select(long, 
+                                                        lat)),
                             proj4string = elev@crs)
 
 dat.occ.elev <- raster::extract(elev, dat.occ.sp)
