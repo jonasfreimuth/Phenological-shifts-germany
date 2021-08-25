@@ -1646,8 +1646,8 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
   
   if (!is.null(col_vec)) {
     # if we have a separated line for groups, also add an overall line
-    plot <- plot +  +
-    geom_smooth()
+    plot <- plot +
+    geom_smooth() +
       geom_smooth(aes(fit, resid),
                   group = "overall", col = "red")
   }
