@@ -65,7 +65,7 @@ options("log_file" = model_log_file)
 
 # read in data, reduce columns to only those relevant here
 select_cols <- c('family', 'species', 'year', 'doy',
-                 'decade', 'id.grp', 'long', 'lat', 'temp')
+                 'decade', 'id.grp', 'long', 'lat', 'temp', 'elev')
 
 log_msg("Loading and centering data...")
 
