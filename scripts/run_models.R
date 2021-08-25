@@ -70,26 +70,26 @@ select_cols <- c('family', 'species', 'year', 'doy',
 log_msg("Loading and centering data...")
 
 if (!(test_run && exists("dat.occ"))) {
-
+  
   dat.occ <- fread(paste0("data/f_occurrences_full_pruned_elev.csv"),
                    select = select_cols,
                    showProgress = FALSE) %>%
-
+    
     # remove records w/o determined temp
     drop_na(temp, elev)
-
+  
   if (test_run) {
-
+    
     # if we do a test run, restrict data to subset of species
     all_species <- unique(dat.occ$species)
     frac_species <- sample(all_species, length(all_species) * 0.005)
-
+    
     log_msg("Test run, pruning data down to species: ",
             paste(frac_species, collapse = ", "))
-
+    
     dat.occ <- dat.occ %>%
       filter(species %in% frac_species)
-
+    
   }
   
   # save mean and sd of dat occ as it is for later rescaling of data
@@ -502,16 +502,16 @@ for (form in form_vec) {
         fix_var_plot <- fix_var_plot +
           geom_boxplot()
       }
-        
-        fix_var_plot <- fix_var_plot + 
-          geom_hline(yintercept = 0) +
-          labs(title = fix_var,
-               subtitle = form,
-               x = toupper(fix_var),
-               y = "Residuals") +
-          theme_minimal() +
-          theme(panel.grid = element_blank())
-        
+      
+      fix_var_plot <- fix_var_plot + 
+        geom_hline(yintercept = 0) +
+        labs(title = fix_var,
+             subtitle = form,
+             x = toupper(fix_var),
+             y = "Residuals") +
+        theme_minimal() +
+        theme(panel.grid = element_blank())
+      
       # save plot
       ggsave(paste0(plot_path,
                     "lmm_resid_fix_eff_", fix_var, "_",
@@ -560,29 +560,29 @@ for (form in form_vec) {
         
         print(
           ggplot(data = data.frame(
-          resid = mod_resid,
-          rnd_var = dat.occ[[rnd_var]]),
-          aes(rnd_var, resid)) +
-          geom_boxplot() +
-          labs(title = rnd_var,
-               x = rnd_var) +
-          geom_hline(yintercept = 0) +
-          geom_text(data = data.frame(
-            rnd_var = sort(unique(dat.occ[[rnd_var]])),
-            lab = paste0("n = ", table(dat.occ[[rnd_var]])),
-            ypos = ypos(mod_resid)
-          ), 
-          aes(rnd_var, ypos, label = lab)
-          ) +
-          facet_wrap(~ rnd_var, scale = "free_x") +
-          labs(title = toupper(rnd_var),
-               subtitle = form,
-               xlab = toupper(rnd_var),
-               ylab = "Residuals") +
-          theme_minimal() +
-          theme(panel.grid = element_blank(),
-                axis.text.x = element_blank())
-          )
+            resid = mod_resid,
+            rnd_var = dat.occ[[rnd_var]]),
+            aes(rnd_var, resid)) +
+            geom_boxplot() +
+            labs(title = rnd_var,
+                 x = rnd_var) +
+            geom_hline(yintercept = 0) +
+            geom_text(data = data.frame(
+              rnd_var = sort(unique(dat.occ[[rnd_var]])),
+              lab = paste0("n = ", table(dat.occ[[rnd_var]])),
+              ypos = ypos(mod_resid)
+            ), 
+            aes(rnd_var, ypos, label = lab)
+            ) +
+            facet_wrap(~ rnd_var, scale = "free_x") +
+            labs(title = toupper(rnd_var),
+                 subtitle = form,
+                 xlab = toupper(rnd_var),
+                 ylab = "Residuals") +
+            theme_minimal() +
+            theme(panel.grid = element_blank(),
+                  axis.text.x = element_blank())
+        )
         
         dev.off()
         
