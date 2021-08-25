@@ -28,7 +28,7 @@ plot_diagnostics_facet <- TRUE
 plot_rnd_slopes <- TRUE
 
 # set number of times a model with failed convergence will attempt to restart
-n_restart <- 3
+n_restart <- 4
 
 # Directory structure:
 #   - timestamp script start
