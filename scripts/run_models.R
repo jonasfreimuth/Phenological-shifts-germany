@@ -366,8 +366,8 @@ for (form in form_vec) {
             geom_point(data = data.frame(dep_var = dat.occ[[dep_var]],
                                          main_var = dat.occ[[main_var]],
                                          
-                                         # TODO: change this in case col name for
-                                         #    rnd_eff is changed
+                                         # TODO: change this in case col name
+                                         #    for rnd_eff is changed
                                          species = dat.occ[[rnd_var]],
                                          
                                          # TODO: make this variable
@@ -473,8 +473,15 @@ for (form in form_vec) {
                   ".png"),
            ggplot(data = data.frame(resid = mod_resid),
                   aes(resid)) +
-             geom_histogram() + 
-             labs(sub = form) +
+             geom_histogram(aes(y = ..density..)) + 
+             geom_density(group = "Data density") +  
+             stat_function(fun = dnorm,
+                           args = list(mean = mean(mod_resid),
+                                       sd = sd(mod_resid)),
+                           col = "red", group = "Normal distribution") +
+             labs(title = "Historgram of residuals", subtitle = form,
+                  xlab = "Residuals",
+                  ylab = "Density") +
              theme_minimal() +
              theme(panel.grid = element_blank()),
            width = 20, height = 12)
@@ -499,8 +506,9 @@ for (form in form_vec) {
         fix_var_plot <- fix_var_plot + 
           geom_hline(yintercept = 0) +
           labs(title = fix_var,
-               x = fix_var) +
-          labs(sub = form) +
+               subtitle = form,
+               x = toupper(fix_var),
+               y = "Residuals") +
           theme_minimal() +
           theme(panel.grid = element_blank())
         
@@ -567,7 +575,10 @@ for (form in form_vec) {
           aes(rnd_var, ypos, label = lab)
           ) +
           facet_wrap(~ rnd_var, scale = "free_x") +
-          labs(sub = form) +
+          labs(title = toupper(rnd_var),
+               subtitle = form,
+               xlab = toupper(rnd_var),
+               ylab = "Residuals") +
           theme_minimal() +
           theme(panel.grid = element_blank(),
                 axis.text.x = element_blank())
