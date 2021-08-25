@@ -366,8 +366,8 @@ for (form in form_vec) {
             geom_point(data = data.frame(dep_var = dat.occ[[dep_var]],
                                          main_var = dat.occ[[main_var]],
                                          
-                                         # TODO: change this in case col name for
-                                         #    rnd_eff is changed
+                                         # TODO: change this in case col name
+                                         #    for rnd_eff is changed
                                          species = dat.occ[[rnd_var]],
                                          
                                          # TODO: make this variable
