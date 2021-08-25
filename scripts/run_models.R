@@ -339,6 +339,8 @@ for (form in form_vec) {
                   time_stamp,
                   ".csv"))
     
+    rm(mod_coef)
+    
     if (plot_rnd_slopes) {
       
       # generate plotting dir
