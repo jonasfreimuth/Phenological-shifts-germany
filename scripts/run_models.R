@@ -435,6 +435,7 @@ for (form in form_vec) {
     # save resid vs fitted
     lm_res_fit_plot <- lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
                                     col_vec = dat.occ$id.grp,
+                                    main = "Residuals vs Fitted",
                                     sub = form)
     
     ggsave(paste0(plot_path,
@@ -453,6 +454,10 @@ for (form in form_vec) {
                     time_stamp,
                     ".png"),
              lm_res_fit_plot +
+               
+               # add red regression curve for better visibility
+               geom_smooth(col = "red") +
+               
                facet_wrap( ~ cols ),
              width = 20, height = 12)
       
@@ -517,10 +522,16 @@ for (form in form_vec) {
                       time_stamp,
                       ".png"),
                fix_var_plot + 
+                 
+                 # add red regression curve for better visibility
+                 geom_smooth(col = "red") +
+                 
                  facet_wrap( ~id.grp ),
                width = 20, height = 12)
         
       }
+      
+      rm(fix_var_plot)
     }
     
     if (has_ranef) {

@@ -1640,20 +1640,21 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
   
   plot <- plot + 
     geom_point() +
-    labs(main = main, sub = sub, xlab = xlab, ylab = ylab) +
-    geom_hline(yintercept = 0) +
-    geom_smooth()
+    labs(title = main, subtitle = sub, xlab = xlab, ylab = ylab) +
+    geom_hline(yintercept = 0)
   
   
   if (!is.null(col_vec)) {
     # if we have a separated line for groups, also add an overall line
-    plot <- plot + 
+    plot <- plot +  +
+    geom_smooth()
       geom_smooth(aes(fit, resid),
                   group = "overall", col = "red")
   }
   
   if (facet && !is.null(col_vec)) {
-    plot <- plot + 
+    plot <- plot +
+      geom_smooth(col = "red") +
       facet_wrap( ~ cols)
   }
   
