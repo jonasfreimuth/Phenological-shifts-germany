@@ -604,3 +604,7 @@ log_msg("All done.")
 
 # reset logging file
 options("log_file" = NULL)
+
+# explicitly print warnings
+# necessary as warnings would not be displayed if there were too many
+print( warnings() )
