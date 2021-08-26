@@ -225,49 +225,41 @@ for (form in form_vec) {
   
   # print(warnings())
   
-  # It is probably not wise to set this bit up extracting stuff from deep within
-  #   the model object, but i cant be asked to do it properly right now
-  if (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
-                     "Model failed to converge"))) {
+  # if we are dealing with a lmm, check for convergence errors
+  if (has_ranef) {
     
-    i <- 1
-    
-    log_msg("  Convergence failure found!")
-    log_msg("  Attempting to restart model fitting with current parameters...")
-    
-    while (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
-                          "Model failed to converge")) &&
-           i <= n_restart) {
+    # It is probably not wise to set this bit up extracting stuff from deep within
+    #   the model object, but i cant be asked to do it properly right now
+    if (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
+                       "Model failed to converge"))) {
       
-      log_msg("  ... Attempt ", i, " of ", n_restart, "...")
+      i <- 1
       
-      if (has_ranef) {
+      log_msg("  Convergence failure found!")
+      log_msg("  Attempting to restart model fitting with current parameters...")
+      
+      while (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
+                            "Model failed to converge")) &&
+             i <= n_restart) {
+        
+        log_msg("  ... Attempt ", i, " of ", n_restart, "...")
         
         params <- getME(lm_mod, "theta")
         lm_mod <- update(lm_mod, start = params)
         
-      } else {
-        
-        # Not sure whether convergence warnings are a thing with lms
-        warning(paste0("Convergence failure mitigation ",
-                       "not implemented for regular lms!"))
-        
-        break
+        i <- i + 1
         
       }
       
-      i <- i + 1
-      
-    }
-    
-    # log whether restarting succeeded
-    if (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
-                       "Model failed to converge")) &&
-        i >= n_restart) {
-      log_msg("  ... Out of tries but no improvement, continuing.")
-    } else {
-      log_msg("  ... Restart sucessfull")
-    }
+      # log whether restarting succeeded
+      if (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
+                         "Model failed to converge")) &&
+          i >= n_restart) {
+        log_msg("  ... Out of tries but no improvement, continuing.")
+      } else {
+        log_msg("  ... Restart sucessfull")
+      }
+    } 
   }
   
   log_msg("... Done.")
