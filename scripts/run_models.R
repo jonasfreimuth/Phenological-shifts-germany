@@ -104,7 +104,7 @@ if (!(test_run && exists("dat.occ"))) {
   dat.occ <- dat.occ %>%
     
     # center main independent variables to a mean of 0
-    mutate(across(tidyselect:::where(is.numeric) && !doy, scale))
+    mutate(across(tidyselect:::where(is.numeric) & !doy, scale))
   
 }
 
