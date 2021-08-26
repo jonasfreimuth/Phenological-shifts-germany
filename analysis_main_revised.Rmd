@@ -12,149 +12,40 @@ knitr::opts_chunk$set(fig.align = "center", echo = FALSE)
 options(dplyr.summarise.inform = FALSE,
         stringsAsFactors = FALSE)
 
-#load libraries
-library("here")
-library("beepr")
 library("data.table")
-library("cowplot")
-library("magick")
-library("lme4")
-library("lmerTest")
-library("multcompView")
-library("rgbif")
-library("raster")
-library("rlang")
 library("ggplot2")
 library("tidyr")
 library("dplyr")
-library("stringr")
-library("forcats")
 
+## Functions ----------------------------------------------
 
-# Vars ----------------------------------------------------
+source("scripts/functions.R")
 
-## Analysis parameters ------------------------------------
+# Control variables -------------------------------------------------
 
-#set min threshold of species records in a year
-thr.spec <- 10
+## Script control -----------------------------------------
 
-# set minimum of percent of period covered
-thr.perc <- 0.4
+test_run         <- TRUE
 
-# set threshold for min # of records per decade for decadal averages
-# based on raw occurrence data
-thr.dec.rec <- 10
+# run script for retrieving climate data from DWD regardless of data being 
+# already present?
+force.clim.get   <- FALSE
 
-# set threshold for min # of years per decade for decadal averages
-# based on yearly average data
-thr.dec.year <- 5
-
-# thresholds for short term phenology changes
-thr.2k.min <- 2010
-thr.2k.max <- 2019
-
-#set cutoff for earliest year of records and last year
-year.start <- 1960
-year.stop <- 2019
-
-#set cutoff for decadal records
-dec.start <- 1960
-dec.stop <- 2010
-
-# for dec computation on yearly basis
-dec.year.start <- 1970
-dec.year.stop <- dec.stop
-
-# #set max months of flowering threshold (redo pruning after changing)
-# thr.FlDur <- 12
-
-## Plotting options ---------------------------------------
-
-# give level of additional plots
-# full -> do everything
-# base -> only base analysis (or just leave it blank for now)
-# or a vector of desired options
-# one of 
-# - int.slopes.year: plots interactions on species level (mean.doy vs time/temp)
-# - traits: analyses all plant traits and their influence on response over time
-#           and temp
-# - all.spec: plots all species reaction to time in one plot
-# - int.slopes.dec: same as spec int slope but on the level of difference 
-#                 of doy and in decades
-# - data.quality.assessment: plots all occurrence records of 
-#                           plants and pollinators in one each
-#                           (not included in full, requires more than 8 GB 
-#                           of RAM (right now at least))
-# - additional:   * spatial occurrence distributions by institution
-#                 * spatial occurrence distribution overall
-#                 * decadal spatial occurrence distribution
-#                 * doy distribution over the year for (for now only)
-#                   all Butterfly species (to estimate the degree of
-#                   multivoltism)
-# - species: plots yearly mean doys and regression for each species
-opts <- c('base')
-
-# this vector is used to check whether options are valid
-val_opts <- c('full',
-              'base',
-              'int.slopes.year',
-              'int.slopes.year.time',
-              'int.slopes.year.temp',
-              'traits',
-              'all.spec',
-              'int.slopes.dec',
-              'data.quality.assessment',
-              'additional',
-              'species')
-
-opts_are_val <- opts %in% val_opts
-
-if (!all(opts_are_val)) {
-  stop(str_glue('Options {paste(opts[!opts_are_val], collapse = ', ')}',
-                'are not valid for this analysis script.\n',
-                'Please check whether they are spelled correctly'))
-}
-
-## Control options ----------------------------------------
-
-### General -----------------------------------------------
-
-# force running of the entire script regardless of no new changes in the data?
-# if FALSE, workspace data from previous run will be loaded
-force.main <- FALSE
-
-# force pruning? (necessary after changing earliest year cutoff)
-force.pruning <- FALSE
-
-# force calculation of mean doys? (better to only set it to FALSE if you're 
-# really impatient)
-force.averaging <- FALSE
-
-# keep raw occurrence files from download? 
-# enabling this will retain the huge files downloaded from gbif containing 
-# raw occurrence data
-# useful when working on that part of the get_occurrence_data script, so you 
-# don't have to download everything again. All the files take up 
-# about 22 GB when kept.
-delete.occ.download <- TRUE
-
-### Climate download --------------------------------------
-
-# control climate data script running
-# if set to false the script may still run if no climate data files with the
-# right name are not found in the static_data folder
-force.clim.get <- FALSE
-
-# control whether the climate data script needs to delete its downloads
-# downloads take up about 40 MB
-delete.clim.download <- TRUE
-
-### Plant trait download ----------------------------------
-
-# control bioflor scraping script running
-# if set to false the script may still run if plant trait files with the
-# right name are not found in the static_data folder
+# run script for retrieving plant trait data from bioFlor regardless of data 
+# being already present?
 force.traits.get <- FALSE
+
+## Path names ---------------------------------------------
+
+if (!test_run) {
+  dat_occ_file   <- "data/f_occurrences_full_pruned_elev.csv"
+  dat_slope_year_file <- "data/rnd_eff_year.csv"
+  dat_slope_temp_file <- "data/rnd_eff_temp.csv"
+} else {
+  dat_occ_file   <- "data/f_occurrences_full_pruned_elev_test.csv"
+  dat_slope_year_file <- "data/rnd_eff_year_test.csv"
+  dat_slope_temp_file <- "data/rnd_eff_temp_test.csv"
+}
 
 ## Set graphics parameters --------------------------------
 
@@ -209,7 +100,6 @@ recode.vec <- c(
 # make alternative vector for interactions
 recode.vec.int <- recode.vec[2:4]
 recode.vec.int[1:3] <- c("Hoverfly - Plant", "Bee - Plant", "Butterfly - Plant")
-
 
 # translate to trivial names
 excl.trivial.year <- recode_factor(excl.group.year, !!! recode.vec)
@@ -304,10 +194,6 @@ col.group.sci <- col.grp$colour[c(1:4, 6)]
 names(col.group.sci) <- c("Coleoptera", "Diptera", "Hymenoptera", "Lepidoptera",
                           "Plants")
 
-# Functions -----------------------------------------------
-
-source(here('scripts', 'functions.R'))
-
 # Save options and parameters -----------------------------
 
 # done so that reloading an older workspace does not overwrite changes to
@@ -340,101 +226,26 @@ if (file.exists('static_data/bioflor_traits.csv')) {
 }
 
 if (run.traits.get | force.traits.get) {
-  source('scripts/get_german_climate_data.R')
+  source('scripts/get_bioflor_traits.R')
 }
 
 ```
 
-```{r get occurrence data, include=FALSE}
-# check if running the script is actually necessary
-# this is the case when:
-# - it hasn't run before (output files are not present)
-# - any of the output files are out of date (older than their
-#   source material)
-if (all(file.exists(
-  here("data", "occurrences_full.csv"),
-  here("data", "occurrences_full_refined.csv"),
-  here("data", "occurrences_full_pruned.csv"),
-  here("data", "species_yearly_mean_doy_raw_based.csv"),
-  here("data", "download_ran.txt")
+```{r get_occurrence_data, include=FALSE}
 
-))) {
-  
-  # files exist, now check for other conditions
-  if (
-    # check if last keys is younger than the file created after 
-    # downloading occurrences
-    file.mtime(here("static_data", "last_keys.txt")) >
-    file.mtime(here("data", "download_ran.txt")) |
-    
-    # check if full unrefined occurrence file is older than refined occurrences
-    file.mtime(here("data", "occurrences_full.csv")) >
-    file.mtime(here("data", "occurrences_full_refined.csv")) |
-    
-    # check if pruned occurrences are older than output from compiled downloads
-    file.mtime(here("data", "occurrences_full_refined.csv")) >
-    file.mtime(here("data", "occurrences_full_pruned.csv")) |
-    
-    # check if averaged occurrences are older than pruned occurrences
-    file.mtime(here("data", "occurrences_full_pruned.csv")) >
-    file.mtime(here("data", "species_yearly_mean_doy_raw_based.csv"))) {
-    
-    run.occ.get <- TRUE
-    
-  } else {
-    
-    run.occ.get <- FALSE
-    
-  }
-  
-  
-} else {
-  
-  run.occ.get <- TRUE
-  
-}
-
-if(run.occ.get | 
-   force.averaging |
-   force.pruning |
-   any(c('full', 'data.quality.assesment') %in% opts)) {
-  
-  # run script for retrieving occurrence data from downloaded 
-  # gbif datasets (and download them first if necessary)
-  # View in RStudio via file.edit(here("scripts", "get_occurrence_data.R"))
-  source(here("scripts", "get_occurrence_data.R"), local = TRUE)
-  
+# for now, only check whether data and random effects are present
+if (!any(file.exists("data/f_occurrences_full_pruned_elev.csv",
+                     "data/species_slopes.csv"))) {
+  stop("Necessary files are not present.")
 }
 
 ```
 
-## Climate Trends in Germany
 
 
-```{r It is getting hot in Germany}
 
-dat.temp <- dat.occ %>%
-  ungroup() %>%
-  distinct(year, y_mean_temp, y_mean_temp.sd)
 
-#generate lm for temp with time
-cor.temp <- cor.test(dat.temp$year, dat.temp$y_mean_temp)
 
-cor.temp
 
-#generate plot
-p.temp <- ggplot(dat.temp) +
-  labs(x = "Year", y = "Yearly mean temperature [\u00B0C]",
-       title = "Yearly mean air temperature\n of Germany over time") +
-  scale_color_gradient(low = "#2F5496", high = "#FF0000") +
-  geom_text(aes(x = 1985, y = 10),
-            label = paste0("r =  ", round(cor.temp[["estimate"]], 2)),
-            col = "gray38") +
-  theme_minimal() +
-  theme(legend.position = "none")
 
-p.temp +
-  geom_point(aes(year, y_mean_temp, col = y_mean_temp)) +
-  geom_smooth(aes(year, y_mean_temp), method = "lm")
 
-```
