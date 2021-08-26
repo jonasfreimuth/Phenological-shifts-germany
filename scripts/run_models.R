@@ -396,7 +396,7 @@ for (form in form_vec) {
     
     log_msg("Extracting plotting data...")
     
-    simRes <- simulateResiduals(lm_mod)
+    simRes <- simulateResiduals(lm_mod, n = 100)
     mod_resid <- residuals(simRes)
     
     # mod_resid <- residuals(lm_mod)
