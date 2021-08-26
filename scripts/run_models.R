@@ -9,6 +9,7 @@ library("tidyr")
 library("tidyselect")
 library("ggplot2")
 library("broom.mixed")
+library("DHARMa")
 
 source("scripts/functions.R")
 
@@ -407,7 +408,10 @@ for (form in form_vec) {
     
     log_msg("Extracting plotting data...")
     
-    mod_resid <- residuals(lm_mod)
+    simRes <- simulateResiduals(lm_mod)
+    mod_resid <- residuals(simRes)
+    
+    # mod_resid <- residuals(lm_mod)
     mod_fitvl <- fitted   (lm_mod)
     
     rm(lm_mod)
@@ -426,9 +430,7 @@ for (form in form_vec) {
         height = 1200
     )
     
-    qqnorm(scale(mod_resid), ylab = "Scaled sample quantiles",
-           sub = form)
-    abline(0, 1)
+    plotQQunif(simRes, testDispersion = FALSE)
     
     dev.off()
     
@@ -438,7 +440,8 @@ for (form in form_vec) {
     lm_res_fit_plot <- lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
                                     col_vec = dat.occ$id.grp,
                                     main = "Residuals vs Fitted",
-                                    sub = form)
+                                    sub = form,
+                                    ylab = "Quantile transformed residuals")
     
     ggsave(paste0(plot_path,
                   "lmm_resid_fit_",
@@ -476,13 +479,13 @@ for (form in form_vec) {
            ggplot(data = data.frame(resid = mod_resid),
                   aes(resid)) +
              geom_histogram(aes(y = ..density..)) + 
-             geom_density(group = "Data density") +  
-             stat_function(fun = dnorm,
-                           args = list(mean = mean(mod_resid),
-                                       sd = sd(mod_resid)),
-                           col = "red", group = "Normal distribution") +
+             # geom_density(group = "Data density") +  
+             # stat_function(fun = dnorm,
+             #               args = list(mean = mean(mod_resid),
+             #                           sd = sd(mod_resid)),
+             #               col = "red", group = "Normal distribution") +
              labs(title = "Historgram of residuals", subtitle = form,
-                  xlab = "Residuals",
+                  xlab = "Quantile transformed residuals",
                   ylab = "Density") +
              theme_minimal() +
              theme(panel.grid = element_blank()),
@@ -506,11 +509,11 @@ for (form in form_vec) {
       }
       
       fix_var_plot <- fix_var_plot + 
-        geom_hline(yintercept = 0) +
+        geom_hline(yintercept = 0.5) +
         labs(title = fix_var,
              subtitle = form,
              x = toupper(fix_var),
-             y = "Residuals") +
+             y = "Quantile transformed residuals") +
         theme_minimal() +
         theme(panel.grid = element_blank())
       
@@ -568,7 +571,7 @@ for (form in form_vec) {
             geom_boxplot() +
             labs(title = rnd_var,
                  x = rnd_var) +
-            geom_hline(yintercept = 0) +
+            geom_hline(yintercept = 0.5) +
             geom_text(data = data.frame(
               rnd_var = sort(unique(dat.occ[[rnd_var]])),
               lab = paste0("n = ", table(dat.occ[[rnd_var]])),
@@ -580,7 +583,7 @@ for (form in form_vec) {
             labs(title = toupper(rnd_var),
                  subtitle = form,
                  xlab = toupper(rnd_var),
-                 ylab = "Residuals") +
+                 ylab = "Quantile transformed residuals") +
             theme_minimal() +
             theme(panel.grid = element_blank(),
                   axis.text.x = element_blank())

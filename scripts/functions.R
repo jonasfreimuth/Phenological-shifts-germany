@@ -1641,7 +1641,7 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
   plot <- plot + 
     geom_point() +
     labs(title = main, subtitle = sub, xlab = xlab, ylab = ylab) +
-    geom_hline(yintercept = 0)
+    geom_hline(yintercept = 0.5)
   
   
   if (!is.null(col_vec)) {
