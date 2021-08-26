@@ -95,8 +95,8 @@ if (!(test_run && exists("dat.occ"))) {
   
   # save mean and sd of dat occ as it is for later rescaling of data
   fwrite(dat.occ %>%
-           summarise(across(tidyselect:::where(is.numeric),
-                            list(mean = mean, sd = sd))),
+    summarise(across(tidyselect:::where(is.numeric),
+                     list(mean = mean, sd = sd))),
          paste0(run_path,
                 "data_summary", "_",
                 script_time_stamp, ".csv"))
@@ -104,11 +104,7 @@ if (!(test_run && exists("dat.occ"))) {
   dat.occ <- dat.occ %>%
     
     # center main independent variables to a mean of 0
-    mutate(temp = (temp - mean(temp)),
-           year = (year - mean(year)),
-           lat  = (lat  - mean(lat )), 
-           long = (long - mean(long)),
-           elev = (elev - mean(elev)))
+    mutate(across(tidyselect:::where(is.numeric) && !doy, scale))
   
 }
 
