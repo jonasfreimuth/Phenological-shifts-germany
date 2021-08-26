@@ -60,6 +60,8 @@ model_log_file <- paste0(run_path,
 
 options("log_file" = model_log_file)
 
+on.exit(options("log_file" = NULL))
+
 
 # Data loading ------------------------------------------------------------
 
@@ -602,6 +604,3 @@ for (form in form_vec) {
 }
 
 log_msg("All done.")
-
-# reset logging file
-options("log_file" = NULL)
