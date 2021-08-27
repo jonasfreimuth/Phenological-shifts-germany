@@ -127,7 +127,7 @@ if (!all(opts_are_val)) {
 force.main <- FALSE
 
 # force pruning? (necessary after changing earliest year cutoff)
-force.pruning <- TRUE
+force.pruning <- FALSE
 
 # force calculation of mean doys? (better to only set it to FALSE if you're 
 # really impatient)
