@@ -288,5 +288,27 @@ slopes_year %>%
         axis.ticks.y = element_blank())
 ```
 
+```{r analyse_between_group_diffs}
+cat("Differences in slope with temperature:\n\n")
+
+aov_temp <- aov(data = slopes_temp, slope ~ id.grp)
+summary(aov_temp)
+
+cat("\n Pairwise differences: \n")
+
+TukeyHSD(aov_temp)
+
+cat("\n\n")
+cat("----------------------------------------------------------\n\n")
+cat("Differences in slope over time:\n\n")
+
+aov_year <- aov(data = slopes_year, slope ~ id.grp)
+summary(aov_year)
+
+cat("\n Pairwise differences: \n")
+
+TukeyHSD(aov_year)
+
+```
 
 
