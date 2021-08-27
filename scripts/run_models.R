@@ -20,7 +20,8 @@ test_run <- TRUE
 # will take a very long time on the full dataset
 plot_diagnostics <- TRUE
 
-# additionally save facetted plots
+# additionally save facetted plots of diagnostic plots 
+#   will have no effect if plot_diagnostics == FALSE
 plot_diagnostics_facet <- TRUE
 
 # save plot of random regression slopes over data?
