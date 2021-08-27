@@ -99,7 +99,8 @@ lm.sum <- function(data = dat.occ, col = id.grp, formula = mean.doy ~ year) {
     out <- data.frame(col = x,
                       intercept = coef(sum.mod)[1],
                       slope = coef(sum.mod)[2],
-                      pval = as.data.frame(sum.mod[["coefficients"]])$'Pr(>|t|)'[2])
+                      pval = as.data.frame(
+                        sum.mod[["coefficients"]])$'Pr(>|t|)'[2])
     
     # rename col column to the name from data
     names(out)[1] <- toString(quo_get_expr(col))
