@@ -8,7 +8,7 @@
 library("raster")
 
 
-dir.check(here("plots/additional"))
+dir.check("plots/additional")
 
 
 # define color scheme
@@ -25,7 +25,7 @@ col.group = c("Coleoptera" = "chartreuse",
 
 #load data
 dat.occ <- fread(
-  here("data", "occurrences_full_refined.csv")) %>% 
+  "data/f_occurrences_full_pruned_elev.csv") %>% 
   
   #remove records without determined species
   filter(species != "") %>%
@@ -49,9 +49,9 @@ for (ins in unique(filter(dat.occ,
                           !is.na(decimalLongitude))$institutionCode)) {
   
   # plot spatial distribution and save plot
-  png(here("plots/additional",
-           paste("occurrences_spatial_distribution_",
-                 gsub("[[:punct:]]", "_", ins), ".png", sep = "")),
+  png(paste0("plots/additional",
+             "occurrences_spatial_distribution_",
+             gsub("[[:punct:]]", "_", ins), ".png"),
       width = 3000, height = 3000)
   
   print(
@@ -99,8 +99,8 @@ for (ins in unique(filter(dat.occ,
 
 
 # plot spatial distribution of all in one
-png(here("plots/additional",
-         paste("occurrences_spatial_distribution_all.png", sep = "")),
+png(paste0("plots/additional/",
+           "occurrences_spatial_distribution_all.png"),
     width = 3000, height = 3000)
 
 print(
@@ -156,8 +156,8 @@ for (dec in sort(unique(dat.occ$decade))) {
              !is.na(decimalLongitude))
   
   # plot that onto germany
-  png(here("plots/additional",
-           paste("occurrences_doy_distribution_decadal_", dec, ".png", sep = "")),
+  png(paste0("plots/additional",
+            "occurrences_doy_distribution_decadal_", dec, ".png"),
       width = 1500, height = 1000)
   
   print(
@@ -204,9 +204,9 @@ for (dec in sort(unique(dat.occ$decade))) {
 for (ins in unique(dat.occ$institutionCode)) {
   
   # plot spatial distribution and save plot
-  png(here("plots/additional",
-           paste("occurrences_doy_distribution_",
-                 gsub("[[:punct:]]", "_", ins), ".png", sep = "")),
+  png(paste0("plots/additional",
+            "occurrences_doy_distribution_",
+            gsub("[[:punct:]]", "_", ins), ".png"),
       width = 1500, height = 1000)
   
   print(
@@ -244,10 +244,10 @@ for (ins in unique(dat.occ$institutionCode)) {
                      id.grp, year)
   
   # plot record number distribution and save
-  png(here("plots/additional",
-           paste("occurrences_nrec_distribution_",
-                 gsub("[[:punct:]]", "_", ins), ".png", sep = "")),
-      width = 1500, height = 1000)
+  png(paste0("plots/additional/",
+             "occurrences_nrec_distribution_",
+             gsub("[[:punct:]]", "_", ins), ".png"),
+  width = 1500, height = 1000)
   
   print(
     ggplot() +
@@ -287,8 +287,8 @@ for (ins in unique(dat.occ$institutionCode)) {
 }
 
 # plot doy distribution and save plot
-png(here("plots/additional",
-         paste("occurrences_doy_distribution_overall.png", sep = "")),
+png(paste0("plots/additional/",
+           "occurrences_doy_distribution_overall.png"),
     width = 1500, height = 1000)
 
 print(
@@ -337,8 +337,8 @@ invisible(
   lapply(unique(filter(dat.occ, order == "Lepidoptera")$species),
          function(x) {
            
-           png(here("plots/additional/species_doy_dist",
-                    str_glue("doy_dist_Lep_{str_replace(x, ' ', '_')}.png")),
+           png(paste0("plots/additional/species_doy_dist/",
+                      str_glue("doy_dist_Lep_{str_replace(x, ' ', '_')}.png")),
                height = 1000, width = 1500)
            
            print(
