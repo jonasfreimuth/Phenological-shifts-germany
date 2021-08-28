@@ -27,15 +27,7 @@ col.group = c("Coleoptera" = "chartreuse",
 dat.occ <- fread(
   "data/f_occurrences_full_pruned_elev.csv") %>% 
   
-  #remove records without determined species
-  filter(species != "") %>%
-  
-  #exclude the current year from further analysis
-  filter(year != as.integer(substr(
-    Sys.Date(), start = 1, stop = 4
-  ))) %>%
-  #exclude first and last days
-  filter(doy != 1, doy != 366, doy != 365)
+  drop_na(temp, elev)
 
 # get german shapefile for plotting
 germany <- raster::getData("GADM", country = "DEU", level = 1)
@@ -44,9 +36,7 @@ germany <- raster::getData("GADM", country = "DEU", level = 1)
 # Generate plots ----------------------------------------------------------
 
 
-for (ins in unique(filter(dat.occ,
-                          !is.na(decimalLatitude) &
-                          !is.na(decimalLongitude))$institutionCode)) {
+for (ins in unique(dat.occ$institutionCode)) {
   
   # plot spatial distribution and save plot
   png(paste0("plots/additional",
@@ -57,21 +47,16 @@ for (ins in unique(filter(dat.occ,
   print(
     ggplot() +
       geom_polygon(data = germany,
-                   aes(x = long, y = lat, group = group)) + 
+                   aes(x = long, y = lat, group = group)) +
+      
       # only plot points from the current institution
-      # only plot points with coordinates (Duh)
-      geom_point(data = filter(dat.occ, institutionCode == ins &
-                                 !is.na(decimalLatitude) &
-                                 !is.na(decimalLongitude)),
+      geom_point(data = filter(dat.occ, institutionCode == ins),
                  aes(x=decimalLongitude, y = decimalLatitude, col = id.grp),
                  alpha = .3,
                  size = 3) + 
       labs(x = "Longitude", y = "Latitude",
            title = ins) +
-      # dont plot the few records far outside the boundaries (those are just very few)
-      coord_fixed(ratio = 1.3,
-                  ylim = c(47.27015165787987, 55.05835230401308),
-                  xlim = c(5.8663129806518555, 15.041742324829102)) +
+      coord_fixed(ratio = 1.3) +
       scale_color_manual(name = "Group",
                          values = col.grp) +
       theme(
@@ -108,17 +93,12 @@ print(
     geom_polygon(data = germany,
                  aes(x = long, y = lat, group = group)) + 
     # only plot points with coordinates (Duh)
-    geom_point(data = filter(dat.occ,
-                             !is.na(decimalLatitude) &
-                               !is.na(decimalLongitude)),
+    geom_point(data = filter(dat.occ),
                aes(x=decimalLongitude, y = decimalLatitude, col = id.grp),
                alpha = .3,
                size = 3) + 
     labs(x = "Longitude", y = "Latitude") +
-    # dont plot the few records far outside the boundaries (those are just very few)
-    coord_fixed(ratio = 1.3,
-                ylim = c(47.27015165787987, 55.05835230401308),
-                xlim = c(5.8663129806518555, 15.041742324829102)) +
+    coord_fixed(ratio = 1.3) +
     scale_color_manual(name = "Group",
                        values = col.grp) +
     facet_wrap(~institutionCode) +
@@ -165,15 +145,13 @@ for (dec in sort(unique(dat.occ$decade))) {
       geom_polygon(data = germany,
                    aes(x = long, y = lat, group = group)) + 
       geom_point(data = dat.occ.dec,
-                 aes(x = decimalLongitude, y = decimalLatitude, col = institutionCode),
+                 aes(x = decimalLongitude, y = decimalLatitude,
+                     col = institutionCode),
                  alpha = .3,
                  size = 3) + 
+      coord_fixed(ratio = 1.3) +
       labs(x = "Longitude", y = "Latitude",
            title = paste("Cumulative occurrences up to decade of", dec)) +
-      # dont plot the few records far outside the boundaries (those are just very few)
-      coord_fixed(ratio = 1.3,
-                  ylim = c(47.27015165787987, 55.05835230401308),
-                  xlim = c(5.8663129806518555, 15.041742324829102)) +
       theme(
         plot.title = element_text(size = 40),
         plot.subtitle = element_text(size = 35),
@@ -366,6 +344,36 @@ invisible(
          }
   )
 )
+
+dir.check("plots/additional/species_inst")
+
+min_doy <- min(dat.occ$doy)
+max_doy <- max(dat.occ$doy)
+
+min_temp <- min(dat.occ$temp)
+max_temp <- max(dat.occ$temp)
+
+#  plot species temp distributions and color institutions
+for (spec in unique(dat.occ$species)) {
+  
+  ggsave(paste0("plots/additional/species_inst/",
+                gsub("[[:punct:]]", "_", spec), ".png"),
+         
+         dat.occ %>% 
+           filter(species == spec) %>% 
+           ggplot(aes(temp, doy, col = institutionCode)) + 
+           geom_point()+
+           geom_smooth(col = "red", method = "lm") +
+           ylim(c(min_doy, max_doy)) +
+           xlim(c(min_temp, max_temp)) +
+           labs(title = spec,
+                subtitle = unique(id.grp)) +
+           theme_minimal(),
+         
+         width = 20, height = 12
+  )
+  
+}
 
 beep()
 
