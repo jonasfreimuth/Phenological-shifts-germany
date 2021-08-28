@@ -12,12 +12,41 @@ source("scripts/functions.R")
 dir.check("plots/additional")
 
 
-# define color scheme
-col.group = c("Coleoptera" = "chartreuse",
-              "Diptera" = "yellow",
-              "Hymenoptera" = "orange",
-              "Lepidoptera" = "red",
-              "Plants" = "darkgreen")
+# define colours
+# DO NOT CHANGE ORDER, only append
+col.grp <-
+  data.frame(
+    group = c(
+      "Beetles",
+      "Flies",
+      "Bees",
+      "Butterflies/\nMoths",
+      "Insects overall",
+      "Plants",
+      "Hoverfly - Plant",
+      "Bee - Plant",
+      "Butterfly - Plant",
+      "Overall",
+      "Insect dependent",
+      "Intermediate",
+      "Insect independent"
+    ),
+    colour = c(
+      "#9815db",
+      "#f41d0f",
+      "#ffa500",
+      "#4744ff",
+      "gold",
+      "#008a00",
+      "#f41d0f",
+      "#ffa500",
+      "#4744ff",
+      "deepskyblue",
+      "red",
+      "#ffa500",
+      "#008a00"
+    )
+  )
 
 # Load and prune data -----------------------------------------------------
 
@@ -242,7 +271,7 @@ for (ins in unique(dat.occ$institutionCode)) {
       # facet_wrap(~institutionCode) + 
       scale_color_manual(name = "Group",
                          aesthetics = c("colour", "fill"),
-                         values = col.group) +
+                         values = col.grp) +
       theme(
         plot.title = element_text(size = 40),
         plot.subtitle = element_text(size = 35),
