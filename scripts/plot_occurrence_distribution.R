@@ -40,7 +40,7 @@ germany <- raster::getData("GADM", country = "DEU", level = 1)
 for (ins in unique(dat.occ$institutionCode)) {
   
   # plot spatial distribution and save plot
-  png(paste0("plots/additional",
+  png(paste0("plots/additional/",
              "occurrences_spatial_distribution_",
              gsub("[[:punct:]]", "_", ins), ".png"),
       width = 3000, height = 3000)
@@ -52,14 +52,14 @@ for (ins in unique(dat.occ$institutionCode)) {
       
       # only plot points from the current institution
       geom_point(data = filter(dat.occ, institutionCode == ins),
-                 aes(x=decimalLongitude, y = decimalLatitude, col = id.grp),
+                 aes(x = long, y = lat, col = id.grp),
                  alpha = .3,
                  size = 3) + 
       labs(x = "Longitude", y = "Latitude",
            title = ins) +
       coord_fixed(ratio = 1.3) +
       scale_color_manual(name = "Group",
-                         values = col.grp) +
+                         values = col.group) +
       theme(
         plot.title = element_text(size = 40),
         plot.subtitle = element_text(size = 35),
@@ -95,13 +95,13 @@ print(
                  aes(x = long, y = lat, group = group)) + 
     # only plot points with coordinates (Duh)
     geom_point(data = filter(dat.occ),
-               aes(x=decimalLongitude, y = decimalLatitude, col = id.grp),
+               aes(x=long, y = lat, col = id.grp),
                alpha = .3,
                size = 3) + 
     labs(x = "Longitude", y = "Latitude") +
     coord_fixed(ratio = 1.3) +
     scale_color_manual(name = "Group",
-                       values = col.grp) +
+                       values = col.group) +
     facet_wrap(~institutionCode) +
     theme(
       plot.title = element_text(size = 40),
@@ -133,12 +133,12 @@ for (dec in sort(unique(dat.occ$decade))) {
   dat.occ.dec <- dat.occ %>% 
     filter(decade <= dec) %>% 
     # exclude records without coordinates
-    filter(!is.na(decimalLatitude) &
-             !is.na(decimalLongitude))
+    filter(!is.na(lat) &
+             !is.na(long))
   
   # plot that onto germany
-  png(paste0("plots/additional",
-            "occurrences_doy_distribution_decadal_", dec, ".png"),
+  png(paste0("plots/additional/",
+             "occurrences_doy_distribution_decadal_", dec, ".png"),
       width = 1500, height = 1000)
   
   print(
@@ -146,7 +146,7 @@ for (dec in sort(unique(dat.occ$decade))) {
       geom_polygon(data = germany,
                    aes(x = long, y = lat, group = group)) + 
       geom_point(data = dat.occ.dec,
-                 aes(x = decimalLongitude, y = decimalLatitude,
+                 aes(x = long, y = lat,
                      col = institutionCode),
                  alpha = .3,
                  size = 3) + 
@@ -183,9 +183,9 @@ for (dec in sort(unique(dat.occ$decade))) {
 for (ins in unique(dat.occ$institutionCode)) {
   
   # plot spatial distribution and save plot
-  png(paste0("plots/additional",
-            "occurrences_doy_distribution_",
-            gsub("[[:punct:]]", "_", ins), ".png"),
+  png(paste0("plots/additional/",
+             "occurrences_doy_distribution_",
+             gsub("[[:punct:]]", "_", ins), ".png"),
       width = 1500, height = 1000)
   
   print(
@@ -226,7 +226,7 @@ for (ins in unique(dat.occ$institutionCode)) {
   png(paste0("plots/additional/",
              "occurrences_nrec_distribution_",
              gsub("[[:punct:]]", "_", ins), ".png"),
-  width = 1500, height = 1000)
+      width = 1500, height = 1000)
   
   print(
     ggplot() +
