@@ -1,11 +1,12 @@
 
-###########################################################################
-
-# script to be run from main analysis notebook
-
-###########################################################################
-
+library("data.table")
+library("ggplot2")
+library("tidyr")
+library("dplyr")
+library("tidyselect")
 library("raster")
+
+source("scripts/functions.R")
 
 
 dir.check("plots/additional")
