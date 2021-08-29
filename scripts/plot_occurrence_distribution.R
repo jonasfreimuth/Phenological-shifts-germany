@@ -376,22 +376,31 @@ invisible(
   )
 )
 
+# ensure target dirs exist
 dir.check("plots/additional/species_inst/temp")
+dir.check("plots/additional/species_inst/year")
 
+# calculate axis limits
 min_doy <- min(dat.occ$doy)
 max_doy <- max(dat.occ$doy)
 
 min_temp <- min(dat.occ$temp)
 max_temp <- max(dat.occ$temp)
 
+min_year <- min(dat.occ$year)
+max_year <- max(dat.occ$year)
+
 #  plot species temp distributions and color institutions
 for (spec in unique(dat.occ$species)) {
   
+  # extract dataset only containing this species
   dat.occ.plt <- dat.occ %>% 
     filter(species == spec)
   
+  # extract the id.grp of that species
   id.grp.plt <- dat.occ.plt$id.grp[1]
   
+  # save plot for temp
   ggsave(paste0("plots/additional/species_inst/temp/",
                 gsub("[[:punct:]]", "_", spec), ".png"),
          
@@ -403,44 +412,35 @@ for (spec in unique(dat.occ$species)) {
            ylim(c(min_doy, max_doy)) +
            xlim(c(min_temp, max_temp)) +
            labs(title = spec,
-                subtitle = id.grp.plt) +
+                subtitle = id.grp.plt,
+                x = "Temperature [\u00B0C]",
+                y = "DOY") +
            theme_minimal(),
-         
+
          width = 20, height = 12
   )
-  
-}
 
-dir.check("plots/additional/species_inst/year")
-
-min_year <- min(dat.occ$year)
-max_year <- max(dat.occ$year)
-
-#  plot species year distributions and color institutions
-for (spec in unique(dat.occ$species)) {
-  
-  dat.occ.plt <- dat.occ %>% 
-    filter(species == spec)
-  
-  id.grp.plt <- dat.occ.plt$id.grp[1]
-  
+  # save plot for year
   ggsave(paste0("plots/additional/species_inst/year/",
                 gsub("[[:punct:]]", "_", spec), ".png"),
-  
-  ggplot(dat.occ.plt,
-         aes(date, doy, col = institutionCode)) + 
-    geom_jitter()+
-    geom_smooth(col = "red", method = "lm") +
-    ylim(c(min_doy, max_doy)) +
-    xlim(c(min_year, max_year)) +
-    labs(title = spec,
-         subtitle = id.grp.plt) +
-    theme_minimal(),
+         
+         ggplot(dat.occ.plt,
+                aes(year, doy, col = institutionCode)) + 
+           geom_point() +
+           geom_smooth(col = "red", method = "lm") +
+           ylim(c(min_doy, max_doy)) +
+           xlim(c(min_year, max_year)) +
+           labs(title = spec,
+                subtitle = id.grp.plt,
+                x = "Year",
+                y = "DOY") +
+           theme_minimal(),
 
          width = 20, height = 12
   )
   
 }
+
 
 beep()
 
