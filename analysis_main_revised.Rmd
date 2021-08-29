@@ -26,7 +26,7 @@ source("scripts/functions.R")
 
 ## Script control -----------------------------------------
 
-test_run         <- TRUE
+test_run         <- FALSE
 
 # run script for retrieving climate data from DWD regardless of data being 
 # already present?
@@ -85,7 +85,17 @@ axis_ticks_length_large <- 16
 # when plots were optimized for 22 x 14 in
 label_size <- 50
 
-### define trivial group names ----------------------------------------------
+## define custom plotting theme ---------------------------
+
+theme_shifts <- function (...) {
+  
+  theme_minimal() %+replace%
+    
+    theme(panel.grid = element_blank(),
+          ...)
+}
+
+## define trivial group names -----------------------------
 
 # set groups to be excluded
 excl.group.year <- c("Diptera", "Hymenoptera")
@@ -337,8 +347,8 @@ slopes_temp %>%
   labs(title = "Shifts with temperature",
        y = "Slope",
        x = "Species") +
-  theme(axis.text.y  = element_blank(),
-        axis.ticks.y = element_blank())
+  theme_shifts(axis.text.y  = element_blank(),
+               axis.ticks.y = element_blank())
 
 slopes_year %>% 
   ggplot(aes(reorder(species,  -slope), slope, col = id.grp)) +
@@ -349,8 +359,9 @@ slopes_year %>%
   labs(title = "Shifts over time",
        y = "Slope",
        x = "Species") +
-  theme(axis.text.y  = element_blank(),
-        axis.ticks.y = element_blank())
+  theme_shifts(axis.text.y  = element_blank(),
+               axis.ticks.y = element_blank())
+
 ```
 
 
@@ -378,4 +389,110 @@ TukeyHSD(aov_year)
 
 ```
 
+
+
+```{r plot_slopes_vs_groups}
+
+# for temp
+ggplot() +
+  
+  # raw data
+  geom_jitter   (data = slopes_temp,
+                 aes(x = id.grp,
+                     y = slope),
+                 col = col.pt) +
+  
+  # errorbars
+  geom_errorbar (data = slopes_temp_sum,
+                 aes(x    = id.grp,
+                     ymin = slope_ci_min,
+                     ymax = slope_ci_max,
+                     col  = id.grp)) +
+  
+  # mean data
+  geom_point    (data = slopes_temp_sum,
+                 aes(x   = id.grp,
+                     y   = slope_mean,
+                     col = id.grp)) + 
+  
+  # line denoting 0
+  geom_hline    (yintercept = 0,
+                 col = col.line) +
+  
+  # supress legend
+  theme_shifts(legend.position = "none")
+
+
+
+# for year
+ggplot() +
+  
+  # raw data
+  geom_jitter   (data = slopes_year,
+                 aes(x = id.grp,
+                     y = slope),
+                 col = col.pt) +
+  
+  # errorbars
+  geom_errorbar (data = slopes_year_sum,
+                 aes(x    = id.grp,
+                     ymin = slope_ci_min,
+                     ymax = slope_ci_max,
+                     col  = id.grp)) +
+  
+  # mean data
+  geom_point    (data = slopes_year_sum,
+                 aes(x   = id.grp,
+                     y   = slope_mean,
+                     col = id.grp)) + 
+  
+  # line denoting 0
+  geom_hline    (yintercept = 0,
+                 col = col.line) +
+  
+  # supress legend
+  theme_shifts(legend.position = "none")
+
+```
+
+
+
+```{r plot_year_vs_temp_slopes_correlation}
+
+ggplot() +
+  
+  # add raw data
+  geom_point     (data = slopes_all,
+                  aes(x = slope_year,
+                      y = slope_temp),
+                  col = col.pt) + 
+  
+  # add year errorbar 
+  geom_errorbarh (data = slopes_all_sum,
+                  aes(y    = slope_mean_temp,
+                      xmin = slope_ci_min_year,
+                      xmax = slope_ci_max_year,
+                      col  = id.grp
+                      )) +
+  
+  # add temp errorbar
+  geom_errorbar  (data = slopes_all_sum,
+                  aes(x    = slope_mean_year,
+                      ymin = slope_ci_min_temp,
+                      ymax = slope_ci_max_temp,
+                      col  = id.grp))  +
+  
+  # add group means
+  geom_point     (data = slopes_all_sum,
+                  aes(x    = slope_mean_year,
+                      y    = slope_mean_temp,
+                      col  = id.grp)) +
+  
+  # split the plot based on the group
+  facet_wrap( ~ id.grp) + 
+  
+  # disable the legend
+  theme_shifts(legend.position = "none")
+
+```
 
