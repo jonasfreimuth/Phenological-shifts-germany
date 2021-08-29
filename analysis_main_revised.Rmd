@@ -203,6 +203,8 @@ save.image('data/curr_environment.RData')
 
 ```
 
+
+
 ```{r Ensure additional data is present}
 
 # Climate data --------------------------------------------
@@ -232,6 +234,8 @@ if (run.traits.get | force.traits.get) {
 
 ```
 
+
+
 ```{r get_occurrence_data, include=FALSE}
 
 # for now, only check whether data and random effects are present
@@ -242,6 +246,8 @@ if (!any(file.exists("data/f_occurrences_full_pruned_elev.csv",
 
 ```
 
+
+
 ```{r load_occurrence_slope_data}
 
 dat.occ <- fread(dat_occ_file)
@@ -249,12 +255,11 @@ dat.occ <- fread(dat_occ_file)
 slopes_temp <- fread(dat_slope_temp_file)
 slopes_year <- fread(dat_slope_year_file)
 
-# add data to slopes
+# add taxonomic data to slopes
 tax_df <- dat.occ %>% 
   select(c(kingdom, phylum, id.grp, order, family, genus, species)) %>% 
   distinct()
   
-
 slopes_temp <- slopes_temp %>% 
   left_join(tax_df, by = "species")
 
@@ -329,7 +334,8 @@ slopes_temp %>%
   geom_hline(yintercept = 0) +
   coord_flip() + 
   facet_wrap( ~ id.grp, scale = "free_y") +
-  labs(y = "Slope",
+  labs(title = "Shifts with temperature",
+       y = "Slope",
        x = "Species") +
   theme(axis.text.y  = element_blank(),
         axis.ticks.y = element_blank())
@@ -340,11 +346,14 @@ slopes_year %>%
   geom_hline(yintercept = 0) +
   coord_flip() + 
   facet_wrap( ~ id.grp, scale = "free_y") +
-  labs(y = "Slope",
+  labs(title = "Shifts over time",
+       y = "Slope",
        x = "Species") +
   theme(axis.text.y  = element_blank(),
         axis.ticks.y = element_blank())
 ```
+
+
 
 ```{r analyse_between_group_diffs}
 cat("Differences in slope with temperature:\n\n")
