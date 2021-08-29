@@ -14,7 +14,7 @@ source("scripts/functions.R")
 
 # do a testing run? 
 # will reduce data size and save outputs into separate directories
-test_run <- TRUE
+test_run <- FALSE
 
 # save diagnostics plots
 # will take a very long time on the full dataset
