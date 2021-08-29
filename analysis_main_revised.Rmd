@@ -16,6 +16,7 @@ library("data.table")
 library("ggplot2")
 library("tidyr")
 library("dplyr")
+library("tidyselect")
 
 ## Functions ----------------------------------------------
 
@@ -260,10 +261,67 @@ slopes_temp <- slopes_temp %>%
 slopes_year <- slopes_year %>% 
   left_join(tax_df, by = "species")
 
+# generate df giving slopes for both vars
+slopes_all <- left_join(slopes_temp,
+                        slopes_year,
+                        by = c("kingdom",
+                               "phylum",
+                               "id.grp",
+                               "order",
+                               "family",
+                               "genus",
+                               "species"),
+                        suffix = c("_temp", "_year")) %>% 
+  
+  # drop redundant cols
+  select(-starts_with(c("group_",
+                        "main_var_")))
 
 ```
 
-```{r}
+
+
+```{r summarize_slopes}
+
+slopes_temp_sum <- slopes_temp %>% 
+  group_by(id.grp) %>% 
+  summarise(n_spec              = length(slope),
+            slope_mean          = mean(slope),
+            slope_sd            = sd(slope),
+            slope_se            = sd(slope) / sqrt(length(slope)),
+            slope_ci_min        = ci.min(slope),
+            slope_ci_max        = ci.max(slope),
+            slope_frac_negative = sum(slope < 0) / length(slope),
+            var                 = "Temperature")
+
+slopes_year_sum <- slopes_year %>% 
+  group_by(id.grp) %>% 
+  summarise(n_spec              = length(slope),
+            slope_mean          = mean(slope),
+            slope_sd            = sd(slope),
+            slope_se            = sd(slope) / sqrt(length(slope)),
+            slope_ci_min        = ci.min(slope),
+            slope_ci_max        = ci.max(slope),
+            slope_frac_negative = sum(slope < 0) / length(slope),
+            var                 = "Year")
+
+#combine both summary data sets and display them
+slopes_all_sum <- left_join(slopes_temp_sum,
+                            slopes_year_sum,
+                            by = c("id.grp"),
+                            suffix = c("_temp",
+                                       "_year")) %>% 
+  
+  # drop redundant columns
+  select(-starts_with("var_"))
+
+slopes_all_sum
+
+```
+
+
+
+```{r plot_slopes_vs_species_forest}
 
 slopes_temp %>% 
   ggplot(aes(reorder(species,  -slope), slope, col = id.grp)) +
