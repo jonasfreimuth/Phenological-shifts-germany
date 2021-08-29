@@ -4,6 +4,7 @@ library("ggplot2")
 library("tidyr")
 library("dplyr")
 library("tidyselect")
+library("stringr")
 library("raster")
 
 source("scripts/functions.R")
