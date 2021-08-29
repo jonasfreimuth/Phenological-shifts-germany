@@ -376,7 +376,7 @@ invisible(
   )
 )
 
-dir.check("plots/additional/species_inst")
+dir.check("plots/additional/species_inst/temp")
 
 min_doy <- min(dat.occ$doy)
 max_doy <- max(dat.occ$doy)
@@ -387,7 +387,12 @@ max_temp <- max(dat.occ$temp)
 #  plot species temp distributions and color institutions
 for (spec in unique(dat.occ$species)) {
   
-  ggsave(paste0("plots/additional/species_inst/",
+  dat.occ.plt <- dat.occ %>% 
+    filter(species == spec)
+  
+  id.grp.plt <- dat.occ.plt$id.grp[1]
+  
+  ggsave(paste0("plots/additional/species_inst/temp/",
                 gsub("[[:punct:]]", "_", spec), ".png"),
          
          dat.occ %>% 
@@ -398,7 +403,7 @@ for (spec in unique(dat.occ$species)) {
            ylim(c(min_doy, max_doy)) +
            xlim(c(min_temp, max_temp)) +
            labs(title = spec,
-                subtitle = unique(id.grp)) +
+                subtitle = id.grp.plt) +
            theme_minimal(),
          
          width = 20, height = 12
