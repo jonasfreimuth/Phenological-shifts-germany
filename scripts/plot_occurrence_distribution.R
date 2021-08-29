@@ -411,6 +411,37 @@ for (spec in unique(dat.occ$species)) {
   
 }
 
+dir.check("plots/additional/species_inst/year")
+
+min_year <- min(dat.occ$year)
+max_year <- max(dat.occ$year)
+
+#  plot species year distributions and color institutions
+for (spec in unique(dat.occ$species)) {
+  
+  dat.occ.plt <- dat.occ %>% 
+    filter(species == spec)
+  
+  id.grp.plt <- dat.occ.plt$id.grp[1]
+  
+  ggsave(paste0("plots/additional/species_inst/year/",
+                gsub("[[:punct:]]", "_", spec), ".png"),
+  
+  ggplot(dat.occ.plt,
+         aes(date, doy, col = institutionCode)) + 
+    geom_jitter()+
+    geom_smooth(col = "red", method = "lm") +
+    ylim(c(min_doy, max_doy)) +
+    xlim(c(min_year, max_year)) +
+    labs(title = spec,
+         subtitle = id.grp.plt) +
+    theme_minimal(),
+
+         width = 20, height = 12
+  )
+  
+}
+
 beep()
 
 
