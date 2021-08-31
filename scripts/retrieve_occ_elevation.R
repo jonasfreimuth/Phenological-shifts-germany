@@ -9,7 +9,7 @@ source("scripts/functions.R")
 dat.occ <- fread("data/f_occurrences_full_pruned.csv") %>% 
   as.data.frame()
 
-elev <- getData("alt", country = "DEU")
+elev <- getData("alt", country = "DEU", path = "data")
 
 dat.occ.sp <- SpatialPoints(coords = as.matrix(dat.occ %>% 
                                                  drop_na(lat) %>% 
