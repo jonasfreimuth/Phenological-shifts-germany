@@ -13,6 +13,11 @@ options(dplyr.summarise.inform = FALSE,
         stringsAsFactors = FALSE)
 
 library("data.table")
+library("rgbif")
+
+# tidyverse stuff last to avoid masking these functions
+library("magrittr")
+library("stringr")
 library("ggplot2")
 library("tidyr")
 library("dplyr")
@@ -35,6 +40,17 @@ force.clim.get   <- FALSE
 # run script for retrieving plant trait data from bioFlor regardless of data 
 # being already present?
 force.traits.get <- FALSE
+
+# force new downloading of occurrence data
+force.occ.download <- TRUE
+
+# control which of the downloaded files to delede
+#   - "all": delete both .zip files and extracted occ .txt files
+#   - "zip": delete only .zip files, keep .txt
+#   - "txt": delete only .txt files, keep .zip
+#   - "non": keep all files in download folder
+delete.occ.download <- "non"
+
 
 ## Path names ---------------------------------------------
 
@@ -249,9 +265,17 @@ if (run.traits.get | force.traits.get) {
 ```{r get_occurrence_data, include=FALSE}
 
 # for now, only check whether data and random effects are present
-if (!any(file.exists("data/f_occurrences_full_pruned_elev.csv",
-                     "data/species_slopes.csv"))) {
-  stop("Necessary files are not present.")
+if (!any(file.exists(dat_occ_file)) || 
+    force.occ.download) {
+  # stop("Necessary files are not present.")
+  
+  source("scripts/get_occ_data_all_in_one.R")
+}
+
+if (!any(file.exists(dat_slope_temp_file, dat_slope_year_file))) {
+  # stop("Necessary files are not present.")
+  
+  source("scripts/run_models.R")
 }
 
 ```
