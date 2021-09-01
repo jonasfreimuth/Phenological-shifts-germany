@@ -231,40 +231,56 @@ if (run.occ.refine) {
 # Below code has been adapted from work that Franziska M. Willems did
 #  see Data.Rmd for her version
 
-dat.occ.refined <- fread("data/occurrences_full_refined.csv",
-                         showProgress = FALSE) %>% 
-  
-  # filter out records without determined species
-  filter(species != "") %>% 
-  
-  # filter out records of species with less than 30 records overall
-  group_by(species) %>% 
-  filter(n() >= 30) %>% 
-  ungroup() %>% 
 
-  # filter out all years before 1980
-  filter(year >= 1980) %>% 
-  
-  # filter out certain days of the year with unnaturally high numbers of 
-  #   records
-  #   In Franziskas script, the last three days are not actually filtered
-  filter(!(doy %in% c(1, 95, 121, 163, 164, 166, 181))) %>% # 
-  
-  # add extra decade column, which includes 2020 in the 2010s decade
-  mutate(decade2 = str_replace_all(decade, "2020", "2010")) %>% 
-  
-  # filter out species with less than 10 records in any decade
-  group_by(species, decade2) %>% 
-  # first filter out decades with less than 10 records
-  filter(n() >= 10) %>% 
-  group_by(species) %>% 
-  # then filter out species where not all decades are present
-  filter(uniqueN(decade2) >= 4) %T>% 
-  
-  # save data to disk
-  fwrite(file = "data/occurrences_full_pruned.csv",
-         showProgress = FALSE)
+if (exists("force.occ.refine")) {
+  run.occ.refine <- force.occ.refine
+} else {
+  run.occ.refine <- !(file.older.check("data/occurrences_full_refined.csv",
+                                       "data/occurrences_full_pruned.csv"))
+}
 
+if (run.occ.refine) {
+  fread("data/occurrences_full_refined.csv",
+        showProgress = FALSE) %>% 
+    
+    # filter out records without determined species
+    filter(species != "") %>% 
+    
+    # filter out records without recorded location
+    drop_na(decimalLatitude, decimalLongitude) %>% 
+    
+    # filter out records of species with less than 30 records overall
+    group_by(species) %>% 
+    filter(n() >= 30) %>% 
+    ungroup() %>% 
+    
+    # filter out all years before 1980
+    filter(year >= 1980) %>% 
+    
+    # filter out certain days of the year with unnaturally high numbers of 
+    #   records
+    #   In Franziskas script, the last three days are not actually filtered
+    filter(!(doy %in% c(1, 95, 121, 163, 164, 166, 181))) %>% # 
+    
+    # add extra decade column, which includes 2020 in the 2010s decade
+    mutate(decade2 = str_replace_all(decade, "2020", "2010")) %>% 
+    
+    # filter out species with less than 10 records in any decade
+    group_by(species, decade2) %>% 
+    # first filter out decades with less than 10 records
+    filter(n() >= 10) %>% 
+    group_by(species) %>% 
+    # then filter out species where not all decades are present
+    filter(uniqueN(decade2) >= 4) %>% 
+    
+    # save data to disk
+    fwrite(file = "data/occurrences_full_pruned.csv",
+           showProgress = FALSE)
+}
+
+  
+  
+  
 
 # Addition of temp and elevation data -------------------------------------
 
