@@ -19,7 +19,8 @@ if ( !(file.exists("static_data/bioflor_traits.csv"))) {
 }
 
 #load bioflor traits
-bioflor_traits <- fread("static_data/bioflor_traits.csv", showProgress = FALSE) %>%
+bioflor_traits <- fread("static_data/bioflor_traits.csv",
+                        showProgress = FALSE) %>%
   mutate(species = as.character(species)) 
 
 
@@ -43,8 +44,8 @@ if(file.exists(paste(sep = "/", "data", "occurrences_full.csv")) &&
   if (file.mtime(paste(sep = "/", "static_data", "last_keys.txt")) < 
       file.mtime(paste(sep = "/", "data", "occurrences_full.csv"))) {
     
-    # since the file for gbif requests is older, we're up to date with the occurrences
-    # and we already have our occurrence dataset
+    # since the file for gbif requests is older, we're up to date with the 
+    # occurrences and we already have our occurrence dataset
     # we don't run the download
     
     run.occ.refine <- FALSE
@@ -85,7 +86,8 @@ if (run.occ.refine) {
   sink(paste(sep = "/", "data", "download_ran.txt"))
   
   cat("# Do not delete this file.\n")
-  cat("# Re-executing the occurrence getting script will take needlessly long...\n")
+  cat("# Re-executing the occurrence getting script will take")
+  cat("needlessly long...\n")
   cat("key\tfinish_time\n")
   
   sink()
