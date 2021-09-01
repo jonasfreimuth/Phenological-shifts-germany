@@ -254,8 +254,8 @@ if (run.occ.refine) {
     filter(n() >= 30) %>% 
     ungroup() %>% 
     
-    # filter out all years before 1980
-    filter(year >= 1980) %>% 
+    # filter out all years before 1980 and after 2020
+    filter(year >= 1980, year <= 2020) %>% 
     
     # filter out certain days of the year with unnaturally high numbers of 
     #   records
