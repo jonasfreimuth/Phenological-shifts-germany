@@ -369,11 +369,9 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
                                  "year",
                                  "month",
                                  "doy")) %>%
-  
   group_by(kingdom, phylum, order, family, genus, id.grp, decade) %>%
   group_by(species, .add = TRUE) %>%
   group_by(year, .add = TRUE) %>%
-  
   # filter  out years with too few records
   filter(n() >= thr.spec) %>%
   summarise(
@@ -389,14 +387,11 @@ dat.occ.mean <- fread(here("data", "occurrences_full_pruned.csv"),
     quant75 = quantile(doy, probs = 0.75),
     n.rec = length(doy)
   ) %>%
-  
   ungroup() %>%
-  
   #join trait data
   left_join(bioflor_traits, by = "species") %>%
   left_join(fread(here("static_data", "overall_mean_temperature.csv")),
             by = c("year")) %>%
-  
   #save species yearly mean doy data
   fwrite(
     here("data", "occurrences_species_yearly_mean_doy_pruned.csv"),
