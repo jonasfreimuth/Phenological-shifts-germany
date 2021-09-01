@@ -24,6 +24,22 @@ dir.check <- function(path) {
   
 }
 
+# function to check whether a file is older than another
+#   returns TRUE if file1 is older than file2 and FALSE otherwise
+#   if any of the files dont exist, it returns FALSE
+file.older.check <- function(file1, file2) {
+  
+  if (!(all(file.exists(file1, file2)))) {
+    return(FALSE)
+  }
+  
+  if (file.mtime(file1) < file.mtime(file2)) {
+    return(TRUE)
+  }
+  
+  return(FALSE)
+}
+
 
 # function for calculating a position above the range of a vector x
 # muliple vectors can be supplied, again, the max result of all vectors
