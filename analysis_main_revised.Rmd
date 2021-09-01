@@ -41,8 +41,8 @@ force.clim.get   <- FALSE
 # being already present?
 force.traits.get <- FALSE
 
-# force new downloading of occurrence data
-force.occ.download <- TRUE
+# force running of occurrence getting script
+force.occ.get <- TRUE
 
 # control which of the downloaded files to delede
 #   - "all": delete both .zip files and extracted occ .txt files
@@ -266,7 +266,7 @@ if (run.traits.get | force.traits.get) {
 
 # for now, only check whether data and random effects are present
 if (!any(file.exists(dat_occ_file)) || 
-    force.occ.download) {
+    force.occ.get) {
   # stop("Necessary files are not present.")
   
   source("scripts/get_occ_data_all_in_one.R")
