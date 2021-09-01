@@ -278,16 +278,46 @@ if (run.occ.refine) {
            showProgress = FALSE)
 }
 
-  
-  
-  
 
 # Addition of temp and elevation data -------------------------------------
 
-# elev <- getData("alt", country = "DEU", path = "data")
-# 
-# dat.occ.sp <- SpatialPoints(coords = as.matrix(dat.occ %>% 
-#                                                  drop_na(lat) %>% 
-#                                                  select(long, 
-#                                                         lat))
+
+dat.occ.pruned <- fread(file = "data/occurrences_full_pruned.csv",
+                         showProgress = FALSE)
+
+# Adding elevation data
+
+# download (if not already present) and load rastered elevation (altitude) data
+elev <- getData("alt", country = "DEU", path = "data")
+
+# generate df with only coordinates of points
+dat.occ.sp <- SpatialPoints(as.matrix(dat.occ.pruned %>%
+                                        select(decimalLatitude,
+                                               decimalLongitude)),
+                            proj4string = elev@crs)
+
+# extract elevation data corresponding to the raster value of each record
+dat.occ.elev <- raster::extract(elev, dat.occ.sp)
+
+# add extracted data to occurrence records
+dat.occ.pruned <- mutate(dat.occ.pruned, elev = dat.occ.elev)
+
+
+# Adding climate data
+
+if (!(file.exists("static_data/cru_climate_data.RDS"))) {
+  
+  warning(paste("Cropped climate data not present, attempting to run",
+                 "script for generating that. If you get errors ensure",
+                 "all necessary files are downloaded."))
+  
+  source("scripts/extract_cru_data.R")
+  
+}
+
+cru_data <- readRDS("static_data/cru_climate_data.RDS")
+
+for (brick in names(cru_data)) {
+  
+}
   
