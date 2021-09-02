@@ -1,0 +1,290 @@
+---
+title: "Data Pruning"
+output: html_document
+author: "Franziska M. Willems"
+---
+
+# load packages
+```{r}
+library(dplyr)
+library(skimr)
+library(data.table)
+library(vtree)
+library(tidyverse)
+library(lme4)
+
+```
+
+
+```{r}
+dat <- read.csv("data/occurrences_full_refined.csv")
+```
+
+try fread if read.csv is too slow
+
+
+
+```{r}
+dat %>%
+  group_by(species) %>%
+  skim()
+
+dat %>% 
+  group_by(species) %>% 
+  summarize(N = length(doy),
+            mean = mean(doy))
+```
+
+
+# throw out all species with less than 30 datapoints
+```{r}
+df <- dat
+df <- df[df$species != "",]
+df <- droplevels(df[ave(df$doy, df$species, FUN = length) > 29, ])
+
+df %>% group_by(species) %>% count() 
+```
+
+# thow out all data before 1980
+```{r}
+hist(df$year)
+```
+
+```{r}
+df <- droplevels(df[df$year > 1979,])
+hist(df$year)
+```
+# remove doys that are unusually common
+
+```{r}
+N_per_doy <- df %>% group_by(doy) %>% summarize(n = n())
+ggplot(data = N_per_doy, aes(n, doy, lable = doy))+
+  geom_point()+
+  geom_text(aes(label=doy),hjust=0, vjust=0)
+```
+
+
+
+* 1 = 1. January (37589)
+* 95 = 5. April (46379)
+* 121 = 1. May (75971)
+* 163 = 12. June (121456) = Geo Tag der Artenvielfalt
+
+also somewhat more common:
+* 181 = 30. June (92207)
+* 166 = 15. June (85348)
+* 164 = 14. June (86782)
+
+dim(df_sub) = 12544795, 21
+
+```{r}
+df %>% filter(doy != 1& 95 & 121 & 163 & 164 & 166 & 181) -> df # this made some trouble, since some doys (e.g. 95) were not removed first
+df %>% filter(doy != 95) -> df
+df %>% filter(doy != 121) -> df
+df %>% filter(doy != 163) -> df 
+dim(df)
+# Number of dicarded datapoints
+12544795 - 13531876  # 281395
+```
+
+```{r}
+hist(dat$doy, breaks = 365)
+hist(df$doy, breaks = 365)
+
+```
+
+
+# Get summaries and overview of the datset
+
+```{r}
+df %>% filter(kingdom == "Animalia") %>% 
+  group_by(order, decade) %>% 
+  summarize(N = length(doy),
+            mean = mean(doy))
+```
+
+## check number of datapoints per decade
+
+```{r}
+N_per_decade <- df %>% 
+  group_by(kingdom, order, species, decade) %>% 
+  summarize(N = length(doy),
+            mean = mean(doy))
+```
+
+```{r}
+N_per_decade %>% filter(N > 9) -> N_per_decade_min
+
+N_per_decade_min %>% 
+  group_by(species) %>%
+ # filter(n() > 3) -> N_per_decade_min # at least 4 decades of data --> leaves 2344 species
+  filter(n() > 4) -> N_per_decade_min5 # at least 5 decades of data --> leaves 1272 Species
+
+N_per_decade_min$species <- as.factor(N_per_decade_min$species)
+N_per_decade_min$order <- as.factor(N_per_decade_min$order)
+
+# Number of species per order
+test <- data.table(N_per_decade_min)
+test[ , .(count = length(unique(species))), by = order]
+```
+
+## check number of datapoints per decade with 2020 included in the 2010 decade
+
+```{r}
+df$decade2 <- df$decade
+df$decade2 <- as.factor(df$decade2)
+levels(df$decade2)
+levels(df$decade2) <- c("1980", "1990", "2000", "2010", "2010")
+levels(df$decade2)
+
+N_per_decade2 <- df %>% 
+  group_by(kingdom, order, species, decade2) %>% 
+  summarize(N = length(doy),
+            mean = mean(doy))
+```
+
+```{r}
+N_per_decade2 %>% filter(N > 9) -> N_per_decade2_min
+
+N_per_decade2_min %>% 
+  group_by(species) %>%
+  filter(n() > 3) -> N_per_decade2_min # at least 4 decades of data, 2020 included in 2010 
+
+
+N_per_decade2_min$species <- as.factor(N_per_decade2_min$species)
+N_per_decade2_min$order <- as.factor(N_per_decade2_min$order)
+```
+
+
+```{r}
+library(vtree)
+vtree(N_per_decade_min[N_per_decade_min$kingdom=="Animalia",], c("order")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
+vtree(N_per_decade_min5[N_per_decade_min5$kingdom=="Animalia",], c("order")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
+
+```
+
+```{r}
+ggplot(N_per_decade_min, aes(x = N)) +
+  geom_histogram() + 
+  facet_grid( ~ kingdom) +
+  theme_bw() + xlim(0, 200)
+
+ggplot(N_per_decade_min5, aes(x = N)) +
+  geom_histogram() +
+  facet_grid( ~ kingdom) +
+  theme_bw() +
+  xlim(0, 200)
+
+```
+
+# List with species that should be inluded
+
+those that have:
+* data from at least 5 decades
+* at least 10 datapoints per decade
+
+```{r}
+Species_list <- unique(N_per_decade_min5$species)
+df %>% filter(species %in% Species_list) -> df_sub
+length(levels(as.factor(df_sub$species)))
+df_sub$species <- as.factor(df_sub$species)
+```
+
+# the same when 2020 is included in the 2010 decade
+```{r}
+Species_list2 <- unique(N_per_decade2_min$species)
+
+memory.limit(size=999999999)
+df %>% filter(species %in% Species_list2) -> df_sub2
+
+saveRDS(df_sub2, file = "df_sub2.RDS")
+length(levels(as.factor(df_sub2$species))) # 2046
+df_sub2$species <- as.factor(df_sub2$species)
+```
+
+## number of datapoints per animal order and species
+
+```{r}
+vtree(df_sub[df_sub$kingdom=="Animalia",], c("order")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
+vtree(df_sub[df_sub$order=="Coleoptera",], c("species")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
+vtree(df_sub[df_sub$order=="Diptera",], c("species")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
+vtree(df_sub[df_sub$order=="Hymenoptera",], c("species")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
+vtree(df_sub[df_sub$order=="Lepidoptera",], c("species")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
+length(levels(as.factor(df_sub$species)))
+N_per_species <- df_sub %>% group_by(species) %>% count() 
+```
+# Overview plots of data
+
+## map with data points
+
+```{r}
+theme_set(theme_bw())
+library(rworldmap)
+library(rgeos)
+library(sf)
+world <- getMap(resolution = "high")
+world <- st_as_sf(world)
+```
+
+
+
+```{r}
+ggplot(data = world)+
+  geom_sf()+
+  geom_point(data = df_sub, aes(y = decimalLatitude, x = decimalLongitude))+
+  coord_sf(xlim = c(0,16), ylim = c(45,55))
+```
+
+
+```{r}
+ggplot(data = df_sub, aes(x = year, y = doy, colour = kingdom)) +
+         geom_point()+
+         geom_smooth(method = "lm")
+```
+```{r}
+ggplot(data = df_sub, aes(x = year, y = doy, colour = order)) +
+#         geom_point()+
+         geom_smooth(method = "lm")
+```
+
+```{r}
+ggplot(data = df_sub[df_sub$kingdom=="Animalia",], aes(x = year, y = doy, group = species)) +
+         geom_point(alpha = 0.5)+
+         geom_smooth(method = "lm")+
+  facet_wrap(~order)
+```
+```{r}
+ggplot(data = df_sub[df_sub$order=="Coleoptera",], aes(x = year, y = doy)) +
+         geom_point(alpha = 0.5)+
+         geom_smooth(method = "lm")+
+  facet_wrap(~species)
+```
+```{r}
+ggplot(data = df_sub[df_sub$order=="Diptera",], aes(x = year, y = doy)) +
+         geom_point(alpha = 0.5)+
+         geom_smooth(method = "lm")+
+  facet_wrap(~species)
+```
+
+
+```{r}
+ggplot(data = df_sub[df_sub$order=="Hymenoptera",], aes(x = year, y = doy)) +
+         geom_point(alpha = 0.5)+
+         geom_smooth(method = "lm")+
+         geom_smooth(data = df_sub[df_sub$order=="Hymenoptera"&df_sub$year > 2009,], method = "lm", col = "red")+
+  facet_wrap(~species)
+```
+
+
+
+```{r}
+ggplot(data = df_sub[df_sub$order=="Lepidoptera",], aes(x = year, y = doy)) +
+         geom_point(alpha = 0.5)+
+         geom_smooth(method = "lm")+
+         geom_smooth(data = df_sub[df_sub$order=="Lepidoptera"&df_sub$year > 2009,], method = "lm", col = "red")+
+  facet_wrap(~species)
+```
+
+
+
+

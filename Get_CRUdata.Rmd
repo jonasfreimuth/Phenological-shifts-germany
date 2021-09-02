@@ -1,0 +1,501 @@
+---
+title: "Get CRU data as RasterBrick Object"
+output: html_notebook
+---
+for instructions see: 
+https://www.benjaminbell.co.uk/2018/01/getting-climate-data.html
+
+```{r}
+# Load packages
+library(raster)
+library(ncdf4)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(data.table)
+```
+# load Data
+```{r}
+df_sub <- readRDS(file = "/Franziska/CleanWorkBench/GBIF_Data/df_sub2.RDS")
+```
+
+
+## round latitude/longitude to .00, .25, .50, .75
+```{r}
+# df_sub$lat <- round(df_sub$decimalLatitude, 2)
+# df_sub$long <- round(df_sub$decimalLongitude, 2)
+
+# library(plyr)
+# df_sub$lat <-round_any(df_sub$lat,0.25)
+# df_sub$long <-round_any(df_sub$long,0.25)
+```
+
+
+
+
+```{r}
+# Load the CRU TS temperature dataset into R 
+
+temp1971_1980 <- brick("download/cru_ts4.05.1971.1980.tmp.dat.nc", varname="tmp")
+temp1981_1990 <- brick("download/cru_ts4.05.1981.1990.tmp.dat.nc", varname="tmp")
+temp1991_2000 <- brick("download/cru_ts4.05.1991.2000.tmp.dat.nc", varname="tmp")
+temp2001_2010 <- brick("download/cru_ts4.05.2001.2010.tmp.dat.nc", varname="tmp")
+temp2011_2020 <- brick("download/cru_ts4.05.2011.2020.tmp.dat.nc", varname="tmp")
+
+#nlayers(temp1981_1990)
+names(temp1981_1990)
+
+```
+The above code loads the NetCDF file as a "RasterBrick" object (similar to an array) into memory using the raster package
+
+The temperature/precipitation data files has have variables "tmp" ("pre") and "stn", 
+"pre" = total precipitation (mm/month), and 
+"stn" = the number of climate stations that were used for the grid square.
+
+dimensions = refesr to longitude and latitude, so  the file contains 
+climate data for 720 x 360 grid squares covering the entire globe. 
+crs = the format of the coordinates system. 
+The third dimension represents time, covering each month between January 1901 and December 2016. 
+This represents 1428 data entries, which can be confirmed by multiplying the number of years (119) 
+by the number of months (12), which equals 1428 
+
+It is possible to plot the information directly from a "RasterBrick" object. 
+E.g. a map showing global precipitation for January 1901 just to see how the data looks: 
+
+
+# Look at Germany area only
+
+crop roughly
+- longitude 6 - 15 
+- latitude 47 - 55
+
+```{r}
+GER.area <- extent(6, 15, 47, 55)
+temp1971_1980 <- crop(temp1971_1980, GER.area)
+temp1981_1990 <- crop(temp1981_1990, GER.area)
+temp1991_2000 <- crop(temp1991_2000, GER.area)
+temp2001_2010 <- crop(temp2001_2010, GER.area)
+temp2011_2020 <- crop(temp2011_2020, GER.area)
+
+```
+
+
+
+# remove NAs in dataset and create df with only "sites", and decaded dfs
+```{r}
+D <- df_sub %>% filter(!is.na(decimalLatitude)) # %>% select(kingdom, order, species, id.grp, decimalLatitude, decimalLongitude, decade, year, doy)
+
+D_1971_1980 <- D %>% filter(year > 1970 & year <= 1980)
+D_1981_1990 <- D %>% filter(year > 1980 & year <= 1990)
+D_1991_2000 <- D %>% filter(year > 1990 & year <= 2000)
+D_2001_2010 <- D %>% filter(year > 2000 & year <= 2010)
+D_2011_2020 <- D %>% filter(year > 2010 & year <= 2020)
+```
+
+# Extract data for 1970s (that is ONLY 1980 in this case)
+## Extract Temp values from RasterBrick
+```{r}
+data_to_match = D_1971_1980
+temp_raster = temp1971_1980
+
+coordinates(data_to_match)= ~ decimalLongitude + decimalLatitude
+rasValue = raster::extract(temp_raster, data_to_match) # layer = c(1:12)
+combinePointValue = cbind(data_to_match,rasValue)
+
+DT_1970s <- as.data.frame(combinePointValue)
+# colnames(DT_1980s) <- gsub("^c\\..*", "Temp_1981_3", colnames(DT_1980s))
+```
+
+## aggregate monthly data
+```{r}
+DT_1970s %>% mutate(Temp1971 = rowMeans(select(DT_1970s, starts_with("X1971.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1972 = rowMeans(select(DT_1970s, starts_with("X1972.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1973 = rowMeans(select(DT_1970s, starts_with("X1973.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1974 = rowMeans(select(DT_1970s, starts_with("X1974.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1975 = rowMeans(select(DT_1970s, starts_with("X1975.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1976 = rowMeans(select(DT_1970s, starts_with("X1976.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1977 = rowMeans(select(DT_1970s, starts_with("X1977.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1978 = rowMeans(select(DT_1970s, starts_with("X1978.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1979 = rowMeans(select(DT_1970s, starts_with("X1979.")))) -> DT_1970s
+DT_1970s %>% mutate(Temp1980 = rowMeans(select(DT_1970s, starts_with("X1980.")))) -> DT_1970s
+
+colnames(DT_1970s)
+DT_1970s %>% select(-starts_with("X")) -> DT_1970s
+colnames(DT_1970s)
+
+DT_1970s %>%
+  mutate(Temp = case_when(
+    year == 1971 ~ DT_1970s$Temp1971, 
+    year == 1972 ~ DT_1970s$Temp1972, 
+    year == 1973 ~ DT_1970s$Temp1973, 
+    year == 1974 ~ DT_1970s$Temp1974, 
+    year == 1975 ~ DT_1970s$Temp1975, 
+    year == 1976 ~ DT_1970s$Temp1976, 
+    year == 1977 ~ DT_1970s$Temp1977, 
+    year == 1978 ~ DT_1970s$Temp1978, 
+    year == 1979 ~ DT_1970s$Temp1979, 
+    year == 1980 ~ DT_1970s$Temp1980)) -> DT_1970s                    
+
+```
+
+#############
+
+
+# Extract data for 1980s
+## Extract Temp values from RasterBrick
+```{r}
+data_to_match = D_1981_1990
+temp_raster = temp1981_1990
+
+coordinates(data_to_match)= ~ decimalLongitude + decimalLatitude
+rasValue = raster::extract(temp_raster, data_to_match) # layer = c(1:12)
+combinePointValue = cbind(data_to_match,rasValue)
+
+DT_1980s <- as.data.frame(combinePointValue)
+# colnames(DT_1980s) <- gsub("^c\\..*", "Temp_1981_3", colnames(DT_1980s))
+```
+
+## aggregate monthly data
+```{r}
+DT_1980s %>% mutate(Temp1981 = rowMeans(select(DT_1980s, starts_with("X1981.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1982 = rowMeans(select(DT_1980s, starts_with("X1982.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1983 = rowMeans(select(DT_1980s, starts_with("X1983.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1984 = rowMeans(select(DT_1980s, starts_with("X1984.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1985 = rowMeans(select(DT_1980s, starts_with("X1985.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1986 = rowMeans(select(DT_1980s, starts_with("X1986.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1987 = rowMeans(select(DT_1980s, starts_with("X1987.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1988 = rowMeans(select(DT_1980s, starts_with("X1988.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1989 = rowMeans(select(DT_1980s, starts_with("X1989.")))) -> DT_1980s
+DT_1980s %>% mutate(Temp1990 = rowMeans(select(DT_1980s, starts_with("X1990.")))) -> DT_1980s
+
+DT_1980s %>% select(-starts_with("X")) -> DT_1980s
+
+DT_1980s %>%
+  mutate(Temp = case_when(
+    year == 1981 ~ DT_1980s$Temp1981, 
+    year == 1982 ~ DT_1980s$Temp1982, 
+    year == 1983 ~ DT_1980s$Temp1983, 
+    year == 1984 ~ DT_1980s$Temp1984, 
+    year == 1985 ~ DT_1980s$Temp1985, 
+    year == 1986 ~ DT_1980s$Temp1986, 
+    year == 1987 ~ DT_1980s$Temp1987, 
+    year == 1988 ~ DT_1980s$Temp1988, 
+    year == 1989 ~ DT_1980s$Temp1989, 
+    year == 1990 ~ DT_1980s$Temp1990)) -> DT_1980s                    
+
+```
+
+################################################################
+
+# Extract data for 1990s
+## Extract Temp values from RasterBrick
+```{r}
+data_to_match = D_1991_2000
+temp_raster = temp1991_2000
+
+coordinates(data_to_match)= ~ decimalLongitude + decimalLatitude
+memory.limit(size=999999999)
+rasValue = raster::extract(temp_raster, data_to_match) # layer = c(1:12)
+combinePointValue = cbind(data_to_match,rasValue)
+
+DT_1990s <- as.data.frame(combinePointValue)
+# colnames(DT_1980s) <- gsub("^c\\..*", "Temp_1981_3", colnames(DT_1980s))
+```
+
+## aggregate monthly data
+```{r}
+DT_1990s %>% mutate(Temp1991 = rowMeans(select(DT_1990s, starts_with("X1991.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp1992 = rowMeans(select(DT_1990s, starts_with("X1992.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp1993 = rowMeans(select(DT_1990s, starts_with("X1993.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp1994 = rowMeans(select(DT_1990s, starts_with("X1994.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp1995 = rowMeans(select(DT_1990s, starts_with("X1995.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp1996 = rowMeans(select(DT_1990s, starts_with("X1996.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp1997 = rowMeans(select(DT_1990s, starts_with("X1997.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp1998 = rowMeans(select(DT_1990s, starts_with("X1998.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp1999 = rowMeans(select(DT_1990s, starts_with("X1999.")))) -> DT_1990s
+DT_1990s %>% mutate(Temp2000 = rowMeans(select(DT_1990s, starts_with("X2000.")))) -> DT_1990s
+
+DT_1990s %>% select(-starts_with("X")) -> DT_1990s
+
+DT_1990s %>%
+  mutate(Temp = case_when(
+    year == 1991 ~ DT_1990s$Temp1991, 
+    year == 1992 ~ DT_1990s$Temp1992, 
+    year == 1993 ~ DT_1990s$Temp1993, 
+    year == 1994 ~ DT_1990s$Temp1994, 
+    year == 1995 ~ DT_1990s$Temp1995, 
+    year == 1996 ~ DT_1990s$Temp1996, 
+    year == 1997 ~ DT_1990s$Temp1997, 
+    year == 1998 ~ DT_1990s$Temp1998, 
+    year == 1999 ~ DT_1990s$Temp1999, 
+    year == 2000 ~ DT_1990s$Temp2000)) -> DT_1990s                    
+
+```
+
+################################################################
+
+# Extract data for 2000s
+## Extract Temp values from RasterBrick
+```{r}
+data_to_match = D_2001_2010
+temp_raster = temp2001_2010
+
+coordinates(data_to_match)= ~ decimalLongitude + decimalLatitude
+rasValue = raster::extract(temp_raster, data_to_match) # layer = c(1:12)
+combinePointValue = cbind(data_to_match,rasValue)
+
+DT_2000s <- as.data.frame(combinePointValue)
+```
+
+## aggregate monthly data
+```{r}
+DT_2000s %>% mutate(Temp2001 = rowMeans(select(DT_2000s, starts_with("X2001.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2002 = rowMeans(select(DT_2000s, starts_with("X2002.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2003 = rowMeans(select(DT_2000s, starts_with("X2003.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2004 = rowMeans(select(DT_2000s, starts_with("X2004.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2005 = rowMeans(select(DT_2000s, starts_with("X2005.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2006 = rowMeans(select(DT_2000s, starts_with("X2006.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2007 = rowMeans(select(DT_2000s, starts_with("X2007.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2008 = rowMeans(select(DT_2000s, starts_with("X2008.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2009 = rowMeans(select(DT_2000s, starts_with("X2009.")))) -> DT_2000s
+DT_2000s %>% mutate(Temp2010 = rowMeans(select(DT_2000s, starts_with("X2010.")))) -> DT_2000s
+
+DT_2000s %>% select(-starts_with("X")) -> DT_2000s
+
+DT_2000s %>%
+  mutate(Temp = case_when(
+    year == 2001 ~ DT_2000s$Temp2001, 
+    year == 2002 ~ DT_2000s$Temp2002, 
+    year == 2003 ~ DT_2000s$Temp2003, 
+    year == 2004 ~ DT_2000s$Temp2004, 
+    year == 2005 ~ DT_2000s$Temp2005, 
+    year == 2006 ~ DT_2000s$Temp2006, 
+    year == 2007 ~ DT_2000s$Temp2007, 
+    year == 2008 ~ DT_2000s$Temp2008, 
+    year == 2009 ~ DT_2000s$Temp2009, 
+    year == 2010 ~ DT_2000s$Temp2010)) -> DT_2000s                    
+
+```
+
+################################################################
+
+# Extract data for 2010s
+## Extract Temp values from RasterBrick
+```{r}
+data_to_match = D_2011_2020
+temp_raster = temp2011_2020
+
+coordinates(data_to_match)= ~ decimalLongitude + decimalLatitude
+rasValue = raster::extract(temp_raster, data_to_match) # layer = c(1:12)
+combinePointValue = cbind(data_to_match,rasValue)
+
+DT_2010s <- as.data.frame(combinePointValue)
+```
+
+## aggregate monthly data
+```{r}
+DT_2010s %>% mutate(Temp2011 = rowMeans(select(DT_2010s, starts_with("X2011.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2012 = rowMeans(select(DT_2010s, starts_with("X2012.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2013 = rowMeans(select(DT_2010s, starts_with("X2013.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2014 = rowMeans(select(DT_2010s, starts_with("X2014.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2015 = rowMeans(select(DT_2010s, starts_with("X2015.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2016 = rowMeans(select(DT_2010s, starts_with("X2016.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2017 = rowMeans(select(DT_2010s, starts_with("X2017.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2018 = rowMeans(select(DT_2010s, starts_with("X2018.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2019 = rowMeans(select(DT_2010s, starts_with("X2019.")))) -> DT_2010s
+DT_2010s %>% mutate(Temp2020 = rowMeans(select(DT_2010s, starts_with("X2020.")))) -> DT_2010s
+
+DT_2010s %>% select(-starts_with("X")) -> DT_2010s
+
+DT_2010s %>%
+  mutate(Temp = case_when(
+    year == 2011 ~ DT_2010s$Temp2011, 
+    year == 2012 ~ DT_2010s$Temp2012, 
+    year == 2013 ~ DT_2010s$Temp2013, 
+    year == 2014 ~ DT_2010s$Temp2014, 
+    year == 2015 ~ DT_2010s$Temp2015, 
+    year == 2016 ~ DT_2010s$Temp2016, 
+    year == 2017 ~ DT_2010s$Temp2017, 
+    year == 2018 ~ DT_2010s$Temp2018, 
+    year == 2019 ~ DT_2010s$Temp2019, 
+    year == 2020 ~ DT_2010s$Temp2020)) -> DT_2010s                    
+
+```
+
+################################################################################
+
+# Combine the decade-dataframes
+ 
+filter specific columns if needed - at least throw out the year-mean-temperature columns (col 23-32)
+This is necessary since they differ between the decade-wise datasets
+```{r}
+# colnames(DT_1980s)
+# DT_1980s %>% select(kingdom, order, species, id.grp, decimalLatitude, decimalLongitude, decade, year, doy, Temp) -> DT_1980s
+# DT_1990s %>% select(kingdom, order, species, id.grp, decimalLatitude, decimalLongitude, decade, year, doy, Temp) -> DT_1990s
+# DT_2000s %>% select(kingdom, order, species, id.grp, decimalLatitude, decimalLongitude, decade, year, doy, Temp) -> DT_2000s
+# DT_2010s %>% select(kingdom, order, species, id.grp, decimalLatitude, decimalLongitude, decade, year, doy, Temp) -> DT_2010s
+
+DT_1970s <- DT_1970s[,-c(23:32)]
+DT_1980s <- DT_1980s[,-c(23:32)]
+DT_1990s <- DT_1990s[,-c(23:32)]
+DT_2000s <- DT_2000s[,-c(23:32)]
+DT_2010s <- DT_2010s[,-c(23:32)]
+
+
+DT <- rbind(DT_1970s, DT_1980s, DT_1990s, DT_2000s, DT_2010s)
+```
+
+################################################################################
+
+# Save finishes dataframe object to a file
+
+```{r}
+saveRDS(DT, file = "DT2.rds")
+```
+
+
+# Rename columns
+```{r}
+names(DT)[names(DT)=="decimalLatitude"] <- "lat"
+names(DT)[names(DT)=="decimalLongitude"] <- "long"
+names(DT)[names(DT)=="Temp"] <- "temp"
+```
+
+# throw out all datapoints outside Germany
+
+
+## limit (roughly) to Germany extensions 
+```{r}
+# DT %>% filter(lat >=47.2 & lat <= 54.9 & long >= 5.96 & long <= 15.02) -> DT
+range(DT$lat)
+range(DT$long)
+```
+
+## Load Germany shapefile
+```{r}
+library(rworldmap)
+library(rgeos)
+library(sf)
+
+# Get the world map
+worldMap <- getMap(resolution = "high")
+GerMap <- worldMap[which(worldMap$NAME=="Germany"),]
+plot(GerMap)
+```
+
+## map points
+```{r}
+GerMap_sf <- st_as_sf(GerMap)
+ggplot(data = GerMap_sf)+
+  geom_sf()+
+  geom_point(data = DT, aes(y = lat, x = long))+
+  coord_sf(xlim = c(0,16), ylim = c(45,55))
+```
+there are multiple points outside of Germany
+
+## create a spatial points dataframe and cut all points outside of Germany 
+```{r}
+library("sp")
+# define the spatial points (here the sampling points)
+spatial_points <- cbind(DT$long, DT$lat)
+spatial_points <- SpatialPoints(spatial_points, proj4string=CRS(proj4string(GerMap)))
+
+# make a SpatialPointsDataFrame
+DT_SP <- DT
+coordinates(DT_SP)= ~ long + lat
+
+# assign Coordinate reference system
+CRS.new<-CRS("+init=epsg:4326")
+proj4string(DT_SP) <- CRS.new 
+proj4string(GerMap) <- CRS.new
+
+# clip all points outside Germany
+DT_SP <- DT_SP[GerMap,]
+DT_test <- as.data.frame(DT_SP)
+
+
+```
+
+## Plot the refinded dataframe again 
+now all points should be within the boarders of Germany
+```{r}
+GerMap_sf <- st_as_sf(GerMap)
+
+library(ggplot2)
+ggplot(data = GerMap_sf)+ 
+  #geom_sf()+
+  geom_point(data = DT_test, aes(y = lat, x = long))+
+  coord_sf(xlim = c(0,16), ylim = c(47.24,55))
+```
+
+
+# Check N per decade/species ect AGAIN
+
+sinse datapoints outside Germany where removed
+check if there are still at least 10 datapoints per decade for each species
+```{r}
+N_per_decade2 <- DT_test %>% group_by(kingdom, order, species, decade2) %>% summarize(N = length(doy), mean = mean(doy))
+
+# select species with at least 10 datapoints per decade
+N_per_decade2 %>% filter(N > 9) -> N_per_decade2_min
+# select species that have 4 decades of data, 2010s-decade including 2020
+N_per_decade2_min %>% filter(n() > 3) -> N_per_decade2_min4 
+
+dim(N_per_decade2_min[N_per_decade2_min$decade2=="1980",])
+dim(N_per_decade2_min[N_per_decade2_min$decade2=="1990",])
+dim(N_per_decade2_min[N_per_decade2_min$decade2=="2000",])
+dim(N_per_decade2_min[N_per_decade2_min$decade2=="2010",])
+
+length(unique(N_per_decade2_min4$species)) 
+  
+```
+# Filter out all species that have now less than 10 datapoints per decade AGAIN
+```{r}
+Species_list2 <- unique(N_per_decade2_min4$species)
+DT_test %>% filter(species %in% Species_list2) -> DF_test_sub
+DF_test_sub <- droplevels(DF_test_sub)
+length(levels(as.factor(DF_test_sub$species)))
+```
+
+
+## save the dataset
+```{r}
+saveRDS(DT_test, file = "D:/Franziska/CleanWorkBench/GBIF_Data/DT_after_nonGer_exclusion.rds")
+saveRDS(DF_test_sub, file = "D:/Franziska/CleanWorkBench/GBIF_Data/DT_after_nonGer_exclusion_SpeciesFilteredAgain.rds") # this is the dataset where species were filtered again
+```
+
+```{r}
+rm(CRS.new, DT_SP, DT_test, spatial_points, world, worldMap, DT_test_sub)
+rm(df_sub, test, D,
+   D_1971_1980, D_1981_1990, D_1991_2000, D_2001_2010, D_2011_2020, 
+   data_to_match, combinePointValue, resValue, 
+   DT, DT_1970s, DT_1980s, DT_1990s, DT_2000s, DT_2010s,
+   temp_raster, temp1971_1980, temp1981_1990, temp1991_2000, temp2001_2010, temp2011_2020)
+
+```
+
+
+################################################################################
+
+# Basic plots
+
+```{r}
+ggplot(data = DT_1980s, aes(year, Temp))+
+  geom_point()+
+  geom_smooth(method="lm")
+```
+
+
+```{r}
+ggplot(data = DT_1980s, aes(Temp, doy, group = species))+
+  geom_point()+
+  geom_smooth(method="lm")
+```
+
+
+```{r}
+ggplot(data = DT_1980s[DT_1980s$order=="Hymenoptera",], aes(Temp, doy, colour = species))+
+  geom_point()+
+  geom_smooth(method="lm", se = F)
+```
+
