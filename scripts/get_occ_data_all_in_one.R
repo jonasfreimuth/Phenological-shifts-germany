@@ -379,4 +379,6 @@ if (run.occ.refine) {
   # save data
   fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv")
   
+  rm(dat.occ.prepruned)
+  
 }
