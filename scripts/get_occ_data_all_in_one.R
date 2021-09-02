@@ -371,7 +371,10 @@ if (run.occ.refine) {
     filter(n() >= 10) %>% 
     group_by(species) %>% 
     # then filter out species where not all decades are present
-    filter(uniqueN(decade2) >= 4)
+    filter(uniqueN(decade2) >= 4) %>% 
+    
+    # rename coordinate columns to fit with the rest
+    rename(lat = decimalLatitude, long = decimalLongitude)
   
   # save data
   fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv")
