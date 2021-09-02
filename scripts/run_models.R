@@ -74,7 +74,7 @@ log_msg("Loading and centering data...")
 
 if (!(test_run && exists("dat.occ"))) {
   
-  dat.occ <- fread(paste0("data/f_occurrences_full_pruned_elev.csv"),
+  dat.occ <- fread(paste0("data/occurrences_full_pruned_clim_elev.csv"),
                    select = select_cols,
                    showProgress = FALSE) %>%
     
