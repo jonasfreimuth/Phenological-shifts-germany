@@ -281,30 +281,10 @@ if (run.occ.refine) {
 
 # Addition of temp and elevation data -------------------------------------
 
-
 dat.occ.pruned <- fread(file = "data/occurrences_full_pruned.csv",
                          showProgress = FALSE)
 
-# Adding elevation data
-
-# download (if not already present) and load rastered elevation (altitude) data
-elev <- getData("alt", country = "DEU", path = "data")
-
-# generate df with only coordinates of points
-dat.occ.sp <- SpatialPoints(as.matrix(dat.occ.pruned %>%
-                                        select(decimalLatitude,
-                                               decimalLongitude)),
-                            proj4string = elev@crs)
-
-# extract elevation data corresponding to the raster value of each record
-dat.occ.elev <- raster::extract(elev, dat.occ.sp)
-
-# add extracted data to occurrence records
-dat.occ.pruned <- mutate(dat.occ.pruned, elev = dat.occ.elev)
-
-
-# Adding climate data
-
+# ensure climate data is present
 if (!(file.exists("static_data/cru_climate_data.RDS"))) {
   
   warning(paste("Cropped climate data not present, attempting to run",
@@ -317,7 +297,81 @@ if (!(file.exists("static_data/cru_climate_data.RDS"))) {
 
 cru_data <- readRDS("static_data/cru_climate_data.RDS")
 
+# download (if not already present) and load rastered elevation (altitude) data
+elev <- raster::getData("alt", country = "DEU", path = "data")
+
+# make dataframe to which elevation and temerature will be joined
+# It is sorted in this way such that records will still match
+dat.occ.clim <- dat.occ.pruned %>% 
+  arrange(year)
+
+# intialize elevation and temp vectors
+temp_vec <- rep(0, nrow(dat.occ.clim))
+elev_vec <- rep(0, nrow(dat.occ.clim))
+
+# intialize index for elevation and temp vectors
+i <- 0
+j <- 0
+
+# jointly extract climate and elevation data
 for (brick in names(cru_data)) {
   
-}
+  # extract beginning and end year of brick data
+  start_stop_year <- str_split(brick, "-", simplify = TRUE)
   
+  # get subset of occ data corresponding to period of the current brick
+  dat.occ.brick <- dat.occ.clim %>% 
+    select(species, year, decimalLatitude, decimalLongitude) %>% 
+    filter(start_stop_year[1] <= year, year <= start_stop_year[2])
+  
+  # set indices for saving temp and elev data
+  i <- j + 1
+  j <- i + nrow(dat.occ.brick) - 1
+  
+  # generate df with only coordinates of points, sorted by year of record
+  dat.occ.sp <- dat.occ.brick %>%
+    select(decimalLatitude,
+           decimalLongitude)
+  coordinates(dat.occ.sp) <- ~ decimalLongitude + decimalLatitude
+  
+  # extract elevation data for the current dataset
+  elev_vec[i:j] <- raster::extract(elev, dat.occ.sp)
+  
+  # extract temperature data and calculate the yearly mean temperature at 
+  #   the location of the record
+  
+  temp_df <- raster::extract(cru_data[[brick]], dat.occ.sp) %>%
+    as.data.frame() %>% 
+    mutate(year = dat.occ.brick$year) 
+  
+  # get a vector of all the years
+  year_var_vec <- as.character(sort(unique(temp_df$year)))
+  
+  # calculate annual temp means, order is still the same as the records, sorted
+  #   by year
+  temp_df <- as.data.frame(sapply(year_var_vec,
+                                  function(x) {
+                                    rowMeans(temp_df[, grep(x, names(temp_df))])
+                                  }))
+  names(temp_df) <- year_var_vec
+  
+  # select the correct cells corresponding to the year
+  # done in a lazy way without preallocation because i want to be done with this
+  temp_vec_brick <- numeric(nrow(dat.occ.brick))
+  for (year_var in year_var_vec) {
+    year_select_vec <- which(dat.occ.brick$year == year_var)
+    temp_vec_brick[year_select_vec] <- temp_df[[year_var]][year_select_vec]
+  }
+  
+  temp_vec[i:j] <- temp_vec_brick
+  
+}
+
+# add elevation and climate data and prune out records where that information
+#   could not be determined
+dat.occ.clim <- dat.occ.clim %>% 
+  mutate(elev = elev_vec, temp = temp_vec) %>% 
+  drop_na(elev) %>% 
+  filter(temp > -Inf)
+  
+fwrite(dat.occ.clim, "data/occurrences_full_clim_elev.csv")
