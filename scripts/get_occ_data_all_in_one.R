@@ -226,7 +226,9 @@ if (run.occ.refine) {
   
 }
 
-# Data pruning ------------------------------------------------------------
+
+# Pruning and addition of extra data --------------------------------------
+
 
 # Below code has been adapted from work that Franziska M. Willems did
 #  see Data.Rmd for her version
@@ -235,13 +237,16 @@ if (run.occ.refine) {
 if (exists("force.occ.refine")) {
   run.occ.refine <- force.occ.refine
 } else {
-  run.occ.refine <- !(file.older.check("data/occurrences_full_refined.csv",
-                                       "data/occurrences_full_pruned.csv"))
+  run.occ.refine <- !(file.older.check(
+    "data/occurrences_full_refined.csv",
+    "data/occurrences_full_pruned_clim_elev.csv"))
 }
 
 if (run.occ.refine) {
-  fread("data/occurrences_full_refined.csv",
-        showProgress = FALSE) %>% 
+  
+  
+  dat.occ.prepruned <- fread("data/occurrences_full_refined.csv",
+                             showProgress = FALSE) %>% 
     
     # filter out records without determined species
     filter(species != "") %>% 
@@ -249,21 +254,116 @@ if (run.occ.refine) {
     # filter out records without recorded location
     drop_na(decimalLatitude, decimalLongitude) %>% 
     
-    # filter out records of species with less than 30 records overall
-    group_by(species) %>% 
-    filter(n() >= 30) %>% 
-    ungroup() %>% 
-    
     # filter out all years before 1980 and after 2020
     filter(year >= 1980, year <= 2020) %>% 
     
     # filter out certain days of the year with unnaturally high numbers of 
     #   records
     #   In Franziskas script, the last three days are not actually filtered
-    filter(!(doy %in% c(1, 95, 121, 163, 164, 166, 181))) %>% # 
+    filter(!(doy %in% c(1, 95, 121, 163, 164, 166, 181))) %>% 
     
     # add extra decade column, which includes 2020 in the 2010s decade
     mutate(decade2 = str_replace_all(decade, "2020", "2010")) %>% 
+    
+    # sort data by year for later addition of climate data
+    arrange(year)
+  
+  
+  # Addition of temp and elevation data -------------------------------------
+  
+  # ensure climate data is present
+  if (!(file.exists("static_data/cru_climate_data.RDS"))) {
+    
+    warning(paste("Cropped climate data not present, attempting to run",
+                  "script for generating that. If you get errors ensure",
+                  "all necessary files are downloaded."))
+    
+    source("scripts/extract_cru_data.R")
+    
+  }
+  
+  cru_data <- readRDS("static_data/cru_climate_data.RDS")
+  
+  # download (if not already present) and load rastered elevation (altitude) data
+  elev <- raster::getData("alt", country = "DEU", path = "data")
+  
+  # intialize elevation and temp vectors
+  temp_vec <- rep(0, nrow(dat.occ.prepruned))
+  elev_vec <- rep(0, nrow(dat.occ.prepruned))
+  
+  # intialize index for elevation and temp vectors
+  i <- 0
+  j <- 0
+  
+  # jointly extract climate and elevation data
+  for (brick in names(cru_data)) {
+    
+    # extract beginning and end year of brick data
+    start_stop_year <- str_split(brick, "-", simplify = TRUE)
+    
+    # get subset of occ data corresponding to period of the current brick
+    dat.occ.brick <- dat.occ.prepruned %>% 
+      select(species, year, decimalLatitude, decimalLongitude) %>% 
+      filter(start_stop_year[1] <= year, year <= start_stop_year[2])
+    
+    # set indices for saving temp and elev data
+    i <- j + 1
+    j <- i + nrow(dat.occ.brick) - 1
+    
+    # generate df with only coordinates of points, sorted by year of record
+    dat.occ.sp <- dat.occ.brick %>%
+      select(decimalLatitude,
+             decimalLongitude)
+    coordinates(dat.occ.sp) <- ~ decimalLongitude + decimalLatitude
+    
+    # extract elevation data for the current dataset
+    elev_vec[i:j] <- raster::extract(elev, dat.occ.sp)
+    
+    # extract temperature data and calculate the yearly mean temperature at 
+    #   the location of the record
+    
+    temp_df <- raster::extract(cru_data[[brick]], dat.occ.sp) %>%
+      as.data.frame() %>% 
+      mutate(year = dat.occ.brick$year) 
+    
+    # get a vector of all the years
+    year_var_vec <- as.character(sort(unique(temp_df$year)))
+    
+    # calculate annual temp means, order is still the same as the records, sorted
+    #   by year
+    temp_df <- as.data.frame(sapply(year_var_vec,
+                                    function(x) {
+                                      rowMeans(temp_df[, grep(x, names(temp_df))])
+                                    }))
+    names(temp_df) <- year_var_vec
+    
+    # select the correct cells corresponding to the year
+    # done in a lazy way without preallocation because i want to be done with this
+    temp_vec_brick <- numeric(nrow(dat.occ.brick))
+    for (year_var in year_var_vec) {
+      year_select_vec <- which(dat.occ.brick$year == year_var)
+      temp_vec_brick[year_select_vec] <- temp_df[[year_var]][year_select_vec]
+    }
+    
+    temp_vec[i:j] <- temp_vec_brick
+    
+  }
+  
+  # add elevation and climate data and prune out records 
+  dat.occ.prepruned <- dat.occ.prepruned %>% 
+    
+    # add both elevation and temperature data
+    mutate(elev = elev_vec, temp = temp_vec) %>% 
+    
+    # remove records where that information could not be determined
+    drop_na(elev) %>% 
+    filter(temp > -Inf) %>% 
+    
+    # filter out records of species with less than 30 records overall
+    # after records without elevation and temp pruned
+    group_by(species) %>% 
+    filter(n() >= 30) %>% 
+    ungroup() %>% 
     
     # filter out species with less than 10 records in any decade
     group_by(species, decade2) %>% 
@@ -271,107 +371,9 @@ if (run.occ.refine) {
     filter(n() >= 10) %>% 
     group_by(species) %>% 
     # then filter out species where not all decades are present
-    filter(uniqueN(decade2) >= 4) %>% 
-    
-    # save data to disk
-    fwrite(file = "data/occurrences_full_pruned.csv",
-           showProgress = FALSE)
-}
-
-
-# Addition of temp and elevation data -------------------------------------
-
-dat.occ.pruned <- fread(file = "data/occurrences_full_pruned.csv",
-                         showProgress = FALSE)
-
-# ensure climate data is present
-if (!(file.exists("static_data/cru_climate_data.RDS"))) {
+    filter(uniqueN(decade2) >= 4)
   
-  warning(paste("Cropped climate data not present, attempting to run",
-                 "script for generating that. If you get errors ensure",
-                 "all necessary files are downloaded."))
-  
-  source("scripts/extract_cru_data.R")
+  # save data
+  fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv")
   
 }
-
-cru_data <- readRDS("static_data/cru_climate_data.RDS")
-
-# download (if not already present) and load rastered elevation (altitude) data
-elev <- raster::getData("alt", country = "DEU", path = "data")
-
-# make dataframe to which elevation and temerature will be joined
-# It is sorted in this way such that records will still match
-dat.occ.clim <- dat.occ.pruned %>% 
-  arrange(year)
-
-# intialize elevation and temp vectors
-temp_vec <- rep(0, nrow(dat.occ.clim))
-elev_vec <- rep(0, nrow(dat.occ.clim))
-
-# intialize index for elevation and temp vectors
-i <- 0
-j <- 0
-
-# jointly extract climate and elevation data
-for (brick in names(cru_data)) {
-  
-  # extract beginning and end year of brick data
-  start_stop_year <- str_split(brick, "-", simplify = TRUE)
-  
-  # get subset of occ data corresponding to period of the current brick
-  dat.occ.brick <- dat.occ.clim %>% 
-    select(species, year, decimalLatitude, decimalLongitude) %>% 
-    filter(start_stop_year[1] <= year, year <= start_stop_year[2])
-  
-  # set indices for saving temp and elev data
-  i <- j + 1
-  j <- i + nrow(dat.occ.brick) - 1
-  
-  # generate df with only coordinates of points, sorted by year of record
-  dat.occ.sp <- dat.occ.brick %>%
-    select(decimalLatitude,
-           decimalLongitude)
-  coordinates(dat.occ.sp) <- ~ decimalLongitude + decimalLatitude
-  
-  # extract elevation data for the current dataset
-  elev_vec[i:j] <- raster::extract(elev, dat.occ.sp)
-  
-  # extract temperature data and calculate the yearly mean temperature at 
-  #   the location of the record
-  
-  temp_df <- raster::extract(cru_data[[brick]], dat.occ.sp) %>%
-    as.data.frame() %>% 
-    mutate(year = dat.occ.brick$year) 
-  
-  # get a vector of all the years
-  year_var_vec <- as.character(sort(unique(temp_df$year)))
-  
-  # calculate annual temp means, order is still the same as the records, sorted
-  #   by year
-  temp_df <- as.data.frame(sapply(year_var_vec,
-                                  function(x) {
-                                    rowMeans(temp_df[, grep(x, names(temp_df))])
-                                  }))
-  names(temp_df) <- year_var_vec
-  
-  # select the correct cells corresponding to the year
-  # done in a lazy way without preallocation because i want to be done with this
-  temp_vec_brick <- numeric(nrow(dat.occ.brick))
-  for (year_var in year_var_vec) {
-    year_select_vec <- which(dat.occ.brick$year == year_var)
-    temp_vec_brick[year_select_vec] <- temp_df[[year_var]][year_select_vec]
-  }
-  
-  temp_vec[i:j] <- temp_vec_brick
-  
-}
-
-# add elevation and climate data and prune out records where that information
-#   could not be determined
-dat.occ.clim <- dat.occ.clim %>% 
-  mutate(elev = elev_vec, temp = temp_vec) %>% 
-  drop_na(elev) %>% 
-  filter(temp > -Inf)
-  
-fwrite(dat.occ.clim, "data/occurrences_full_clim_elev.csv")
