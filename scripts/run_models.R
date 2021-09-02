@@ -106,11 +106,7 @@ if (!(test_run && exists("dat.occ"))) {
   dat.occ <- dat.occ %>%
     
     # center main independent variables to a mean of 0
-    mutate(temp = (temp - mean(temp)),
-           year = (year - mean(year)),
-           lat  = (lat  - mean(lat )), 
-           long = (long - mean(long)),
-           elev = (elev - mean(elev)))
+    mutate(across(tidyselect:::where(is.numeric) & !doy, scale))
   
 }
 
@@ -359,22 +355,28 @@ for (form in form_vec) {
             height = 250 * ceiling(sqrt(n_rnd_var)))
         
         print(
-          ggplot() +
-            geom_point(data = data.frame(dep_var = dat.occ[[dep_var]],
-                                         main_var = dat.occ[[main_var]],
-                                         
-                                         # TODO: change this in case col name
-                                         #    for rnd_eff is changed
-                                         species = dat.occ[[rnd_var]],
-                                         
-                                         # TODO: make this variable
-                                         group = dat.occ[["id.grp"]]),
-                       
-                       aes(main_var, dep_var,
-                           col = group)) +
+          ggplot(data = data.frame(dep_var = dat.occ[[dep_var]],
+                                   main_var = dat.occ[[main_var]],
+                                   
+                                   # TODO: change this in case col name
+                                   #    for rnd_eff is changed
+                                   species = dat.occ[[rnd_var]],
+                                   
+                                   # TODO: make this variable
+                                   group = dat.occ[["id.grp"]]),
+                 
+                 aes(main_var, dep_var,
+                     col = group)) +
+            geom_point() +
+            
+            # add gam curve to check if linear model is actually applicable
+            geom_smooth(col = "red") +
+            
+            # plot model regression lines
             geom_abline(data = rnd_eff,
                         aes(intercept = intercept,
                             slope = slope)) +
+            
             labs(title = rnd_var, subtitle = form,
                  xlab = main_var, ylab = dep_var) +
             facet_wrap( ~ species) +
@@ -605,3 +607,9 @@ for (form in form_vec) {
 }
 
 log_msg("All done.")
+
+# reset logging file
+options("log_file" = NULL)
+
+# explicitly print warnings
+# necessary as warnings would not be displayed if there were too many
