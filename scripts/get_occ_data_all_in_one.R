@@ -326,6 +326,9 @@ if (run.occ.refine) {
       as.data.frame() %>% 
       mutate(year = dat.occ.brick$year) 
     
+    # remove spatial points df again
+    rm(dat.occ.sp)
+    
     # get a vector of all the years
     year_var_vec <- as.character(sort(unique(temp_df$year)))
     
@@ -345,7 +348,11 @@ if (run.occ.refine) {
       temp_vec_brick[year_select_vec] <- temp_df[[year_var]][year_select_vec]
     }
     
+    rm(year_select_vec)
+    
     temp_vec[i:j] <- temp_vec_brick
+    
+    rm(temp_vec_brick)
     
   }
   
@@ -379,6 +386,6 @@ if (run.occ.refine) {
   # save data
   fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv")
   
-  rm(dat.occ.prepruned)
+  rm(dat.occ.prepruned, temp_vec, elev_vec)
   
 }
