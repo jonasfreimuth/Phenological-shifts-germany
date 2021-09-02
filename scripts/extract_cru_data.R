@@ -46,8 +46,7 @@ for (file in list.files("download", "cru_ts4.05*")) {
 }
 
 # crop out the area we need, i.e. germany
-GER.area <- extent(5.8663129806518555, 15.041742324829102,
-                   47.27015165787987, 55.05835230401308)
+GER.area <- extent(6, 15.5, 46, 55.5)
 
 for (brick in names(climate_data)) {
   climate_data[[brick]] <- crop(climate_data[[brick]], GER.area)
