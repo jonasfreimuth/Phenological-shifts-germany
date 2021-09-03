@@ -510,6 +510,66 @@ ggplot() +
 
 ```
 
+## Analysis of correlation of time and temperature shifts
+
+```{r analyse_year_temp_corr}
+
+# perform correlation test of time and temp slopes for each group and
+# store results in df
+corr_slopes <- lapply(
+  unique(slopes_all$id.grp),
+  function(id.grp_var, data = slopes_all) {
+    
+    slopes_grp <- filter(data, id.grp == id.grp_var)
+    
+    # make sure data has enough observations for cor.test
+    if (nrow(slopes_grp) > 2) {
+      
+      test <- cor.test(slopes_grp$slope_year,
+                       slopes_grp$slope_temp)
+      
+      res <- data.frame(id.grp = id.grp_var,
+                        cor    = test[["estimate"]][["cor"]],
+                        t      = test[["statistic"]],
+                        df     = test[["parameter"]][["df"]],
+                        pval   = test[["p.value"]])
+      
+      return(res)
+      
+    } else {
+      
+      # if we have not enough observations, return the closest thing
+      #   to NAs
+      res <- data.frame(id.grp = id.grp_var,
+                        cor    = NA,
+                        t      = "-",
+                        df     = "-",
+                        pval   = NA)
+      
+      return(res)
+      
+    }
+    
+  })
+
+# bind_rows was acting up, so do.call(rbind) it is
+corr_slopes <- do.call(rbind, corr_slopes) %>%
+  
+  # format pvalues into significance symbols
+  mutate(pval.sig = cut(
+    pval,
+    breaks = c(0, 0.001, 0.01, 0.05, 0.1, 1),
+    labels = c("***", "**", "*", ".", " "),
+    right  = FALSE )) %>%
+  
+  # special case of NAs
+  mutate(pval.sig = str_replace_na(pval.sig, "-")) %>%
+  
+  # also add group sizes for plotting (slightly hacky)
+  left_join(select(slopes_all_sum, id.grp, n_spec_temp), by = "id.grp")
+
+
+```
 
 
 ```{r plot_year_vs_temp_slopes_correlation}
@@ -543,8 +603,28 @@ ggplot() +
                       y    = slope_mean_temp,
                       col  = id.grp)) +
   
+  # add group sizes, correlation coefficient and its significance
+  geom_text      (data = corr_slopes,
+                  
+                  # set text at the middle of all time slopes and slightly 
+                  #   above the max of all temp slopes
+                  aes(x = mean(c(min(slopes_all$slope_year),
+                                 max(slopes_all$slope_year))),
+                      y = ypos(slopes_all$slope_temp),
+                      
+                      label = str_glue("n = {n_spec_temp}, ",
+                                       "r = {round(cor, 2)}\n{pval.sig}")),
+                  col = "gray38") +
+  
+  # adjust ylim to fit text
+  ylim(c(min(slopes_all$slope_temp), max(slopes_all$slope_temp)) * 2) +
+  
   # split the plot based on the group
   facet_wrap( ~ id.grp) + 
+  
+  # improve axis lables 
+  labs(x = "Shift over time",
+       y = "Shift with temperature") +
   
   # disable the legend
   theme_shifts(legend.position = "none")
