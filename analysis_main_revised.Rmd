@@ -281,21 +281,55 @@ if (!any(file.exists(dat_slope_temp_file, dat_slope_year_file))) {
 
 ```{r load_occurrence_slope_data}
 
-dat.occ <- fread(dat_occ_file)
+# load plant trait data
+plant_traits <- fread("static_data/bioflor_traits.csv") %>% 
+  
+  # prune out some unecessary data
+  select(-all_of(c("AccName", "GbifKey", "OrigName", "bioflor_id")))
 
+# load occurrence data
+dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>% 
+  
+  # add trait data
+  left_join(plant_traits, by = "species")
+
+
+# load slope data
 slopes_temp <- fread(dat_slope_temp_file)
 slopes_year <- fread(dat_slope_year_file)
 
-# add taxonomic data to slopes
-tax_df <- dat.occ %>% 
-  select(c(kingdom, phylum, id.grp, order, family, genus, species)) %>% 
+
+# add taxonomic and trait data to slopes
+col_vec <- c("kingdom",
+             "phylum",
+             "id.grp",
+             "order",
+             "family",
+             "genus",
+             "species")
+
+tax_df <- dat.occ %>%  
+  select(all_of(col_vec)) %>% 
   distinct()
   
-slopes_temp <- slopes_temp %>% 
-  left_join(tax_df, by = "species")
 
-slopes_year <- slopes_year %>% 
-  left_join(tax_df, by = "species")
+slopes_temp <- slopes_temp %>% 
+  
+  # add taxonomic data
+  left_join(tax_df, by = "species") %>% 
+  
+  # add trait data
+  left_join(plant_traits, by = "species")
+
+
+slopes_year <- slopes_year %>%  
+  
+  # add taxonomic data
+  left_join(tax_df, by = "species") %>% 
+  
+  # add trait data
+  left_join(plant_traits, by = "species")
+
 
 # generate df giving slopes for both vars
 slopes_all <- left_join(slopes_temp,
@@ -306,7 +340,7 @@ slopes_all <- left_join(slopes_temp,
                                "order",
                                "family",
                                "genus",
-                               "species"),
+                               names(plant_traits)),
                         suffix = c("_temp", "_year")) %>% 
   
   # drop redundant cols
