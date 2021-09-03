@@ -576,6 +576,10 @@ corr_slopes <- do.call(rbind, corr_slopes) %>%
 
 ggplot() +
   
+  # add 0 lines
+  geom_hline     (yintercept = 0, col = col.line) + 
+  geom_vline     (xintercept = 0, col = col.line) +
+  
   # add raw data
   geom_point     (data = slopes_all,
                   aes(x = slope_year,
@@ -614,10 +618,10 @@ ggplot() +
                       
                       label = str_glue("n = {n_spec_temp}, ",
                                        "r = {round(cor, 2)}\n{pval.sig}")),
-                  col = "gray38") +
+                  col = col.note) +
   
   # adjust ylim to fit text
-  ylim(c(min(slopes_all$slope_temp), max(slopes_all$slope_temp)) * 2) +
+  ylim(c(min(slopes_all$slope_temp), max(slopes_all$slope_temp) * 2)) +
   
   # split the plot based on the group
   facet_wrap( ~ id.grp) + 
