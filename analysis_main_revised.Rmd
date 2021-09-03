@@ -268,14 +268,10 @@ if (run.traits.get | force.traits.get) {
 # for now, only check whether data and random effects are present
 if (!any(file.exists(dat_occ_file)) || 
     force.occ.get) {
-  # stop("Necessary files are not present.")
-  
   source("scripts/get_occ_data_all_in_one.R")
 }
 
 if (!any(file.exists(dat_slope_temp_file, dat_slope_year_file))) {
-  # stop("Necessary files are not present.")
-  
   source("scripts/run_models.R")
 }
 
@@ -319,7 +315,7 @@ slopes_all <- left_join(slopes_temp,
 
 ```
 
-
+## Summary of Shifts
 
 ```{r summarize_slopes}
 
@@ -389,7 +385,7 @@ slopes_year %>%
 
 ```
 
-
+## Analysis of differences between groups
 
 ```{r analyse_between_group_diffs}
 cat("Differences in slope with temperature:\n\n")
