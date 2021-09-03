@@ -78,20 +78,43 @@ if (!(test_run && exists("dat.occ"))) {
                    select = select_cols,
                    showProgress = FALSE) %>%
     
-    # remove records w/o determined temp
+    # remove records w/o determined temp, shouldnt be necessary any more
     drop_na(temp, elev)
   
   if (test_run) {
     
-    # if we do a test run, restrict data to subset of species
-    all_species <- unique(dat.occ$species)
-    frac_species <- sample(all_species, length(all_species) * 0.005)
+    # calculate roughly how many species we want
+    samp_size <- ceiling((uniqueN(dat.occ$species) * 0.02))
+    
+    # TODO: Make this work
+    spec_sizes <- dat.occ %>% 
+      group_by(id.grp) %>% 
+      mutate(group_size = uniqueN(species)) %>%
+      ungroup() %>% 
+      distinct(id.grp, species, group_size) %>% 
+      mutate(group_size = group_size / sum(unique(group_size))) %>% 
+      mutate(sample_n = ceiling(group_size * samp_size))
+    
+    spec_vec <- character(0)
+    
+    for (id.grp_var in unique(spec_sizes$id.grp)) {
+      
+      spec_size_id_grp <- spec_sizes %>% 
+        filter(id.grp == id.grp_var) 
+      
+      n <- spec_size_id_grp$sample_n[1]
+      
+      spec_size_id_grp <- spec_size_id_grp %>% 
+        slice_sample(n = n)
+      
+      spec_vec <- c(spec_vec, spec_size_id_grp$species)
+    }
+    
+    dat.occ <- dat.occ %>% 
+      filter(species %in% spec_vec)
     
     log_msg("Test run, pruning data down to species: ",
-            paste(frac_species, collapse = ", "))
-    
-    dat.occ <- dat.occ %>%
-      filter(species %in% frac_species)
+            paste(spec_vec, collapse = ", "))
     
   }
   
@@ -613,3 +636,4 @@ options("log_file" = NULL)
 
 # explicitly print warnings
 # necessary as warnings would not be displayed if there were too many
+warnings()
