@@ -698,3 +698,397 @@ ggplot() +
   theme_shifts(legend.position = "none")
 
 ```
+
+## Analysis of synchrony
+
+```{r summarize_interactions}
+
+#load interaction data
+int_data <- read.csv(paste0("static_data/",
+                           "plant_pollinator_interactions_for_potential_",
+                           "networks_2018.csv")) %>%
+  
+  # make names less unwieldy
+  rename(poll = POLLINATOR_NAME, plant = PLANT_NAME, group = Group) %>%
+  
+  # filter out species which have no occurrence data
+  filter(
+    plant %in% unique(dat.occ$species) &
+    poll  %in% unique(dat.occ$species)
+    ) %>% 
+  
+  #add the plant trait data to the interactions
+  left_join(plant_traits,
+            by = c("plant" = "species")) %>%
+  
+  #exclude interactions with pollinator independent plants
+  filter(PollDep != "No") %>%
+  
+  #reorder factor levels for more intuitive plotting
+  mutate(group = fct_relevel(group, "Hoverfly", "Bee", "Butterfly"))
+
+
+# display numbers of unique plants and pollinators there are per group
+int_data_sum <- int_data %>% 
+  select(poll, plant, group) %>% 
+  group_by(group) %>% 
+  summarise(across(everything(), uniqueN))
+
+int_data_sum
+
+```
+
+
+```{r compute_slope_interactions}
+
+int_slope_syn <- int_data %>% 
+  apply(1, function(int_data_row) {
+    
+    # get slope data for plant and poll
+    slope_all_plant <- slopes_all %>% 
+      filter(species == int_data_row["plant"])
+    
+    slope_all_poll  <- slopes_all %>% 
+      filter(species == int_data_row["poll" ])
+    
+    # browser()
+    
+    return(data.frame(plant = int_data_row["plant"],
+                      poll  = int_data_row["poll" ],
+                      group = int_data_row["group"],
+                      
+                      slope_temp_plant = slope_all_plant$slope_temp,
+                      slope_temp_poll  = slope_all_poll $slope_temp,
+                      
+                      slope_temp_diff  = slope_all_plant$slope_temp - 
+                        slope_all_poll $slope_temp,
+                      
+                      
+                      slope_year_plant = slope_all_plant$slope_year,
+                      slope_year_poll  = slope_all_poll $slope_year,
+                      
+                      slope_year_diff  = slope_all_plant$slope_year - 
+                        slope_all_poll $slope_year))
+    
+  }) %>% 
+  
+  bind_rows()
+
+# head(int_slope_syn)
+
+```
+
+
+
+```{r analyse_between_group_diffs_int}
+
+cat("Differences in interaction slope difference with temperature:\n\n")
+
+aov_int_temp <- aov(data = int_slope_syn, slope_temp_diff ~ group)
+summary(aov_int_temp)
+
+cat("\n Pairwise differences: \n")
+
+TukeyHSD(aov_int_temp)
+
+cat("\n\n")
+cat("----------------------------------------------------------\n\n")
+cat("Differences in interaction slope difference over time:\n\n")
+
+aov_int_year <- aov(data = int_slope_syn, slope_year_diff ~ group)
+summary(aov_int_year)
+
+cat("\n Pairwise differences: \n")
+
+TukeyHSD(aov_int_year)
+
+```
+
+
+
+```{r summarize_slope_interactions}
+
+int_slope_syn_sum <- int_slope_syn %>% 
+  group_by(group) %>% 
+  summarise(n_int                         = length(slope_temp_plant),
+            
+            # summarize temp diff
+            slope_temp_diff_mean          = mean(slope_temp_diff),
+            slope_temp_diff_sd            = sd(slope_temp_diff),
+            slope_temp_diff_se            = sd(slope_temp_diff) / 
+              sqrt(length(slope_temp_diff)),
+            
+            slope_temp_diff_ci_min        = ci.min(slope_temp_diff),
+            slope_temp_diff_ci_max        = ci.max(slope_temp_diff),
+            slope_temp_diff_frac_negative = sum(slope_temp_diff < 0) /
+              length(slope_temp_diff),
+            
+            
+            # summarize year diff
+            slope_year_diff_mean          = mean(slope_year_diff),
+            slope_year_diff_sd            = sd(slope_year_diff),
+            slope_year_diff_se            = sd(slope_year_diff) / 
+              sqrt(length(slope_year_diff)),
+            
+            slope_year_diff_ci_min        = ci.min(slope_year_diff),
+            slope_year_diff_ci_max        = ci.max(slope_year_diff),
+            slope_year_diff_frac_negative = sum(slope_year_diff < 0) /
+              length(slope_year_diff)
+  )
+
+int_slope_syn_sum
+
+```
+
+
+
+```{r plot_slope_interactions}
+
+# for temp
+ggplot() +
+  
+  # raw data
+  geom_jitter   (data = int_slope_syn,
+                 aes(x = group,
+                     y = slope_temp_diff),
+                 col = col.pt) +
+  
+  # error bars
+  geom_errorbar (data = int_slope_syn_sum,
+                 aes(x    = group,
+                     ymin = slope_temp_diff_ci_min,
+                     ymax = slope_temp_diff_ci_max,
+                     col  = group)) +
+  
+  # mean data
+  geom_point    (data = int_slope_syn_sum,
+                 aes(x   = group,
+                     y   = slope_temp_diff_mean,
+                     col = group)) + 
+  
+  # line denoting 0
+  geom_hline    (yintercept = 0,
+                 col = col.line) +
+  
+  # add labels
+  labs(title = "Interaction shift differences",
+       subtitle = "with temperature",
+       x = "Group",
+       y = "Slope difference [days / \u00B0C] (\u00B1 95% CI)") +
+  
+  # add color
+  scale_color_manual(name   = "Group",
+                     values = col.PollDep$colour) +
+  
+  # suppress legend
+  theme_shifts(legend.position = "none")
+
+
+
+# for year
+ggplot() +
+  
+  # raw data
+  geom_jitter   (data = int_slope_syn,
+                 aes(x = group,
+                     y = slope_year_diff),
+                 col = col.pt) +
+  
+  # error bars
+  geom_errorbar (data = int_slope_syn_sum,
+                 aes(x    = group,
+                     ymin = slope_year_diff_ci_min,
+                     ymax = slope_year_diff_ci_max,
+                     col  = group)) +
+  
+  # mean data
+  geom_point    (data = int_slope_syn_sum,
+                 aes(x   = group,
+                     y   = slope_year_diff_mean,
+                     col = group)) + 
+  
+  # line denoting 0
+  geom_hline    (yintercept = 0,
+                 col = col.line) +
+  
+  # add labels
+  labs(title = "Interaction shift differences",
+       subtitle = "over time",
+       x = "Group",
+       y = "Slope difference [days / year] (\u00B1 95% CI)") +
+  
+  # add color
+  scale_color_manual(name   = "Group",
+                     values = col.PollDep$colour) +
+  
+  # suppress legend
+  theme_shifts(legend.position = "none")
+
+```
+
+
+## Analysis of influence of plant traits
+
+```{r analyse_plant_traits_slope}
+
+cat("Differences in slope with temperature between levels of pollinator ",
+    "dependence:\n\n")
+
+aov_int_temp <- aov(data = slopes_all, slope_temp ~ PollDep)
+summary(aov_int_temp)
+
+cat("\n Pairwise differences: \n")
+
+TukeyHSD(aov_int_temp)
+
+cat("\n\n")
+cat("----------------------------------------------------------\n\n")
+cat("Differences in in slope over time between levels of pollinator ",
+    "dependence:\n\n")
+
+aov_int_year <- aov(data = slopes_all, slope_year ~ PollDep)
+summary(aov_int_year)
+
+cat("\n Pairwise differences: \n")
+
+TukeyHSD(aov_int_year)
+
+```
+
+
+
+```{r get_and_sum_plant_traits_slopes}
+
+# filter out species without determined PollDep
+#   (includes insects)
+slopes_temp_polldep <- slopes_temp %>% 
+  drop_na(PollDep)
+
+slopes_year_polldep <- slopes_year %>% 
+  drop_na(PollDep)
+
+# summarise data sets
+slopes_temp_polldep_sum <- slopes_temp_polldep %>% 
+  group_by(PollDep) %>% 
+  summarise(n_spec              = length(slope),
+            slope_mean          = mean(slope),
+            slope_sd            = sd(slope),
+            slope_se            = sd(slope) / sqrt(length(slope)),
+            slope_ci_min        = ci.min(slope),
+            slope_ci_max        = ci.max(slope),
+            slope_frac_negative = sum(slope < 0) / length(slope),
+            var                 = "Temperature")
+
+slopes_year_polldep_sum <- slopes_year_polldep %>% 
+  group_by(PollDep) %>% 
+  summarise(n_spec              = length(slope),
+            slope_mean          = mean(slope),
+            slope_sd            = sd(slope),
+            slope_se            = sd(slope) / sqrt(length(slope)),
+            slope_ci_min        = ci.min(slope),
+            slope_ci_max        = ci.max(slope),
+            slope_frac_negative = sum(slope < 0) / length(slope),
+            var                 = "Year")
+
+#combine both summary data sets and display them
+slopes_all_polldep_sum <- left_join(slopes_temp_polldep_sum,
+                                    slopes_year_polldep_sum,
+                                    by = c("PollDep"),
+                                    suffix = c("_temp",
+                                               "_year")) %>% 
+  
+  # drop redundant columns
+  select(-starts_with("var_"))
+
+slopes_all_polldep_sum
+
+
+```
+
+
+
+```{r plot_plant_traits_slope}
+
+# for temp
+ggplot() +
+  
+  # raw data
+  geom_jitter   (data = slopes_temp_polldep,
+                 aes(x = PollDep,
+                     y = slope),
+                 col = col.pt) +
+  
+  # error bars
+  geom_errorbar (data = slopes_temp_polldep_sum,
+                 aes(x    = PollDep,
+                     ymin = slope_ci_min,
+                     ymax = slope_ci_max,
+                     col  = PollDep)) +
+  
+  # mean data
+  geom_point    (data = slopes_temp_polldep_sum,
+                 aes(x   = PollDep,
+                     y   = slope_mean,
+                     col = PollDep)) + 
+  
+  # line denoting 0
+  geom_hline    (yintercept = 0,
+                 col = col.line) +
+  
+  # add labels
+  labs(title = "Between group differences in shift",
+       subtitle = "with temperature",
+       x = "Group",
+       y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
+  
+  # add coloring
+  scale_color_manual(name = "Group",
+                     labels = col.PollDep$group,
+                     values = col.PollDep$colour) +
+  
+  # suppress legend
+  theme_shifts(legend.position = "none")
+
+
+
+# for year
+ggplot() +
+  
+  # raw data
+  geom_jitter   (data = slopes_year_polldep,
+                 aes(x = PollDep,
+                     y = slope),
+                 col = col.pt) +
+  
+  # error bars
+  geom_errorbar (data = slopes_year_polldep_sum,
+                 aes(x    = PollDep,
+                     ymin = slope_ci_min,
+                     ymax = slope_ci_max,
+                     col  = PollDep)) +
+  
+  # mean data
+  geom_point    (data = slopes_year_polldep_sum,
+                 aes(x   = PollDep,
+                     y   = slope_mean,
+                     col = PollDep)) + 
+  
+  # line denoting 0
+  geom_hline    (yintercept = 0,
+                 col = col.line) +
+  
+  # add labels
+  labs(title = "Between group differences in shift",
+       subtitle = "over time",
+       x = "Group",
+       y = "Slope [days / year] (\u00B1 95% CI)") +
+  
+  # add coloring
+  scale_color_manual(name = "Group",
+                     labels = col.PollDep$group,
+                     values = col.PollDep$colour) +
+  
+  # suppress legend
+  theme_shifts(legend.position = "none")
+
+```
