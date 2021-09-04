@@ -423,6 +423,7 @@ slopes_year %>%
 ## Analysis of differences between groups
 
 ```{r analyse_between_group_diffs}
+
 cat("Differences in slope with temperature:\n\n")
 
 aov_temp <- aov(data = slopes_temp, slope ~ id.grp)
@@ -458,7 +459,7 @@ ggplot() +
                      y = slope),
                  col = col.pt) +
   
-  # errorbars
+  # error bars
   geom_errorbar (data = slopes_temp_sum,
                  aes(x    = id.grp,
                      ymin = slope_ci_min,
@@ -489,7 +490,7 @@ ggplot() +
                      y = slope),
                  col = col.pt) +
   
-  # errorbars
+  # error bars
   geom_errorbar (data = slopes_year_sum,
                  aes(x    = id.grp,
                      ymin = slope_ci_min,
