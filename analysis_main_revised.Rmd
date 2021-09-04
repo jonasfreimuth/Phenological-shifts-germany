@@ -19,6 +19,7 @@ library("raster")
 
 # tidyverse stuff last to avoid masking these functions
 library("magrittr")
+library("forcats")
 library("stringr")
 library("ggplot2")
 library("tidyr")
@@ -292,7 +293,11 @@ plant_traits <- fread("static_data/bioflor_traits.csv") %>%
 dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>% 
   
   # add trait data
-  left_join(plant_traits, by = "species")
+  left_join(plant_traits, by = "species") %>%
+  
+  # recode id.grp to use trivial names 
+  # (recode only takes name/value pairs, so !!! expansion necessary)
+  mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
 
 
 # load slope data
@@ -395,26 +400,59 @@ slopes_all_sum
 ```{r plot_slopes_vs_species_forest}
 
 slopes_temp %>% 
+  
+  # plot slopes in ascending order
   ggplot(aes(reorder(species,  -slope), slope, col = id.grp)) +
   geom_point() +
+  
+  # clearly denote the 0 line
   geom_hline(yintercept = 0) +
+  
+  # invert x and y axis for classic forest plot look
   coord_flip() + 
+  
+  # break plot into facets, each with an independent species axis
   facet_wrap( ~ id.grp, scale = "free_y") +
+  
+  # add lables
   labs(title = "Shifts with temperature",
        y = "Slope",
        x = "Species") +
+  
+  # add coloring
+  scale_color_manual(name   = "Group",
+                     values = col.grp.vec) +
+  
+  # remove labeling of individual species (too much information at once)
   theme_shifts(axis.text.y  = element_blank(),
                axis.ticks.y = element_blank())
 
+
 slopes_year %>% 
+  
+  # plot slopes in ascending order
   ggplot(aes(reorder(species,  -slope), slope, col = id.grp)) +
   geom_point() +
+  
+  # clearly denote the 0 line
   geom_hline(yintercept = 0) +
+  
+  # invert x and y axis for classic forest plot look
   coord_flip() + 
+  
+  # break plot into facets, each with an independent species axis
   facet_wrap( ~ id.grp, scale = "free_y") +
-  labs(title = "Shifts over time",
+  
+  # add lables
+  labs(title = "Shifts with temperature",
        y = "Slope",
        x = "Species") +
+  
+  # add coloring
+  scale_color_manual(name   = "Group",
+                     values = col.grp.vec) +
+  
+  # remove labeling of individual species (too much information at once)
   theme_shifts(axis.text.y  = element_blank(),
                axis.ticks.y = element_blank())
 
@@ -482,6 +520,10 @@ ggplot() +
        x = "Group",
        y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
   
+  # add coloring
+  scale_color_manual(name   = "Group",
+                     values = col.grp.vec) +
+  
   # suppress legend
   theme_shifts(legend.position = "none")
 
@@ -518,6 +560,10 @@ ggplot() +
        subtitle = "over time",
        x = "Group",
        y = "Slope [days / year] (\u00B1 95% CI)") +
+  
+  # add coloring
+  scale_color_manual(name   = "Group",
+                     values = col.grp.vec) +
   
   # suppress legend
   theme_shifts(legend.position = "none")
@@ -644,8 +690,11 @@ ggplot() +
   labs(x = "Shift over time",
        y = "Shift with temperature") +
   
+  # add coloring
+  scale_color_manual(name   = "Group",
+                     values = col.grp.vec) +
+  
   # disable the legend
   theme_shifts(legend.position = "none")
 
 ```
-
