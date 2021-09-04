@@ -476,7 +476,13 @@ ggplot() +
   geom_hline    (yintercept = 0,
                  col = col.line) +
   
-  # supress legend
+  # add labels
+  labs(title = "Between group differences in shift",
+       subtitle = "with temperature",
+       x = "Group",
+       y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
+  
+  # suppress legend
   theme_shifts(legend.position = "none")
 
 
@@ -507,7 +513,13 @@ ggplot() +
   geom_hline    (yintercept = 0,
                  col = col.line) +
   
-  # supress legend
+  # add labels
+  labs(title = "Between group differences in shift",
+       subtitle = "over time",
+       x = "Group",
+       y = "Slope [days / year] (\u00B1 95% CI)") +
+  
+  # suppress legend
   theme_shifts(legend.position = "none")
 
 ```
