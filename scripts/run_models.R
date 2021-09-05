@@ -31,6 +31,10 @@ plot_rnd_slopes <- TRUE
 # set number of times a model with failed convergence will attempt to restart
 n_restart <- 4
 
+# how to treat predictor variables
+center_preds <- TRUE
+scale_preds  <- TRUE
+
 # Directory structure:
 #   - timestamp script start
 #     - model formulas for script
@@ -121,15 +125,19 @@ if (!(test_run && exists("dat.occ"))) {
   # save mean and sd of dat occ as it is for later rescaling of data
   fwrite(dat.occ %>%
            summarise(across(tidyselect:::where(is.numeric),
-                            list(mean = mean, sd = sd))),
+                            list(mean = mean, sd = sd))) %>% 
+           
+           # record what we did to the predictor variables
+           mutate(center = center_preds, scale = scale_preds),
          paste0(run_path,
                 "data_summary", "_",
                 script_time_stamp, ".csv"))
   
   dat.occ <- dat.occ %>%
     
-    # center main independent variables to a mean of 0
-    mutate(across(tidyselect:::where(is.numeric) & !doy, scale))
+    # if specified, center and / or scale data
+    mutate(across(tidyselect:::where(is.numeric) & !doy, scale,
+                  center = center_preds, scale = scale_preds))
   
 }
 
