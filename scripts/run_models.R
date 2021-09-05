@@ -193,20 +193,35 @@ for (form in form_vec) {
   ind_vars <- str_extract(form, "(?<=~).*")
   
   #   extract random variables
-  rnd_vars <- str_extract_all(ind_vars, "(?<=\\().*(?=\\))")
+  rnd_terms <- str_extract_all(ind_vars, "(?<=\\()[^\\)\\(]*(?=\\))",
+                               simplify = TRUE)
   
   has_ranef <- FALSE
   
-  # this check if rnd_vars is empty is rather convoluted, but i dont know how 
-  #   to improve it
-  if (! any(sapply(rnd_vars,
-                   function (x) {identical(x, character(0))}
-  ))) {
+  # check if there are any random vars
+  if (length(rnd_terms) >= 1) {
     
-    rnd_vars <- str_extract    (rnd_vars, "(?<=\\|\\s?)[\\w\\.]+")
-    rnd_vars <- unique(rnd_vars) 
+    # extract all the random effect variables
+    rnd_vars     <- str_extract_all(rnd_terms, "(?<=\\|\\s?)[\\w\\.]+", 
+                                    simplify = TRUE)
     
-    # save whether ranef was found
+    # extract the groups those variables are nested in
+    rnd_vars_grp <- str_extract_all(rnd_terms, "[\\w\\.]+(?=\\s?\\|)", 
+                                    simplify = TRUE)
+    
+    # make a df compining both
+    rnd_var_df <- data.frame(rnd_var = rnd_vars, group = rnd_vars_grp)
+    nrow_asis <- nrow(rnd_var_df)
+    
+    rnd_var_df <- rnd_var_df %>% 
+      distinct()
+    
+    if (nrow_asis != nrow(rnd_var_df)) {
+      warning(paste0("Duplication of random effects detected. ",
+                     "Currently, this will cause problems down the line..."))
+    }
+    
+    # save that at least one ranef was found
     has_ranef <- TRUE 
     
   }
