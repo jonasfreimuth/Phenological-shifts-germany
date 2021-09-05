@@ -386,15 +386,15 @@ for (form in form_vec) {
             height = 250 * ceiling(sqrt(n_rnd_var)))
         
         print(
-          ggplot(data = data.frame(dep_var = dat.occ[[dep_var]],
+          ggplot(data = data.frame(dep_var  = dat.occ[[dep_var ]],
                                    main_var = dat.occ[[main_var]],
                                    
                                    # TODO: change this in case col name
                                    #    for rnd_eff is changed
-                                   species = dat.occ[[rnd_var]],
+                                   species  = dat.occ[[rnd_var ]],
                                    
                                    # TODO: make this variable
-                                   group = dat.occ[["id.grp"]]),
+                                   group    = dat.occ[["id.grp"]]),
                  
                  aes(main_var, dep_var,
                      col = group)) +
@@ -409,7 +409,7 @@ for (form in form_vec) {
                             slope = slope)) +
             
             labs(title = rnd_var, subtitle = form,
-                 xlab = main_var, ylab = dep_var) +
+                 x = main_var, y = dep_var) +
             facet_wrap( ~ species) +
             theme_minimal()
         )
