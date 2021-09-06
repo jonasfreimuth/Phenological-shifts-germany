@@ -379,6 +379,10 @@ invisible(
   )
 )
 
+
+# Plot species time and temp dist with Institutions -----------------------
+
+
 # ensure target dirs exist
 dir.check("plots/additional/species_inst/temp")
 dir.check("plots/additional/species_inst/year")
@@ -407,8 +411,7 @@ for (spec in unique(dat.occ$species)) {
   ggsave(paste0("plots/additional/species_inst/temp/",
                 gsub("[[:punct:]]", "_", spec), ".png"),
          
-         dat.occ %>% 
-           filter(species == spec) %>% 
+         dat.occ.plt %>% 
            ggplot(aes(temp, doy, col = institutionCode)) + 
            geom_point()+
            geom_smooth(col = "red", method = "lm") +
