@@ -1638,6 +1638,18 @@ append.df <- function(name, value, multiplier = NULL, formattedValue = NULL,  ta
 
 # Lmm functions -----------------------------------------------------------
 
+# function to extract raw marginal residuals from lmer mod
+# Adapted from:
+# https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
+rawMargResid <- function (mod) {
+  if (class(mod) != "lmerMod") {
+    stop(paste("This only works for lme4 linear mixed effects models of",
+               "class lmerMod."))
+  }
+  res <- as.vector(mod@resp$y - (mod@pp$X %*% matrix(mod@beta, ncol = 1)))
+  return(res)
+}
+
 # function to plot precomputed residuals and fitted values of a lm against
 #   each other using ggplot. Formalized as a function mainly for consistency
 lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL, 
