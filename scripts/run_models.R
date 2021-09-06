@@ -450,8 +450,8 @@ for (form in form_vec) {
     
     log_msg("Extracting plotting data...")
     
-    mod_resid <- residuals(lm_mod)
-    mod_fitvl <- fitted   (lm_mod)
+    mod_resid <- rawMargResid(lm_mod)
+    mod_fitvl <- fitted      (lm_mod)
     
     rm(lm_mod)
     
