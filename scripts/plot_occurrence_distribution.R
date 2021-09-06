@@ -55,13 +55,16 @@ col.grp <-
 # institutions which get taken out there
 
 #load data
-dat.occ <- fread(
-  "data/f_occurrences_full_pruned_elev.csv") %>% 
+if (!exists(dat.occ)) {
   
-  drop_na(temp, elev)
+  dat.occ <- fread(
+    "data/occurrences_full_pruned_clim_elev.csv") %>% 
+    drop_na(temp, elev)
+  
+}
 
 # get german shapefile for plotting
-germany <- raster::getData("GADM", country = "DEU", level = 1)
+germany <- raster::getData("GADM", country = "DEU", level = 0, path = "data")
 
 
 # Generate plots ----------------------------------------------------------
