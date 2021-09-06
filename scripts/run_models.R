@@ -353,28 +353,66 @@ for (form in form_vec) {
       # alternatively also include std.err in values from
       #   left out as overall intercept and slope will be added, which might 
       #   be confusing (to what does the std.err belong)
-      pivot_wider(id_cols = c(level, group), names_from = term,
-                  values_from = c(estimate)) %>% 
-      mutate(main_var = main_var) 
+      pivot_wider(id_cols = c(level, group),
+                  names_from = term,
+                  values_from = c(estimate)) 
     
-    # hacky way to rename everything based on formulas
-    # needs to be coded custom to the way the order of names is
-    names(rnd_eff)[1] <- rnd_vars[1]
-    names(rnd_eff)[3] <- "intercept"
-    names(rnd_eff)[4] <- "slope"
-    # names(rnd_eff)[5] <- "intercept_std_err"
-    # names(rnd_eff)[6] <- "slope_std_err"
+    # # hacky way to rename everything based on formulas
+    # # needs to be coded custom to the way the order of names is
+    # names(rnd_eff)[3] <- "intercept"
+    # names(rnd_eff)[4] <- "slope"
+    # # names(rnd_eff)[5] <- "intercept_std_err"
+    # # names(rnd_eff)[6] <- "slope_std_err"
     
-    # add overall slope and intercept to rnd slope and intercept
-    rnd_eff$intercept <- rnd_eff$intercept + mod_coef[1,1]
-    rnd_eff$slope     <- rnd_eff$slope     + mod_coef[2,1]
+    # split data frame into groups based on the group of the random effect
+    rnd_eff <- rnd_eff %>% 
+      group_by(group) %>% 
+      group_split() 
     
-    fwrite(rnd_eff,
-           paste0(mod_path, 
-                  "lmm_rnd_eff_",
-                  str_replace(simple_form, "~", "_"), "_",
-                  time_stamp,
-                  ".csv"))
+    rnd_eff_lst <- list()
+    
+    for (i in 1:length(rnd_eff)) {
+      
+      grp_df <- rnd_eff[[i]]
+      
+      # extract the name of the group
+      grp_var <- grp_df$group[1]
+      
+      # browser()
+      
+      # rename level col to reflect contents
+      names(grp_df)[1] <- grp_var
+      
+      # extract overall slope and intercept
+      all_int <- mod_coef[row.names(mod_coef) == "(Intercept)", 1]
+      all_slp <- mod_coef[row.names(mod_coef) == grp_var      , 1]
+      
+      # if one is not present in the model, replace them with 0
+      # intercept is probably unnecessary
+      if (length(all_int) != 1) { all_int <- 0 }
+      if (length(all_slp) != 1) { all_slp <- 0 }
+      
+      # add overall slope and intercept to rnd slope and intercept
+      grp_df$intercept <- grp_df$intercept + all_int
+      grp_df$slope     <- grp_df$slope     + all_slp
+      
+      # remove group column
+      grp_df <- grp_df %>% 
+        select(- group)
+      
+      # save to disk 
+      fwrite(grp_df,
+             paste0(mod_path, 
+                    "lmm_rnd_eff_",
+                    grp_var, "_",
+                    str_replace(simple_form, "~", "_"), "_",
+                    time_stamp,
+                    ".csv"))
+      
+      # save changed df in list for later use
+      rnd_eff[[i]] <- grp_df
+      
+    }
     
     rm(mod_coef)
     
@@ -386,9 +424,11 @@ for (form in form_vec) {
       
       log_msg("Plotting slopes for random variables...")
       
-      for (rnd_var in rnd_vars) {
+      for (grp_df in rnd_eff) {
         
-        log_msg("  ... for variable ", rnd_var, "...")
+        rnd_var <- grp_df$group[1]
+        
+        log_msg("  ...for variable ", rnd_var, "...")
         
         n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
         
