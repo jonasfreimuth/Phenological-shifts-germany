@@ -259,8 +259,13 @@ if (run.occ.refine) {
     
     # filter out certain days of the year with unnaturally high numbers of 
     #   records
-    #   In Franziskas script, the last three days are not actually filtered
+    #   In Franziskas notebook, the last three days are not actually filtered
     filter(!(doy %in% c(1, 95, 121, 163, 164, 166, 181))) %>% 
+    
+    # additionally (also not in Franziskas script) filter out the last
+    #  doy in the MnhnL (Musée national d’histoire naturelle Louxembourg) 
+    #  data set
+    filter(!(doy %in% c(365, 366))) %>% 
     
     # add extra decade column, which includes 2020 in the 2010s decade
     mutate(decade2 = str_replace_all(decade, "2020", "2010")) %>% 
