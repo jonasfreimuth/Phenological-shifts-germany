@@ -413,7 +413,7 @@ for (spec in unique(dat.occ$species)) {
          
          dat.occ.plt %>% 
            ggplot(aes(temp, doy, col = institutionCode)) + 
-           geom_point()+
+           geom_point() +
            geom_smooth(col = "red", method = "lm") +
            ylim(c(min_doy, max_doy)) +
            xlim(c(min_temp, max_temp)) +
@@ -422,10 +422,10 @@ for (spec in unique(dat.occ$species)) {
                 x = "Temperature [\u00B0C]",
                 y = "DOY") +
            theme_minimal(),
-
+         
          width = 20, height = 12
   )
-
+  
   # save plot for year
   ggsave(paste0("plots/additional/species_inst/year/",
                 gsub("[[:punct:]]", "_", spec), ".png"),
@@ -441,7 +441,7 @@ for (spec in unique(dat.occ$species)) {
                 x = "Year",
                 y = "DOY") +
            theme_minimal(),
-
+         
          width = 20, height = 12
   )
   
