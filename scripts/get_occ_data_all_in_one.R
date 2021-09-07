@@ -389,7 +389,8 @@ if (run.occ.prune) {
     rename(lat = decimalLatitude, long = decimalLongitude)
   
   # save data
-  fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv")
+  fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv",
+         showProgress = FALSE)
   
   rm(dat.occ.prepruned, temp_vec, elev_vec)
   
