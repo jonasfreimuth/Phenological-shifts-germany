@@ -687,7 +687,7 @@ ggplot() +
 
 ```
 
-## Analysis of synchrony
+## Analysis of interaction shift differences
 
 ```{r summarize_interactions}
 
@@ -729,7 +729,7 @@ int_data_sum
 
 ```{r compute_slope_interactions}
 
-int_slope_syn <- int_data %>% 
+int_slope_diff <- int_data %>% 
   apply(1, function(int_data_row) {
     
     # get slope data for plant and poll
@@ -762,7 +762,7 @@ int_slope_syn <- int_data %>%
   
   bind_rows()
 
-# head(int_slope_syn)
+# head(int_slope_diff)
 
 ```
 
@@ -772,7 +772,7 @@ int_slope_syn <- int_data %>%
 
 cat("Differences in interaction slope difference with temperature:\n\n")
 
-aov_int_temp <- aov(data = int_slope_syn, slope_temp_diff ~ group)
+aov_int_temp <- aov(data = int_slope_diff, slope_temp_diff ~ group)
 summary(aov_int_temp)
 
 cat("\n Pairwise differences: \n")
@@ -783,7 +783,7 @@ cat("\n\n")
 cat("----------------------------------------------------------\n\n")
 cat("Differences in interaction slope difference over time:\n\n")
 
-aov_int_year <- aov(data = int_slope_syn, slope_year_diff ~ group)
+aov_int_year <- aov(data = int_slope_diff, slope_year_diff ~ group)
 summary(aov_int_year)
 
 cat("\n Pairwise differences: \n")
@@ -796,7 +796,7 @@ TukeyHSD(aov_int_year)
 
 ```{r summarize_slope_interactions}
 
-int_slope_syn_sum <- int_slope_syn %>% 
+int_slope_diff_sum <- int_slope_diff %>% 
   group_by(group) %>% 
   summarise(n_int                         = length(slope_temp_plant),
             
@@ -824,7 +824,7 @@ int_slope_syn_sum <- int_slope_syn %>%
               length(slope_year_diff)
   )
 
-int_slope_syn_sum
+int_slope_diff_sum
 
 ```
 
@@ -836,20 +836,20 @@ int_slope_syn_sum
 ggplot() +
   
   # raw data
-  geom_jitter   (data = int_slope_syn,
+  geom_jitter   (data = int_slope_diff,
                  aes(x = group,
                      y = slope_temp_diff),
                  col = col.pt) +
   
   # error bars
-  geom_errorbar (data = int_slope_syn_sum,
+  geom_errorbar (data = int_slope_diff_sum,
                  aes(x    = group,
                      ymin = slope_temp_diff_ci_min,
                      ymax = slope_temp_diff_ci_max,
                      col  = group)) +
   
   # mean data
-  geom_point    (data = int_slope_syn_sum,
+  geom_point    (data = int_slope_diff_sum,
                  aes(x   = group,
                      y   = slope_temp_diff_mean,
                      col = group)) + 
@@ -877,20 +877,20 @@ ggplot() +
 ggplot() +
   
   # raw data
-  geom_jitter   (data = int_slope_syn,
+  geom_jitter   (data = int_slope_diff,
                  aes(x = group,
                      y = slope_year_diff),
                  col = col.pt) +
   
   # error bars
-  geom_errorbar (data = int_slope_syn_sum,
+  geom_errorbar (data = int_slope_diff_sum,
                  aes(x    = group,
                      ymin = slope_year_diff_ci_min,
                      ymax = slope_year_diff_ci_max,
                      col  = group)) +
   
   # mean data
-  geom_point    (data = int_slope_syn_sum,
+  geom_point    (data = int_slope_diff_sum,
                  aes(x   = group,
                      y   = slope_year_diff_mean,
                      col = group)) + 
