@@ -265,7 +265,7 @@ if (run.occ.prune) {
     # additionally (also not in Franziskas script) filter out the last
     #  doy in the MnhnL (Musée national d’histoire naturelle Louxembourg) 
     #  data set
-    filter(!(doy %in% c(365, 366))) %>% 
+    filter(!(doy %in% c(365, 366) & institutionCode == "MnhnL")) %>% 
     
     # add extra decade column, which includes 2020 in the 2010s decade
     mutate(decade2 = str_replace_all(decade, "2020", "2010")) %>% 
