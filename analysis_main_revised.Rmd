@@ -1030,7 +1030,7 @@ ggplot() +
        y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
-  scale_color_manual(name = "Group",
+  scale_color_manual(name = "Pollinator Dependency",
                      labels = col.PollDep$group,
                      values = col.PollDep$colour) +
   
@@ -1072,7 +1072,7 @@ ggplot() +
        y = "Slope [days / year] (\u00B1 95% CI)") +
   
   # add coloring
-  scale_color_manual(name = "Group",
+  scale_color_manual(name = "Pollinator Dependency",
                      labels = col.PollDep$group,
                      values = col.PollDep$colour) +
   
