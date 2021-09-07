@@ -866,7 +866,7 @@ ggplot() +
   
   # add color
   scale_color_manual(name   = "Group",
-                     values = col.PollDep$colour) +
+                     values = col.int$colour) +
   
   # suppress legend
   theme_shifts(legend.position = "none")
@@ -907,7 +907,7 @@ ggplot() +
   
   # add color
   scale_color_manual(name   = "Group",
-                     values = col.PollDep$colour) +
+                     values = col.int$colour) +
   
   # suppress legend
   theme_shifts(legend.position = "none")
