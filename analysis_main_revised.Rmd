@@ -34,18 +34,18 @@ source("scripts/functions.R")
 
 ## Script control -----------------------------------------
 
-test_run         <- FALSE
+test_run            <- FALSE
 
 # run script for retrieving climate data from DWD regardless of data being 
 # already present?
-force.clim.get   <- FALSE
+force.clim.get      <- FALSE
 
 # run script for retrieving plant trait data from bioFlor regardless of data 
 # being already present?
-force.traits.get <- FALSE
+force.traits.get    <- FALSE
 
 # force running of occurrence getting script
-force.occ.get    <- TRUE
+force.occ.get       <- TRUE
 
 # control which of the downloaded files to delede
 #   - "all": delete both .zip files and extracted occ .txt files
