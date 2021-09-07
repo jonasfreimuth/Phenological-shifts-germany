@@ -234,15 +234,15 @@ if (run.occ.refine) {
 #  see Data.Rmd for her version
 
 
-if (exists("force.occ.refine")) {
-  run.occ.refine <- force.occ.refine
+if (exists("force.occ.prune")) {
+  run.occ.prune <- force.occ.prune
 } else {
-  run.occ.refine <- !(file.older.check(
+  run.occ.prune <- !(file.older.check(
     "data/occurrences_full_refined.csv",
     "data/occurrences_full_pruned_clim_elev.csv"))
 }
 
-if (run.occ.refine) {
+if (run.occ.prune) {
   
   
   dat.occ.prepruned <- fread("data/occurrences_full_refined.csv",

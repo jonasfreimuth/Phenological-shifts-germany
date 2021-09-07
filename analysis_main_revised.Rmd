@@ -54,6 +54,9 @@ force.occ.get       <- TRUE
 #   - "non": keep all files in download folder
 delete.occ.download <- "non"
 
+# force pruning of data and addition of climate and elevation
+force.occ.prune     <- TRUE
+
 
 ## Path names ---------------------------------------------
 
@@ -257,7 +260,8 @@ if (run.traits.get | force.traits.get) {
 
 # for now, only check whether data and random effects are present
 if (!any(file.exists(dat_occ_file)) || 
-    force.occ.get) {
+    force.occ.get                   ||
+    force.occ.prune) {
   source("scripts/get_occ_data_all_in_one.R")
 }
 
