@@ -116,9 +116,6 @@ theme_shifts <- function (...) {
 
 ## define trivial group names -----------------------------
 
-# set groups to be excluded
-excl.group.year <- c("Diptera", "Hymenoptera")
-
 # set named vector for recoding group names to common names
 recode.vec <- c(
   "Coleoptera" = "Beetles",
@@ -130,9 +127,6 @@ recode.vec <- c(
 # make alternative vector for interactions
 recode.vec.int <- recode.vec[2:4]
 recode.vec.int[1:3] <- c("Hoverfly - Plant", "Bee - Plant", "Butterfly - Plant")
-
-# translate to trivial names
-excl.trivial.year <- recode_factor(excl.group.year, !!! recode.vec)
 
 ### set colour tables -------------------------------------------------------
 
@@ -183,8 +177,7 @@ col.plapoll <- col.grp[5:6,]
 col.poll.stc <- col.grp[1:4,]
 
 #only for polls
-col.poll <- col.grp[1:4,] %>% 
-  filter(!(group %in% excl.trivial.year))
+col.poll           <- col.grp[1:4,] 
 
 #only for plants
 col.plant <- col.grp[6,]
@@ -213,10 +206,6 @@ col.int2 <- col.grp[7:10,]
 #set colours for Interaction group comparisions
 col.int3 <- bind_rows(col.int, col.plant)
 
-#set colours for decade comparisons
-col.dec <- data.frame(group = c("1990s and before", "all decades", "1990s on"),
-                      colour = c("#2F5496", "#972A4B", "#FF0000")
-)
 
 # colours for id.grps with scientific scheme
 # TODO: Apply colour scheme throughout notebook
