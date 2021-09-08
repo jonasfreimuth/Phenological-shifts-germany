@@ -62,12 +62,12 @@ force.occ.prune     <- TRUE
 
 if (!test_run) {
   dat_occ_file        <- "data/occurrences_full_pruned_clim_elev.csv"
-  dat_slope_year_file <- "data/rnd_eff_year.csv"
   dat_slope_temp_file <- "data/rnd_eff_temp.csv"
+  dat_slope_year_file <- "data/rnd_eff_year.csv"
 } else {
   dat_occ_file        <- "data/occurrences_full_pruned_clim_elev_test.csv"
-  dat_slope_year_file <- "data/rnd_eff_year_test.csv"
   dat_slope_temp_file <- "data/rnd_eff_temp_test.csv"
+  dat_slope_year_file <- "data/rnd_eff_year_test.csv"
 }
 
 ## Set graphics parameters --------------------------------
