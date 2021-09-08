@@ -398,46 +398,56 @@ for (form in form_vec) {
         
         log_msg("  ... for variable ", rnd_var, "...")
         
-        n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
-        
-        png(paste0(plot_path,
-                   "lmm_rnd_var_slopes_", rnd_var, "_",
-                   str_replace(simple_form, "~", "_"), "_",
-                   time_stamp,
-                   ".png"),
-            width  = 250 * ceiling(sqrt(n_rnd_var)),
-            height = 250 * ceiling(sqrt(n_rnd_var)))
-        
-        print(
-          ggplot(data = data.frame(dep_var  = dat.occ[[dep_var ]],
-                                   main_var = dat.occ[[main_var]],
-                                   
-                                   # TODO: change this in case col name
-                                   #    for rnd_eff is changed
-                                   species  = dat.occ[[rnd_var ]],
-                                   
-                                   # TODO: make this variable
-                                   group    = dat.occ[["id.grp"]]),
-                 
-                 aes(main_var, dep_var,
-                     col = group)) +
-            geom_point() +
-            
-            # add gam curve to check if linear model is actually applicable
-            geom_smooth(col = "red") +
-            
-            # plot model regression lines
-            geom_abline(data = rnd_eff,
-                        aes(intercept = intercept,
-                            slope = slope)) +
-            
-            labs(title = rnd_var, subtitle = form,
-                 x = main_var, y = dep_var) +
-            facet_wrap( ~ species) +
-            theme_minimal()
-        )
-        
-        dev.off()
+        for (group in unique(dat.occ$id.grp)) {
+          
+          dat.occ.plt <- dat.occ %>% 
+            filter(id.grp == group)
+          
+          rnd_eff_plt <- rnd_eff %>% 
+            filter(species %in% dat.occ.plt$species)
+          
+          n_rnd_var <- uniqueN(dat.occ.plt[[rnd_var]])
+          
+          png(paste0(plot_path,
+                     "lmm_rnd_var_slopes_", rnd_var, "_", group, "_",
+                     str_replace(simple_form, "~", "_"), "_",
+                     time_stamp,
+                     ".png"),
+              width  = 250 * ceiling(sqrt(n_rnd_var)),
+              height = 250 * ceiling(sqrt(n_rnd_var)))
+          
+          print(
+            ggplot(data = data.frame(dep_var  = dat.occ.plt[[dep_var ]],
+                                     main_var = dat.occ.plt[[main_var]],
+                                     
+                                     # TODO: change this in case col name
+                                     #    for rnd_eff is changed
+                                     species  = dat.occ.plt[[rnd_var ]],
+                                     
+                                     # TODO: make this variable
+                                     group    = dat.occ.plt[["id.grp"]]),
+                   
+                   aes(main_var, dep_var, col = group)) +
+              
+              geom_point() +
+              
+              # add gam curve to check if linear model is actually applicable
+              geom_smooth(method = "gam", col = "red") +
+              
+              # plot model regression lines
+              geom_abline(data = rnd_eff_plt,
+                          aes(intercept = intercept,
+                              slope = slope)) +
+              
+              labs(title = rnd_var, subtitle = form,
+                   x = main_var, y = dep_var) +
+              facet_wrap( ~ species) +
+              
+              theme_minimal()
+          )
+          
+          dev.off()
+        }
       }
       
       log_msg("  ... Done.")
