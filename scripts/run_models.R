@@ -12,6 +12,12 @@ library("broom.mixed")
 
 source("scripts/functions.R")
 
+col.grp.sci <- c(Coleoptera  = "#9815db",
+                 Diptera     = "#f41d0f",
+                 Hymenoptera = "#ffa500",
+                 Lepidoptera = "#4744ff",
+                 Plants      = "#008a00")
+
 # do a testing run? 
 # will reduce data size and save outputs into separate directories
 test_run <- FALSE
@@ -279,8 +285,8 @@ for (form in form_vec) {
   # if we are dealing with a lmm, check for convergence errors
   if (has_ranef) {
     
-    # It is probably not wise to set this bit up extracting stuff from deep within
-    #   the model object, but i cant be asked to do it properly right now
+    # It is probably not wise to set this bit up extracting stuff from deep 
+    #   within the model object, but i cant be asked to do it properly right now
     if (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
                        "Model failed to converge"))) {
       
@@ -369,8 +375,8 @@ for (form in form_vec) {
     names(rnd_eff)[6] <- "slope_std_err"
     
     # add overall slope and intercept to rnd slope and intercept
-    rnd_eff$intercept         <- rnd_eff$intercept         + mod_coef[1,1]
-    rnd_eff$slope             <- rnd_eff$slope             + mod_coef[2,1]
+    rnd_eff$intercept         <- rnd_eff$intercept              + mod_coef[1,1]
+    rnd_eff$slope             <- rnd_eff$slope                  + mod_coef[2,1]
     
     # add std.error of overall slope and intercept to rnd slope and intercept
     #   uses error propagation formula
@@ -441,6 +447,11 @@ for (form in form_vec) {
               
               labs(title = rnd_var, subtitle = form,
                    x = main_var, y = dep_var) +
+              
+              # add coloring
+              scale_color_manual(name   = "Group",
+                                 values = col.grp.sci) +
+              
               facet_wrap( ~ species) +
               
               theme_minimal()
@@ -499,7 +510,11 @@ for (form in form_vec) {
     lm_res_fit_plot <- lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
                                     col_vec = dat.occ$id.grp,
                                     main = "Residuals vs Fitted",
-                                    sub = form)
+                                    sub = form) +
+      
+      # add coloring
+      scale_color_manual(name   = "Group",
+                         values = col.grp.sci)
     
     ggsave(paste0(plot_path,
                   "lmm_resid_fit_",
@@ -545,6 +560,8 @@ for (form in form_vec) {
              labs(title = "Historgram of residuals", subtitle = form,
                   xlab = "Residuals",
                   ylab = "Density") +
+             scale_color_manual(name   = "Group",
+                                values = col.grp.sci) +
              theme_minimal() +
              theme(panel.grid = element_blank()),
            width = 20, height = 12)
@@ -572,6 +589,8 @@ for (form in form_vec) {
              subtitle = form,
              x = toupper(fix_var),
              y = "Residuals") +
+        scale_color_manual(name   = "Group",
+                           values = col.grp.sci) +
         theme_minimal() +
         theme(panel.grid = element_blank())
       
@@ -633,15 +652,15 @@ for (form in form_vec) {
             geom_text(data = data.frame(
               rnd_var = sort(unique(dat.occ[[rnd_var]])),
               lab = paste0("n = ", table(dat.occ[[rnd_var]])),
-              ypos = ypos(mod_resid)
-            ), 
-            aes(rnd_var, ypos, label = lab)
-            ) +
+              ypos = ypos(mod_resid)), 
+            aes(rnd_var, ypos, label = lab)) +
             facet_wrap(~ rnd_var, scale = "free_x") +
             labs(title = toupper(rnd_var),
                  subtitle = form,
                  xlab = toupper(rnd_var),
                  ylab = "Residuals") +
+            scale_color_manual(name   = "Group",
+                               values = col.grp.sci) +
             theme_minimal() +
             theme(panel.grid = element_blank(),
                   axis.text.x = element_blank())
