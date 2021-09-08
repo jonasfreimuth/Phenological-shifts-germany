@@ -239,7 +239,11 @@ for (form in form_vec) {
   # Directory stuff -------------------
   
   mod_path <- paste0(run_path,
-                     str_replace(simple_form, "~", "_"), "_",
+                     dep_var, "_vs_",
+                     paste(fix_vars, collapse = "_"), "_",
+                     paste(str_c(rnd_var_df$group, rnd_var_df$rnd_var,
+                                 sep = "-"),
+                           collapse = "_"), "_",
                      time_stamp, "/")
   
   dir.check(mod_path)
