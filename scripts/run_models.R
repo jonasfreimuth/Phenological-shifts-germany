@@ -350,11 +350,8 @@ for (form in form_vec) {
     
     rnd_eff <- tidy(lm_mod, c("ran_vals")) %>% 
       
-      # alternatively also include std.err in values from
-      #   left out as overall intercept and slope will be added, which might 
-      #   be confusing (to what does the std.err belong)
       pivot_wider(id_cols = c(level, group), names_from = term,
-                  values_from = c(estimate)) %>% 
+                  values_from = c(estimate, std.error)) %>% 
       mutate(main_var = main_var) 
     
     # hacky way to rename everything based on formulas
@@ -362,12 +359,17 @@ for (form in form_vec) {
     names(rnd_eff)[1] <- rnd_vars[1]
     names(rnd_eff)[3] <- "intercept"
     names(rnd_eff)[4] <- "slope"
-    # names(rnd_eff)[5] <- "intercept_std_err"
-    # names(rnd_eff)[6] <- "slope_std_err"
+    names(rnd_eff)[5] <- "intercept_std_err"
+    names(rnd_eff)[6] <- "slope_std_err"
     
     # add overall slope and intercept to rnd slope and intercept
-    rnd_eff$intercept <- rnd_eff$intercept + mod_coef[1,1]
-    rnd_eff$slope     <- rnd_eff$slope     + mod_coef[2,1]
+    rnd_eff$intercept         <- rnd_eff$intercept         + mod_coef[1,1]
+    rnd_eff$slope             <- rnd_eff$slope             + mod_coef[2,1]
+    
+    # add std.error of overall slope and intercept to rnd slope and intercept
+    #   uses error propagation formula
+    rnd_eff$intercept_std_err <- sqrt(rnd_eff$intercept_std_err + mod_coef[1,2])
+    rnd_eff$slope_std_err     <- sqrt(rnd_eff$slope_std_err     + mod_coef[2,2])
     
     fwrite(rnd_eff,
            paste0(mod_path, 
