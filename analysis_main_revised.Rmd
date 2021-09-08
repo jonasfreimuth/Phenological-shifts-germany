@@ -924,6 +924,80 @@ ggplot() +
 
 ```
 
+## Analysis of interaction asynchrony
+
+Here asynchrony is defined as the difference between the peak doy of flowering 
+and the peak doy of flight in a given year or at a given temperature. Here, the
+peak doys are approximated by the predicted values given by the linear models 
+for the corresponding plant and pollinator. The shift in asynchrony is then 
+given by the change in the difference between the predicted values over time and
+with temperature.
+
+```{r compute_asynchrony}
+
+temp_vec <- unique(dat.occ$temp)
+year_vec <- unique(dat.occ$year)
+
+int_slope_syn <- int_data %>% 
+  apply(1, function(int_data_row) {
+    
+    # get slope data for plant and poll
+    slope_all_plant <- slopes_all %>% 
+      filter(species == int_data_row[["plant"]])
+    
+    slope_all_poll  <- slopes_all %>% 
+      filter(species == int_data_row[["poll" ]])
+    
+    out <- data.frame(
+      
+      # get general data on interaction partners
+      plant = int_data_row["plant"],
+      poll  = int_data_row["poll" ],
+      group = int_data_row["group"],
+      
+      # extract their slopes with temp
+      slope_temp_plant = slope_all_plant$slope_temp,
+      slope_temp_poll  = slope_all_poll $slope_temp,
+      
+      # extract their intercept for temp
+      intcp_temp_plant = slope_all_plant$intercept_temp,
+      intcp_temp_poll  = slope_all_poll $intercept_temp,
+      
+      
+      # extract their slopes over time
+      slope_year_plant = slope_all_plant$slope_year,
+      slope_year_poll  = slope_all_poll $slope_year,
+      
+      # extract their intercept for time
+      intcp_year_plant = slope_all_plant$intercept_year,
+      intcp_year_poll  = slope_all_poll $intercept_year)
+    
+    # compute asynchrony for temp and time
+    asyn_temp <- (out$intcp_temp_plant + out$slope_temp_plant * temp_vec) -
+      (out$intcp_temp_poll + out$slope_temp_poll * temp_vec)
+    
+    asyn_year <- (out$intcp_year_plant + out$slope_year_plant * year_vec) -
+      (out$intcp_year_poll + out$slope_year_poll * year_vec)
+    
+    # get the slope and intercept for both
+    asyn_coef_temp <- coef(lm(asyn_temp ~ temp_vec))
+    asyn_coef_year <- coef(lm(asyn_year ~ year_vec))
+    
+    # add those to the df
+    out$slope_temp_asyn <- asyn_coef_temp[["temp_vec"   ]]
+    out$intcp_temp_asyn <- asyn_coef_temp[["(Intercept)"]]
+    
+    out$slope_year_asyn <- asyn_coef_year[["year_vec"   ]]
+    out$intcp_year_asyn <- asyn_coef_year[["(Intercept)"]]
+    
+     return(out)
+  }) %>% 
+  
+  bind_rows()
+
+```
+
+
 
 ## Analysis of influence of plant traits
 
