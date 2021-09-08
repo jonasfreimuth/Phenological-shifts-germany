@@ -738,29 +738,35 @@ int_slope_diff <- int_data %>%
     
     # get slope data for plant and poll
     slope_all_plant <- slopes_all %>% 
-      filter(species == int_data_row["plant"])
+      filter(species == int_data_row[["plant"]])
     
     slope_all_poll  <- slopes_all %>% 
-      filter(species == int_data_row["poll" ])
+      filter(species == int_data_row[["poll" ]])
     
-    # browser()
     
-    return(data.frame(plant = int_data_row["plant"],
-                      poll  = int_data_row["poll" ],
-                      group = int_data_row["group"],
-                      
-                      slope_temp_plant = slope_all_plant$slope_temp,
-                      slope_temp_poll  = slope_all_poll $slope_temp,
-                      
-                      slope_temp_diff  = slope_all_plant$slope_temp - 
-                        slope_all_poll $slope_temp,
-                      
-                      
-                      slope_year_plant = slope_all_plant$slope_year,
-                      slope_year_poll  = slope_all_poll $slope_year,
-                      
-                      slope_year_diff  = slope_all_plant$slope_year - 
-                        slope_all_poll $slope_year))
+    return(data.frame(
+      
+      # get general data on interaction partners
+      plant = int_data_row["plant"],
+      poll  = int_data_row["poll" ],
+      group = int_data_row["group"],
+      
+      # extract their slopes with temp
+      slope_temp_plant = slope_all_plant$slope_temp,
+      slope_temp_poll  = slope_all_poll $slope_temp,
+      
+      # compute the difference between both temp slopes
+      slope_temp_diff  = slope_all_plant$slope_temp - 
+        slope_all_poll $slope_temp,
+      
+      
+      # extract their slopes over time
+      slope_year_plant = slope_all_plant$slope_year,
+      slope_year_poll  = slope_all_poll $slope_year,
+      
+      # compute the difference between both time slopes
+      slope_year_diff  = slope_all_plant$slope_year - 
+        slope_all_poll $slope_year))
     
   }) %>% 
   
