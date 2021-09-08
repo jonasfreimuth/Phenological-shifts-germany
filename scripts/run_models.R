@@ -167,11 +167,13 @@ for (form in form_vec) {
   # get timestamp identifying this model
   time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
-  
   # Formula stuff ---------------------
   
   # split model formula into constituents
-  mod_comps <- str_split(form, " ", simplify = TRUE)
+  mod_comps <- str_split(form, "\\s+", simplify = TRUE)
+  
+  # stitch formula back together to have the long spaces removed
+  form <- paste(mod_comps, collapse = " ")
   
   # extract response and fist independent variable
   simple_form <- mod_comps[, 1:3] %>%
