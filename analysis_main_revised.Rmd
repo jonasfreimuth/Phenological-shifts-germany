@@ -394,8 +394,11 @@ slopes_all_sum
 slopes_temp %>% 
   
   # plot slopes in ascending order
-  ggplot(aes(reorder(species,  -slope), slope, col = id.grp)) +
-  geom_point() +
+  ggplot() +
+  geom_pointrange(aes(x    = reorder(species,  -slope),
+                      y    = slope,
+                      ymin = slope - slope_std_err,
+                      ymax = slope + slope_std_err, col = id.grp)) +
   
   # clearly denote the 0 line
   geom_hline(yintercept = 0) +
@@ -423,8 +426,11 @@ slopes_temp %>%
 slopes_year %>% 
   
   # plot slopes in ascending order
-  ggplot(aes(reorder(species,  -slope), slope, col = id.grp)) +
-  geom_point() +
+  ggplot() +
+  geom_pointrange(aes(x    = reorder(species,  -slope),
+                      y    = slope,
+                      ymin = slope - slope_std_err,
+                      ymax = slope + slope_std_err, col = id.grp)) +
   
   # clearly denote the 0 line
   geom_hline(yintercept = 0) +
@@ -456,23 +462,29 @@ slopes_year %>%
 
 cat("Differences in slope with temperature:\n\n")
 
-aov_temp <- aov(data = slopes_temp, slope ~ id.grp)
+aov_temp <- aov(data = slopes_temp, slope ~ id.grp, 
+                weights = 1 / (slope_std_err ^ 2)
+                )
 summary(aov_temp)
 
 cat("\n Pairwise differences: \n")
 
-TukeyHSD(aov_temp)
+ph_aov_temp <- TukeyHSD(aov_temp)
+ph_aov_temp
 
 cat("\n\n")
 cat("----------------------------------------------------------\n\n")
 cat("Differences in slope over time:\n\n")
 
-aov_year <- aov(data = slopes_year, slope ~ id.grp)
+aov_year <- aov(data = slopes_year, slope ~ id.grp, 
+                weights = 1 / (slope_std_err ^ 2)
+                )
 summary(aov_year)
 
 cat("\n Pairwise differences: \n")
 
-TukeyHSD(aov_year)
+ph_aov_year <- TukeyHSD(aov_year)
+ph_aov_year
 
 ```
 
@@ -484,27 +496,30 @@ TukeyHSD(aov_year)
 ggplot() +
   
   # raw data
-  geom_jitter   (data = slopes_temp,
-                 aes(x = id.grp,
-                     y = slope),
-                 col = col.pt) +
+  geom_pointrange(data = slopes_temp,
+                  aes(x    = id.grp,
+                      y    = slope,
+                      ymin = slope - slope_std_err,
+                      ymax = slope + slope_std_err),
+                  col = col.pt,
+                  position = position_jitter()) +
   
   # error bars
-  geom_errorbar (data = slopes_temp_sum,
-                 aes(x    = id.grp,
-                     ymin = slope_ci_min,
-                     ymax = slope_ci_max,
-                     col  = id.grp)) +
+  geom_errorbar  (data = slopes_temp_sum,
+                  aes(x    = id.grp,
+                      ymin = slope_ci_min,
+                      ymax = slope_ci_max,
+                      col  = id.grp)) +
   
   # mean data
-  geom_point    (data = slopes_temp_sum,
-                 aes(x   = id.grp,
-                     y   = slope_mean,
-                     col = id.grp)) + 
+  geom_point     (data = slopes_temp_sum,
+                  aes(x   = id.grp,
+                      y   = slope_mean,
+                      col = id.grp)) + 
   
   # line denoting 0
-  geom_hline    (yintercept = 0,
-                 col = col.line) +
+  geom_hline     (yintercept = 0,
+                  col = col.line) +
   
   # add labels
   labs(title = "Between group differences in shift",
@@ -525,27 +540,30 @@ ggplot() +
 ggplot() +
   
   # raw data
-  geom_jitter   (data = slopes_year,
-                 aes(x = id.grp,
-                     y = slope),
-                 col = col.pt) +
+  geom_pointrange(data = slopes_year,
+                  aes(x    = id.grp,
+                      y    = slope,
+                      ymin = slope - slope_std_err,
+                      ymax = slope + slope_std_err),
+                  col = col.pt,
+                  position = position_jitter()) +
   
   # error bars
-  geom_errorbar (data = slopes_year_sum,
-                 aes(x    = id.grp,
-                     ymin = slope_ci_min,
-                     ymax = slope_ci_max,
-                     col  = id.grp)) +
+  geom_errorbar  (data = slopes_year_sum,
+                  aes(x    = id.grp,
+                      ymin = slope_ci_min,
+                      ymax = slope_ci_max,
+                      col  = id.grp)) +
   
   # mean data
-  geom_point    (data = slopes_year_sum,
-                 aes(x   = id.grp,
-                     y   = slope_mean,
-                     col = id.grp)) + 
+  geom_point     (data = slopes_year_sum,
+                  aes(x   = id.grp,
+                      y   = slope_mean,
+                      col = id.grp)) + 
   
   # line denoting 0
-  geom_hline    (yintercept = 0,
-                 col = col.line) +
+  geom_hline     (yintercept = 0,
+                  col = col.line) +
   
   # add labels
   labs(title = "Between group differences in shift",
@@ -632,6 +650,19 @@ ggplot() +
   geom_hline     (yintercept = 0, col = col.line) + 
   geom_vline     (xintercept = 0, col = col.line) +
   
+  # add errorbars for raw data
+  geom_errorbar  (data = slopes_all,
+                  aes(x    = slope_year,
+                      ymin = slope_temp - slope_std_err_temp,
+                      ymax = slope_temp + slope_std_err_temp),
+                  col = col.pt) +
+  
+  geom_errorbarh (data = slopes_all,
+                  aes(y    = slope_temp,
+                      xmin = slope_year - slope_std_err_year,
+                      xmax = slope_year + slope_std_err_year),
+                  col = col.pt) +
+  
   # add raw data
   geom_point     (data = slopes_all,
                   aes(x = slope_year,
@@ -679,8 +710,9 @@ ggplot() +
   facet_wrap( ~ id.grp) + 
   
   # improve axis lables 
-  labs(x = "Shift over time",
-       y = "Shift with temperature") +
+  labs(x = "Shift over time [days / year] (\u00B1 95% CI)",
+       y = "Shift with temperature [days / \u00B0C] (\u00B1 95% CI)",
+       subtitle = "Individual points currently \u00B1 SE") +
   
   # add coloring
   scale_color_manual(name   = "Group",
