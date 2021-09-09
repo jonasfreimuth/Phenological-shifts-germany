@@ -20,7 +20,7 @@ col.grp.sci <- c(Coleoptera  = "#9815db",
 
 # do a testing run? 
 # will reduce data size and save outputs into separate directories
-test_run <- FALSE
+test_run <- TRUE
 
 # save diagnostics plots
 # will take a very long time on the full dataset
