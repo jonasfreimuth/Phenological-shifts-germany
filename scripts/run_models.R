@@ -379,9 +379,12 @@ for (form in form_vec) {
     rnd_eff$slope             <- rnd_eff$slope                  + mod_coef[2,1]
     
     # add std.error of overall slope and intercept to rnd slope and intercept
-    #   uses error propagation formula
-    rnd_eff$intercept_std_err <- sqrt(rnd_eff$intercept_std_err + mod_coef[1,2])
-    rnd_eff$slope_std_err     <- sqrt(rnd_eff$slope_std_err     + mod_coef[2,2])
+    #   uses error propagation formula found here:
+    # https://stats.stackexchange.com/questions/70164/error-propagation-sd-vs-se
+    rnd_eff$intercept_std_err <- sqrt(rnd_eff$intercept_std_err ^ 2 +
+                                        mod_coef[1,2] ^ 2)
+    rnd_eff$slope_std_err     <- sqrt(rnd_eff$slope_std_err     ^ 2 +
+                                        mod_coef[2,2] ^ 2)
     
     fwrite(rnd_eff,
            paste0(mod_path, 
