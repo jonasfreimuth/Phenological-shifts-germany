@@ -770,74 +770,108 @@ int_data_sum
 ```
 
 
-```{r compute_slope_interactions}
 
-int_slope_diff <- int_data %>% 
+```{r compute_asynchrony}
+
+temp_vec <- unique(dat.occ$temp)
+year_vec <- unique(dat.occ$year)
+
+int_slope_asyn <- int_data %>%
   apply(1, function(int_data_row) {
-    
+
     # get slope data for plant and poll
-    slope_all_plant <- slopes_all %>% 
+    slope_all_plant <- slopes_all %>%
       filter(species == int_data_row[["plant"]])
-    
-    slope_all_poll  <- slopes_all %>% 
+
+    slope_all_poll  <- slopes_all %>%
       filter(species == int_data_row[["poll" ]])
     
-    
     return(data.frame(
-      
+
       # get general data on interaction partners
       plant = int_data_row["plant"],
       poll  = int_data_row["poll" ],
       group = int_data_row["group"],
-      
+
       # extract their slopes with temp
       slope_temp_plant = slope_all_plant$slope_temp,
       slope_temp_poll  = slope_all_poll $slope_temp,
-      
+
       # compute the difference between both temp slopes
-      slope_temp_diff  = slope_all_plant$slope_temp - 
+      slope_temp_asyn  = slope_all_plant$slope_temp -
         slope_all_poll $slope_temp,
+      
+      # compute their SEs
+      slope_temp_asyn_std_err  = sqrt(
+        slope_all_plant$slope_std_err_temp  ^ 2 +
+          slope_all_poll$slope_std_err_temp ^ 2),
+      
+      
+      # same for intercepts
+      intcp_temp_asyn  = slope_all_plant$intercept_temp - 
+        slope_all_poll $intercept_temp,
+      
+      # compute their SEs
+      intcp_temp_asyn_std_err  = sqrt(
+        slope_all_plant$intercept_std_err_temp  ^ 2 +
+          slope_all_poll$intercept_std_err_temp ^ 2),
+      
       
       
       # extract their slopes over time
       slope_year_plant = slope_all_plant$slope_year,
       slope_year_poll  = slope_all_poll $slope_year,
       
-      # compute the difference between both time slopes
-      slope_year_diff  = slope_all_plant$slope_year - 
-        slope_all_poll $slope_year))
+      # compute the difference between both year slopes
+      slope_year_asyn  = slope_all_plant$slope_year -
+        slope_all_poll $slope_year,
+      
+      # compute their SEs
+      slope_year_asyn_std_err  = sqrt(
+        slope_all_plant$slope_std_err_year  ^ 2 +
+          slope_all_poll$slope_std_err_year ^ 2),
+      
+      
+      # same for intercepts
+      intcp_year_asyn  = slope_all_plant$intercept_year - 
+        slope_all_poll $intercept_year,
+      
+      # compute their SEs
+      intcp_year_asyn_std_err = sqrt(
+        slope_all_plant$intercept_std_err_year  ^ 2 +
+          slope_all_poll$intercept_std_err_year ^ 2)))
     
-  }) %>% 
-  
-  bind_rows()
+  }) %>%
 
-# head(int_slope_diff)
+  bind_rows()
 
 ```
 
 
 
-```{r analyse_between_group_diffs_int}
+```{r analyse_between_group_asynchrony_diffs}
 
-cat("Differences in interaction slope difference with temperature:\n\n")
+cat("Differences in slope of asynchrony with temperature:\n\n")
 
-aov_int_temp <- aov(data = int_slope_diff, slope_temp_diff ~ group)
-summary(aov_int_temp)
+aov_asyn_temp <- aov(data = int_slope_asyn, slope_temp_asyn ~ group,
+                     weights = 1 / (slope_temp_asyn_std_err ^ 2))
+summary(aov_asyn_temp)
 
 cat("\n Pairwise differences: \n")
 
-TukeyHSD(aov_int_temp)
+TukeyHSD(aov_asyn_temp)
 
 cat("\n\n")
 cat("----------------------------------------------------------\n\n")
-cat("Differences in interaction slope difference over time:\n\n")
+cat("Differences in slope of asynchrony over time:\n\n")
 
-aov_int_year <- aov(data = int_slope_diff, slope_year_diff ~ group)
-summary(aov_int_year)
+aov_asyn_year <- aov(data = int_slope_asyn, slope_year_asyn ~ group,
+                     weights = 1 / (slope_year_asyn_std_err ^ 2))
+summary(aov_asyn_year)
 
 cat("\n Pairwise differences: \n")
 
-TukeyHSD(aov_int_year)
+TukeyHSD(aov_asyn_year)
 
 ```
 
@@ -845,35 +879,48 @@ TukeyHSD(aov_int_year)
 
 ```{r summarize_slope_interactions}
 
-int_slope_diff_sum <- int_slope_diff %>% 
+int_slope_asyn_sum <- int_slope_asyn %>% 
   group_by(group) %>% 
   summarise(n_int                         = length(slope_temp_plant),
             
-            # summarize temp diff
-            slope_temp_diff_mean          = mean(slope_temp_diff),
-            slope_temp_diff_sd            = sd(slope_temp_diff),
-            slope_temp_diff_se            = sd(slope_temp_diff) / 
-              sqrt(length(slope_temp_diff)),
+            # summarize temp asyn
+            slope_temp_asyn_mean          = mean(slope_temp_asyn),
+            slope_temp_asyn_sd            = sd(slope_temp_asyn),
+            slope_temp_asyn_se            = sqrt(
+              sum(slope_temp_asyn_std_err ^ 2)) / length(slope_temp_asyn),
+            slope_temp_asyn_ci_min        = slope_temp_asyn_mean - 
+              slope_temp_asyn_se * 1.96,
+            slope_temp_asyn_ci_max        = slope_temp_asyn_mean + 
+              slope_temp_asyn_se * 1.96,
+            slope_temp_asyn_frac_negative = sum(slope_temp_asyn < 0) /
+              length(slope_temp_asyn),
             
-            slope_temp_diff_ci_min        = ci.min(slope_temp_diff),
-            slope_temp_diff_ci_max        = ci.max(slope_temp_diff),
-            slope_temp_diff_frac_negative = sum(slope_temp_diff < 0) /
-              length(slope_temp_diff),
+            # summarize intercept
+            intcp_temp_asyn_mean          = mean(intcp_temp_asyn),
+            intcp_temp_asyn_se            = sqrt(
+              sum(intcp_temp_asyn_std_err ^ 2)) / length(intcp_temp_asyn),
             
             
-            # summarize year diff
-            slope_year_diff_mean          = mean(slope_year_diff),
-            slope_year_diff_sd            = sd(slope_year_diff),
-            slope_year_diff_se            = sd(slope_year_diff) / 
-              sqrt(length(slope_year_diff)),
+            # summarize year asyn
+            slope_year_asyn_mean          = mean(slope_year_asyn),
+            slope_year_asyn_sd            = sd(slope_year_asyn),
+            slope_year_asyn_se            = sqrt(
+              sum(slope_year_asyn_std_err ^ 2)) / length(slope_year_asyn),
+            slope_year_asyn_ci_min        = slope_year_asyn_mean - 
+              slope_year_asyn_se * 1.96,
+            slope_year_asyn_ci_max        = slope_year_asyn_mean + 
+              slope_year_asyn_se * 1.96,
+            slope_year_asyn_frac_negative = sum(slope_year_asyn < 0) /
+              length(slope_year_asyn),
             
-            slope_year_diff_ci_min        = ci.min(slope_year_diff),
-            slope_year_diff_ci_max        = ci.max(slope_year_diff),
-            slope_year_diff_frac_negative = sum(slope_year_diff < 0) /
-              length(slope_year_diff)
+            # summarize intercept
+            intcp_year_asyn_mean          = mean(intcp_year_asyn),
+            intcp_year_asyn_se            = sqrt(
+              sum(intcp_year_asyn_std_err ^ 2)) / length(intcp_year_asyn)
   )
 
-int_slope_diff_sum
+
+int_slope_asyn_sum
 
 ```
 
@@ -885,22 +932,25 @@ int_slope_diff_sum
 ggplot() +
   
   # raw data
-  geom_jitter   (data = int_slope_diff,
-                 aes(x = group,
-                     y = slope_temp_diff),
-                 col = col.pt) +
+  geom_pointrange(data = int_slope_asyn,
+                  aes(x    = group,
+                      y    = slope_temp_asyn,
+                      ymin = slope_temp_asyn - slope_temp_asyn_std_err,
+                      ymax = slope_temp_asyn + slope_temp_asyn_std_err),
+                  col = col.pt,
+                  position = position_jitter()) +
   
   # error bars
-  geom_errorbar (data = int_slope_diff_sum,
+  geom_errorbar (data = int_slope_asyn_sum,
                  aes(x    = group,
-                     ymin = slope_temp_diff_ci_min,
-                     ymax = slope_temp_diff_ci_max,
+                     ymin = slope_temp_asyn_mean - slope_temp_asyn_se,
+                     ymax = slope_temp_asyn_mean + slope_temp_asyn_se,
                      col  = group)) +
   
   # mean data
-  geom_point    (data = int_slope_diff_sum,
+  geom_point    (data = int_slope_asyn_sum,
                  aes(x   = group,
-                     y   = slope_temp_diff_mean,
+                     y   = slope_temp_asyn_mean,
                      col = group)) + 
   
   # line denoting 0
@@ -908,10 +958,10 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title = "Interaction shift differences",
+  labs(title = "Interaction asynchrony shifts",
        subtitle = "with temperature",
        x = "Group",
-       y = "Slope difference [days / \u00B0C] (\u00B1 95% CI)") +
+       y = "Asynchrony shift [days / \u00B0C] (\u00B1 SE)") +
   
   # add color
   scale_color_manual(name   = "Group",
@@ -926,22 +976,25 @@ ggplot() +
 ggplot() +
   
   # raw data
-  geom_jitter   (data = int_slope_diff,
-                 aes(x = group,
-                     y = slope_year_diff),
-                 col = col.pt) +
+  geom_pointrange(data = int_slope_asyn,
+                  aes(x    = group,
+                      y    = slope_year_asyn,
+                      ymin = slope_year_asyn - slope_year_asyn_std_err,
+                      ymax = slope_year_asyn + slope_year_asyn_std_err),
+                  col = col.pt,
+                  position = position_jitter()) +
   
   # error bars
-  geom_errorbar (data = int_slope_diff_sum,
+  geom_errorbar (data = int_slope_asyn_sum,
                  aes(x    = group,
-                     ymin = slope_year_diff_ci_min,
-                     ymax = slope_year_diff_ci_max,
+                     ymin = slope_year_asyn_mean - slope_year_asyn_se,
+                     ymax = slope_year_asyn_mean + slope_year_asyn_se,
                      col  = group)) +
   
   # mean data
-  geom_point    (data = int_slope_diff_sum,
+  geom_point    (data = int_slope_asyn_sum,
                  aes(x   = group,
-                     y   = slope_year_diff_mean,
+                     y   = slope_year_asyn_mean,
                      col = group)) + 
   
   # line denoting 0
@@ -949,10 +1002,10 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title = "Interaction shift differences",
+  labs(title = "Interaction asynchrony shifts",
        subtitle = "over time",
        x = "Group",
-       y = "Slope difference [days / year] (\u00B1 95% CI)") +
+       y = "Asynchrony shift [days / year] (\u00B1 SE)") +
   
   # add color
   scale_color_manual(name   = "Group",
@@ -962,81 +1015,6 @@ ggplot() +
   theme_shifts(legend.position = "none")
 
 ```
-
-## Analysis of interaction asynchrony
-
-Here asynchrony is defined as the difference between the peak doy of flowering 
-and the peak doy of flight in a given year or at a given temperature. Here, the
-peak doys are approximated by the predicted values given by the linear models 
-for the corresponding plant and pollinator. The shift in asynchrony is then 
-given by the change in the difference between the predicted values over time and
-with temperature.
-
-```{r compute_asynchrony}
-
-temp_vec <- unique(dat.occ$temp)
-year_vec <- unique(dat.occ$year)
-
-int_slope_syn <- int_data %>% 
-  apply(1, function(int_data_row) {
-    
-    # get slope data for plant and poll
-    slope_all_plant <- slopes_all %>% 
-      filter(species == int_data_row[["plant"]])
-    
-    slope_all_poll  <- slopes_all %>% 
-      filter(species == int_data_row[["poll" ]])
-    
-    out <- data.frame(
-      
-      # get general data on interaction partners
-      plant = int_data_row["plant"],
-      poll  = int_data_row["poll" ],
-      group = int_data_row["group"],
-      
-      # extract their slopes with temp
-      slope_temp_plant = slope_all_plant$slope_temp,
-      slope_temp_poll  = slope_all_poll $slope_temp,
-      
-      # extract their intercept for temp
-      intcp_temp_plant = slope_all_plant$intercept_temp,
-      intcp_temp_poll  = slope_all_poll $intercept_temp,
-      
-      
-      # extract their slopes over time
-      slope_year_plant = slope_all_plant$slope_year,
-      slope_year_poll  = slope_all_poll $slope_year,
-      
-      # extract their intercept for time
-      intcp_year_plant = slope_all_plant$intercept_year,
-      intcp_year_poll  = slope_all_poll $intercept_year)
-    
-    # compute asynchrony for temp and time
-    asyn_temp <- (out$intcp_temp_plant + out$slope_temp_plant * temp_vec) -
-      (out$intcp_temp_poll + out$slope_temp_poll * temp_vec)
-    
-    asyn_year <- (out$intcp_year_plant + out$slope_year_plant * year_vec) -
-      (out$intcp_year_poll + out$slope_year_poll * year_vec)
-    
-    # get the slope and intercept for both
-    asyn_coef_temp <- coef(lm(asyn_temp ~ temp_vec))
-    asyn_coef_year <- coef(lm(asyn_year ~ year_vec))
-    
-    # add those to the df
-    out$slope_temp_asyn <- asyn_coef_temp[["temp_vec"   ]]
-    out$intcp_temp_asyn <- asyn_coef_temp[["(Intercept)"]]
-    
-    out$slope_year_asyn <- asyn_coef_year[["year_vec"   ]]
-    out$intcp_year_asyn <- asyn_coef_year[["(Intercept)"]]
-    
-     return(out)
-  }) %>% 
-  
-  bind_rows()
-
-```
-
-
 
 ## Analysis of influence of plant traits
 
