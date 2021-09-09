@@ -1,14 +1,14 @@
 
 # Setup -------------------------------------------------------------------
 
-library("stringr")
+library("broom.mixed")
 library("data.table")
 library("lme4")
+library("stringr")
 library("dplyr")
 library("tidyr")
 library("tidyselect")
 library("ggplot2")
-library("broom.mixed")
 
 source("scripts/functions.R")
 
