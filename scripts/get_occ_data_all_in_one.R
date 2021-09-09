@@ -234,15 +234,15 @@ if (run.occ.refine) {
 #  see Data.Rmd for her version
 
 
-if (exists("force.occ.refine")) {
-  run.occ.refine <- force.occ.refine
+if (exists("force.occ.prune")) {
+  run.occ.prune <- force.occ.prune
 } else {
-  run.occ.refine <- !(file.older.check(
+  run.occ.prune <- !(file.older.check(
     "data/occurrences_full_refined.csv",
     "data/occurrences_full_pruned_clim_elev.csv"))
 }
 
-if (run.occ.refine) {
+if (run.occ.prune) {
   
   
   dat.occ.prepruned <- fread("data/occurrences_full_refined.csv",
@@ -259,8 +259,13 @@ if (run.occ.refine) {
     
     # filter out certain days of the year with unnaturally high numbers of 
     #   records
-    #   In Franziskas script, the last three days are not actually filtered
+    #   In Franziskas notebook, the last three days are not actually filtered
     filter(!(doy %in% c(1, 95, 121, 163, 164, 166, 181))) %>% 
+    
+    # additionally (also not in Franziskas script) filter out the last
+    #  doy in the MnhnL (Musée national d’histoire naturelle Louxembourg) 
+    #  data set
+    filter(!(doy %in% c(365, 366) & institutionCode == "MnhnL")) %>% 
     
     # add extra decade column, which includes 2020 in the 2010s decade
     mutate(decade2 = str_replace_all(decade, "2020", "2010")) %>% 
@@ -384,7 +389,8 @@ if (run.occ.refine) {
     rename(lat = decimalLatitude, long = decimalLongitude)
   
   # save data
-  fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv")
+  fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv",
+         showProgress = FALSE)
   
   rm(dat.occ.prepruned, temp_vec, elev_vec)
   

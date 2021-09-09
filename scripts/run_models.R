@@ -1,16 +1,22 @@
 
 # Setup -------------------------------------------------------------------
 
-library("stringr")
+library("broom.mixed")
 library("data.table")
 library("lme4")
+library("stringr")
 library("dplyr")
 library("tidyr")
 library("tidyselect")
 library("ggplot2")
-library("broom.mixed")
 
 source("scripts/functions.R")
+
+col.grp.sci <- c(Coleoptera  = "#9815db",
+                 Diptera     = "#f41d0f",
+                 Hymenoptera = "#ffa500",
+                 Lepidoptera = "#4744ff",
+                 Plants      = "#008a00")
 
 # do a testing run? 
 # will reduce data size and save outputs into separate directories
@@ -167,11 +173,13 @@ for (form in form_vec) {
   # get timestamp identifying this model
   time_stamp <- format(Sys.time(), format = "%Y%m%d_%H%M")
   
-  
   # Formula stuff ---------------------
   
   # split model formula into constituents
-  mod_comps <- str_split(form, " ", simplify = TRUE)
+  mod_comps <- str_split(form, "\\s+", simplify = TRUE)
+  
+  # stitch formula back together to have the long spaces removed
+  form <- paste(mod_comps, collapse = " ")
   
   # extract response and fist independent variable
   simple_form <- mod_comps[, 1:3] %>%
@@ -237,7 +245,11 @@ for (form in form_vec) {
   # Directory stuff -------------------
   
   mod_path <- paste0(run_path,
-                     str_replace(simple_form, "~", "_"), "_",
+                     dep_var, "_vs_",
+                     paste(fix_vars, collapse = "_"), "_",
+                     paste(str_c(rnd_var_df$group, rnd_var_df$rnd_var,
+                                 sep = "-"),
+                           collapse = "_"), "_",
                      time_stamp, "/")
   
   dir.check(mod_path)
@@ -273,8 +285,8 @@ for (form in form_vec) {
   # if we are dealing with a lmm, check for convergence errors
   if (has_ranef) {
     
-    # It is probably not wise to set this bit up extracting stuff from deep within
-    #   the model object, but i cant be asked to do it properly right now
+    # It is probably not wise to set this bit up extracting stuff from deep 
+    #   within the model object, but i cant be asked to do it properly right now
     if (any(str_detect(lm_mod@optinfo$conv$lme4$messages,
                        "Model failed to converge"))) {
       
@@ -350,11 +362,8 @@ for (form in form_vec) {
     
     rnd_eff <- tidy(lm_mod, c("ran_vals")) %>% 
       
-      # alternatively also include std.err in values from
-      #   left out as overall intercept and slope will be added, which might 
-      #   be confusing (to what does the std.err belong)
       pivot_wider(id_cols = c(level, group), names_from = term,
-                  values_from = c(estimate)) %>% 
+                  values_from = c(estimate, std.error)) %>% 
       mutate(main_var = main_var) 
     
     # hacky way to rename everything based on formulas
@@ -362,12 +371,20 @@ for (form in form_vec) {
     names(rnd_eff)[1] <- rnd_vars[1]
     names(rnd_eff)[3] <- "intercept"
     names(rnd_eff)[4] <- "slope"
-    # names(rnd_eff)[5] <- "intercept_std_err"
-    # names(rnd_eff)[6] <- "slope_std_err"
+    names(rnd_eff)[5] <- "intercept_std_err"
+    names(rnd_eff)[6] <- "slope_std_err"
     
     # add overall slope and intercept to rnd slope and intercept
-    rnd_eff$intercept <- rnd_eff$intercept + mod_coef[1,1]
-    rnd_eff$slope     <- rnd_eff$slope     + mod_coef[2,1]
+    rnd_eff$intercept         <- rnd_eff$intercept              + mod_coef[1,1]
+    rnd_eff$slope             <- rnd_eff$slope                  + mod_coef[2,1]
+    
+    # add std.error of overall slope and intercept to rnd slope and intercept
+    #   uses error propagation formula found here:
+    # https://stats.stackexchange.com/questions/70164/error-propagation-sd-vs-se
+    rnd_eff$intercept_std_err <- sqrt(rnd_eff$intercept_std_err ^ 2 +
+                                        mod_coef[1,2] ^ 2)
+    rnd_eff$slope_std_err     <- sqrt(rnd_eff$slope_std_err     ^ 2 +
+                                        mod_coef[2,2] ^ 2)
     
     fwrite(rnd_eff,
            paste0(mod_path, 
@@ -390,46 +407,61 @@ for (form in form_vec) {
         
         log_msg("  ... for variable ", rnd_var, "...")
         
-        n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
-        
-        png(paste0(plot_path,
-                   "lmm_rnd_var_slopes_", rnd_var, "_",
-                   str_replace(simple_form, "~", "_"), "_",
-                   time_stamp,
-                   ".png"),
-            width  = 250 * ceiling(sqrt(n_rnd_var)),
-            height = 250 * ceiling(sqrt(n_rnd_var)))
-        
-        print(
-          ggplot(data = data.frame(dep_var  = dat.occ[[dep_var ]],
-                                   main_var = dat.occ[[main_var]],
-                                   
-                                   # TODO: change this in case col name
-                                   #    for rnd_eff is changed
-                                   species  = dat.occ[[rnd_var ]],
-                                   
-                                   # TODO: make this variable
-                                   group    = dat.occ[["id.grp"]]),
-                 
-                 aes(main_var, dep_var,
-                     col = group)) +
-            geom_point() +
-            
-            # add gam curve to check if linear model is actually applicable
-            geom_smooth(col = "red") +
-            
-            # plot model regression lines
-            geom_abline(data = rnd_eff,
-                        aes(intercept = intercept,
-                            slope = slope)) +
-            
-            labs(title = rnd_var, subtitle = form,
-                 x = main_var, y = dep_var) +
-            facet_wrap( ~ species) +
-            theme_minimal()
-        )
-        
-        dev.off()
+        for (group in unique(dat.occ$id.grp)) {
+          
+          dat.occ.plt <- dat.occ %>% 
+            filter(id.grp == group)
+          
+          rnd_eff_plt <- rnd_eff %>% 
+            filter(species %in% dat.occ.plt$species)
+          
+          n_rnd_var <- uniqueN(dat.occ.plt[[rnd_var]])
+          
+          png(paste0(plot_path,
+                     "lmm_rnd_var_slopes_", rnd_var, "_", group, "_",
+                     str_replace(simple_form, "~", "_"), "_",
+                     time_stamp,
+                     ".png"),
+              width  = 250 * ceiling(sqrt(n_rnd_var)),
+              height = 250 * ceiling(sqrt(n_rnd_var)))
+          
+          print(
+            ggplot(data = data.frame(dep_var  = dat.occ.plt[[dep_var ]],
+                                     main_var = dat.occ.plt[[main_var]],
+                                     
+                                     # TODO: change this in case col name
+                                     #    for rnd_eff is changed
+                                     species  = dat.occ.plt[[rnd_var ]],
+                                     
+                                     # TODO: make this variable
+                                     group    = dat.occ.plt[["id.grp"]]),
+                   
+                   aes(main_var, dep_var, col = group)) +
+              
+              geom_point() +
+              
+              # add gam curve to check if linear model is actually applicable
+              geom_smooth(method = "gam", col = "red") +
+              
+              # plot model regression lines
+              geom_abline(data = rnd_eff_plt,
+                          aes(intercept = intercept,
+                              slope = slope)) +
+              
+              labs(title = rnd_var, subtitle = form,
+                   x = main_var, y = dep_var) +
+              
+              # add coloring
+              scale_color_manual(name   = "Group",
+                                 values = col.grp.sci) +
+              
+              facet_wrap( ~ species) +
+              
+              theme_minimal()
+          )
+          
+          dev.off()
+        }
       }
       
       log_msg("  ... Done.")
@@ -481,7 +513,11 @@ for (form in form_vec) {
     lm_res_fit_plot <- lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
                                     col_vec = dat.occ$id.grp,
                                     main = "Residuals vs Fitted",
-                                    sub = form)
+                                    sub = form) +
+      
+      # add coloring
+      scale_color_manual(name   = "Group",
+                         values = col.grp.sci)
     
     ggsave(paste0(plot_path,
                   "lmm_resid_fit_",
@@ -527,6 +563,8 @@ for (form in form_vec) {
              labs(title = "Historgram of residuals", subtitle = form,
                   xlab = "Residuals",
                   ylab = "Density") +
+             scale_color_manual(name   = "Group",
+                                values = col.grp.sci) +
              theme_minimal() +
              theme(panel.grid = element_blank()),
            width = 20, height = 12)
@@ -554,6 +592,8 @@ for (form in form_vec) {
              subtitle = form,
              x = toupper(fix_var),
              y = "Residuals") +
+        scale_color_manual(name   = "Group",
+                           values = col.grp.sci) +
         theme_minimal() +
         theme(panel.grid = element_blank())
       
@@ -615,15 +655,15 @@ for (form in form_vec) {
             geom_text(data = data.frame(
               rnd_var = sort(unique(dat.occ[[rnd_var]])),
               lab = paste0("n = ", table(dat.occ[[rnd_var]])),
-              ypos = ypos(mod_resid)
-            ), 
-            aes(rnd_var, ypos, label = lab)
-            ) +
+              ypos = ypos(mod_resid)), 
+            aes(rnd_var, ypos, label = lab)) +
             facet_wrap(~ rnd_var, scale = "free_x") +
             labs(title = toupper(rnd_var),
                  subtitle = form,
                  xlab = toupper(rnd_var),
                  ylab = "Residuals") +
+            scale_color_manual(name   = "Group",
+                               values = col.grp.sci) +
             theme_minimal() +
             theme(panel.grid = element_blank(),
                   axis.text.x = element_blank())
