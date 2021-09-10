@@ -790,13 +790,17 @@ int_slopes_asyn <- int_data %>%
     return(data.frame(
 
       # get general data on interaction partners
-      plant = int_data_row["plant"],
-      poll  = int_data_row["poll" ],
-      group = int_data_row["group"],
+      plant = int_data_row[["plant"]],
+      poll  = int_data_row[["poll" ]],
+      group = int_data_row[["group"]],
 
       # extract their slopes with temp
       slope_temp_plant = slopes_all_plant$slope_temp,
       slope_temp_poll  = slopes_all_poll $slope_temp,
+
+      # extract their intercepts with temp
+      intcp_temp_plant = slopes_all_plant$intercept_temp,
+      intcp_temp_poll  = slopes_all_poll $intercept_temp,
 
       # compute the difference between both temp slopes
       slope_temp_asyn  = slopes_all_plant$slope_temp -
@@ -822,6 +826,10 @@ int_slopes_asyn <- int_data %>%
       # extract their slopes over time
       slope_year_plant = slopes_all_plant$slope_year,
       slope_year_poll  = slopes_all_poll $slope_year,
+
+      # extract their intercepts with year
+      intcp_year_plant = slopes_all_plant$intercept_year,
+      intcp_year_poll  = slopes_all_poll $intercept_year,
       
       # compute the difference between both year slopes
       slope_year_asyn  = slopes_all_plant$slope_year -
