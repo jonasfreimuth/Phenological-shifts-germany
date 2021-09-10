@@ -84,6 +84,9 @@ col.ax   <- "gray31"
 # set col for annotations
 col.note <- "gray31"
 
+# ribbon alpha
+alpha.ribbon            <- 0.3
+
 # annotation text size
 annot_text              <- 20
 
