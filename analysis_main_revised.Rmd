@@ -397,8 +397,9 @@ slopes_temp %>%
   ggplot() +
   geom_pointrange(aes(x    = reorder(species,  -slope),
                       y    = slope,
-                      ymin = slope - slope_std_err,
-                      ymax = slope + slope_std_err, col = id.grp)) +
+                      ymin = slope - slope_std_err * 1.96,
+                      ymax = slope + slope_std_err * 1.96,
+                      col  = id.grp)) +
   
   # clearly denote the 0 line
   geom_hline(yintercept = 0) +
@@ -411,7 +412,7 @@ slopes_temp %>%
   
   # add lables
   labs(title = "Shifts with temperature",
-       y = "Slope",
+       y = "Slope [days / year] (\u00B1 95% CI) ",
        x = "Species") +
   
   # add coloring
@@ -429,8 +430,9 @@ slopes_year %>%
   ggplot() +
   geom_pointrange(aes(x    = reorder(species,  -slope),
                       y    = slope,
-                      ymin = slope - slope_std_err,
-                      ymax = slope + slope_std_err, col = id.grp)) +
+                      ymin = slope - slope_std_err * 1.96,
+                      ymax = slope + slope_std_err * 1.96,
+                      col  = id.grp)) +
   
   # clearly denote the 0 line
   geom_hline(yintercept = 0) +
@@ -443,7 +445,7 @@ slopes_year %>%
   
   # add lables
   labs(title = "Shifts with temperature",
-       y = "Slope [days / year] (\u00B1 SE)",
+       y = "Slope [days / \u00B0C] (\u00B1 95% CI)",
        x = "Species") +
   
   # add coloring
@@ -496,19 +498,17 @@ ph_aov_year
 ggplot() +
   
   # raw data
-  geom_pointrange(data = slopes_temp,
+  geom_point     (data = slopes_temp,
                   aes(x    = id.grp,
-                      y    = slope,
-                      ymin = slope - slope_std_err,
-                      ymax = slope + slope_std_err),
+                      y    = slope),
                   col = col.pt,
                   position = position_jitter()) +
   
   # error bars
   geom_errorbar  (data = slopes_temp_sum,
                   aes(x    = id.grp,
-                      ymin = slope_mean - slope_se,
-                      ymax = slope_mean + slope_se,
+                      ymin = slope_ci_min,
+                      ymax = slope_ci_max,
                       col  = id.grp)) +
   
   # mean data
@@ -525,7 +525,7 @@ ggplot() +
   labs(title = "Between group differences in shift",
        subtitle = "with temperature",
        x = "Group",
-       y = "Slope [days / \u00B0C] (\u00B1 SE)") +
+       y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -540,19 +540,17 @@ ggplot() +
 ggplot() +
   
   # raw data
-  geom_pointrange(data = slopes_year,
+  geom_point     (data = slopes_year,
                   aes(x    = id.grp,
-                      y    = slope,
-                      ymin = slope - slope_std_err,
-                      ymax = slope + slope_std_err),
+                      y    = slope),
                   col = col.pt,
                   position = position_jitter()) +
   
   # error bars
   geom_errorbar  (data = slopes_year_sum,
                   aes(x    = id.grp,
-                      ymin = slope_mean - slope_se,
-                      ymax = slope_mean + slope_se,
+                      ymin = slope_ci_min,
+                      ymax = slope_ci_max,
                       col  = id.grp)) +
   
   # mean data
@@ -569,7 +567,7 @@ ggplot() +
   labs(title = "Between group differences in shift",
        subtitle = "over time",
        x = "Group",
-       y = "Slope [days / year] (\u00B1 SE)") +
+       y = "Slope [days / year] (\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -650,18 +648,18 @@ ggplot() +
   geom_hline     (yintercept = 0, col = col.line) + 
   geom_vline     (xintercept = 0, col = col.line) +
   
-  # add errorbars for raw data
-  geom_errorbar  (data = slopes_all,
-                  aes(x    = slope_year,
-                      ymin = slope_temp - slope_std_err_temp,
-                      ymax = slope_temp + slope_std_err_temp),
-                  col = col.pt) +
-  
-  geom_errorbarh (data = slopes_all,
-                  aes(y    = slope_temp,
-                      xmin = slope_year - slope_std_err_year,
-                      xmax = slope_year + slope_std_err_year),
-                  col = col.pt) +
+  # # add errorbars for raw data
+  # geom_errorbar  (data = slopes_all,
+  #                 aes(x    = slope_year,
+  #                     ymin = slope_temp - slope_std_err_temp,
+  #                     ymax = slope_temp + slope_std_err_temp),
+  #                 col = col.pt) +
+  # 
+  # geom_errorbarh (data = slopes_all,
+  #                 aes(y    = slope_temp,
+  #                     xmin = slope_year - slope_std_err_year,
+  #                     xmax = slope_year + slope_std_err_year),
+  #                 col = col.pt) +
   
   # add raw data
   geom_point     (data = slopes_all,
@@ -672,16 +670,16 @@ ggplot() +
   # add year errorbar 
   geom_errorbarh (data = slopes_all_sum,
                   aes(y    = slope_mean_temp,
-                      xmin = slope_mean_year - slope_se_year,
-                      xmax = slope_mean_year + slope_se_year,
+                      xmin = slope_ci_min_year,
+                      xmax = slope_ci_max_year,
                       col  = id.grp
                       )) +
   
   # add temp errorbar
   geom_errorbar  (data = slopes_all_sum,
                   aes(x    = slope_mean_year,
-                      ymin = slope_mean_temp - slope_se_year,
-                      ymax = slope_mean_temp + slope_se_year,
+                      ymin = slope_ci_min_temp,
+                      ymax = slope_ci_max_temp,
                       col  = id.grp))  +
   
   # add group means
@@ -710,8 +708,8 @@ ggplot() +
   facet_wrap( ~ id.grp) + 
   
   # improve axis lables 
-  labs(x = "Shift over time [days / year] (\u00B1 SE)",
-       y = "Shift with temperature [days / \u00B0C] (\u00B1 SE)") +
+  labs(x = "Shift over time [days / year] (\u00B1 95% CI)",
+       y = "Shift with temperature [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -934,17 +932,15 @@ ggplot() +
   # raw data
   geom_pointrange(data = int_slope_asyn,
                   aes(x    = group,
-                      y    = slope_temp_asyn,
-                      ymin = slope_temp_asyn - slope_temp_asyn_std_err,
-                      ymax = slope_temp_asyn + slope_temp_asyn_std_err),
+                      y    = slope_temp_asyn),
                   col = col.pt,
                   position = position_jitter()) +
   
   # error bars
   geom_errorbar (data = int_slope_asyn_sum,
                  aes(x    = group,
-                     ymin = slope_temp_asyn_mean - slope_temp_asyn_se,
-                     ymax = slope_temp_asyn_mean + slope_temp_asyn_se,
+                     ymin = slope_temp_asyn_ci_min,
+                     ymax = slope_temp_asyn_ci_max,
                      col  = group)) +
   
   # mean data
@@ -961,7 +957,7 @@ ggplot() +
   labs(title = "Interaction asynchrony shifts",
        subtitle = "with temperature",
        x = "Group",
-       y = "Asynchrony shift [days / \u00B0C] (\u00B1 SE)") +
+       y = "Asynchrony shift [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add color
   scale_color_manual(name   = "Group",
@@ -978,17 +974,15 @@ ggplot() +
   # raw data
   geom_pointrange(data = int_slope_asyn,
                   aes(x    = group,
-                      y    = slope_year_asyn,
-                      ymin = slope_year_asyn - slope_year_asyn_std_err,
-                      ymax = slope_year_asyn + slope_year_asyn_std_err),
+                      y    = slope_year_asyn),
                   col = col.pt,
                   position = position_jitter()) +
   
   # error bars
   geom_errorbar (data = int_slope_asyn_sum,
                  aes(x    = group,
-                     ymin = slope_year_asyn_mean - slope_year_asyn_se,
-                     ymax = slope_year_asyn_mean + slope_year_asyn_se,
+                     ymin = slope_year_asyn_ci_min,
+                     ymax = slope_year_asyn_ci_max,
                      col  = group)) +
   
   # mean data
@@ -1005,7 +999,7 @@ ggplot() +
   labs(title = "Interaction asynchrony shifts",
        subtitle = "over time",
        x = "Group",
-       y = "Asynchrony shift [days / year] (\u00B1 SE)") +
+       y = "Asynchrony shift [days / year] (\u00B1 95% CI)") +
   
   # add color
   scale_color_manual(name   = "Group",
@@ -1104,19 +1098,17 @@ TukeyHSD(aov_int_year)
 ggplot() +
   
   # raw data
-  geom_pointrange(data = slopes_temp_polldep,
+  geom_point     (data = slopes_temp_polldep,
                   aes(x    = PollDep,
-                      y    = slope,
-                      ymin = slope - slope_std_err,
-                      ymax = slope + slope_std_err),
+                      y    = slope),
                   col = col.pt,
                   position = position_jitter()) +
   
   # error bars
   geom_errorbar (data = slopes_temp_polldep_sum,
                  aes(x    = PollDep,
-                     ymin = slope_mean - slope_se,
-                     ymax = slope_mean + slope_se,
+                     ymin = slope_ci_min,
+                     ymax = slope_ci_max,
                      col  = PollDep)) +
   
   # mean data
@@ -1133,7 +1125,7 @@ ggplot() +
   labs(title = "Between group differences in shift",
        subtitle = "with temperature",
        x = "Group",
-       y = "Slope [days / \u00B0C] (\u00B1 SE)") +
+       y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name = "Pollinator Dependency",
@@ -1149,19 +1141,17 @@ ggplot() +
 ggplot() +
   
   # raw data
-  geom_pointrange(data = slopes_year_polldep,
+  geom_point    (data = slopes_year_polldep,
                   aes(x    = PollDep,
-                      y    = slope,
-                      ymin = slope - slope_std_err,
-                      ymax = slope + slope_std_err),
+                      y    = slope),
                   col = col.pt,
                   position = position_jitter()) +
   
   # error bars
   geom_errorbar (data = slopes_year_polldep_sum,
                  aes(x    = PollDep,
-                     ymin = slope_mean - slope_se,
-                     ymax = slope_mean + slope_se,
+                     ymin = slope_ci_min,
+                     ymax = slope_ci_max,
                      col  = PollDep)) +
   
   # mean data
@@ -1178,7 +1168,7 @@ ggplot() +
   labs(title = "Between group differences in shift",
        subtitle = "over time",
        x = "Group",
-       y = "Slope [days / year] (\u00B1 SE)") +
+       y = "Slope [days / year] (\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name = "Pollinator Dependency",
