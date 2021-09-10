@@ -34,7 +34,7 @@ source("scripts/functions.R")
 
 ## Script control -----------------------------------------
 
-test_run            <- FALSE
+test_run            <- TRUE
 
 # run script for retrieving climate data from DWD regardless of data being 
 # already present?
@@ -45,7 +45,7 @@ force.clim.get      <- FALSE
 force.traits.get    <- FALSE
 
 # force running of occurrence getting script
-force.occ.get       <- TRUE
+force.occ.get       <- FALSE
 
 # control which of the downloaded files to delete
 #   - "all": delete both .zip files and extracted occ .txt files
@@ -55,7 +55,7 @@ force.occ.get       <- TRUE
 delete.occ.download <- "non"
 
 # force pruning of data and addition of climate and elevation
-force.occ.prune     <- TRUE
+force.occ.prune     <- FALSE
 
 
 ## Path names ---------------------------------------------
