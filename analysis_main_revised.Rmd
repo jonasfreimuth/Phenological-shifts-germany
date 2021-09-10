@@ -781,10 +781,10 @@ int_slopes_asyn <- int_data %>%
   apply(1, function(int_data_row) {
 
     # get slope data for plant and poll
-    slope_all_plant <- slopes_all %>%
+    slopes_all_plant <- slopes_all %>%
       filter(species == int_data_row[["plant"]])
 
-    slope_all_poll  <- slopes_all %>%
+    slopes_all_poll  <- slopes_all %>%
       filter(species == int_data_row[["poll" ]])
     
     return(data.frame(
@@ -795,52 +795,52 @@ int_slopes_asyn <- int_data %>%
       group = int_data_row["group"],
 
       # extract their slopes with temp
-      slope_temp_plant = slope_all_plant$slope_temp,
-      slope_temp_poll  = slope_all_poll $slope_temp,
+      slope_temp_plant = slopes_all_plant$slope_temp,
+      slope_temp_poll  = slopes_all_poll $slope_temp,
 
       # compute the difference between both temp slopes
-      slope_temp_asyn  = slope_all_plant$slope_temp -
-        slope_all_poll $slope_temp,
+      slope_temp_asyn  = slopes_all_plant$slope_temp -
+        slopes_all_poll$slope_temp,
       
       # compute their SEs
       slope_temp_asyn_std_err  = sqrt(
-        slope_all_plant$slope_std_err_temp  ^ 2 +
-          slope_all_poll$slope_std_err_temp ^ 2),
+        slopes_all_plant$slope_std_err_temp  ^ 2 +
+          slopes_all_poll$slope_std_err_temp ^ 2),
       
       
       # same for intercepts
-      intcp_temp_asyn  = slope_all_plant$intercept_temp - 
-        slope_all_poll $intercept_temp,
+      intcp_temp_asyn  = slopes_all_plant$intercept_temp - 
+        slopes_all_poll$intercept_temp,
       
       # compute their SEs
       intcp_temp_asyn_std_err  = sqrt(
-        slope_all_plant$intercept_std_err_temp  ^ 2 +
-          slope_all_poll$intercept_std_err_temp ^ 2),
+        slopes_all_plant$intercept_std_err_temp  ^ 2 +
+          slopes_all_poll$intercept_std_err_temp ^ 2),
       
       
       
       # extract their slopes over time
-      slope_year_plant = slope_all_plant$slope_year,
-      slope_year_poll  = slope_all_poll $slope_year,
+      slope_year_plant = slopes_all_plant$slope_year,
+      slope_year_poll  = slopes_all_poll $slope_year,
       
       # compute the difference between both year slopes
-      slope_year_asyn  = slope_all_plant$slope_year -
-        slope_all_poll $slope_year,
+      slope_year_asyn  = slopes_all_plant$slope_year -
+        slopes_all_poll$slope_year,
       
       # compute their SEs
       slope_year_asyn_std_err  = sqrt(
-        slope_all_plant$slope_std_err_year  ^ 2 +
-          slope_all_poll$slope_std_err_year ^ 2),
+        slopes_all_plant$slope_std_err_year  ^ 2 +
+          slopes_all_poll$slope_std_err_year ^ 2),
       
       
       # same for intercepts
-      intcp_year_asyn  = slope_all_plant$intercept_year - 
-        slope_all_poll $intercept_year,
+      intcp_year_asyn  = slopes_all_plant$intercept_year - 
+        slopes_all_poll$intercept_year,
       
       # compute their SEs
       intcp_year_asyn_std_err = sqrt(
-        slope_all_plant$intercept_std_err_year  ^ 2 +
-          slope_all_poll$intercept_std_err_year ^ 2)))
+        slopes_all_plant$intercept_std_err_year  ^ 2 +
+          slopes_all_poll$intercept_std_err_year ^ 2)))
     
   }) %>%
 
