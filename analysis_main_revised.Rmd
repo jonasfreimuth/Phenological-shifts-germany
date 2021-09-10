@@ -1010,6 +1010,104 @@ ggplot() +
 
 ```
 
+
+
+```{r simulate_interaction_diff_slopes}
+
+# for each interaction, derive the difference between the plant and the 
+#   pollinator in a given year or at a given temperature
+sim_int_diff_temp <- apply(
+  int_slopes_asyn, 1,
+  function(int_slopes_row, vec) {
+    
+    n <- length(temp_vec)
+    
+    # coercion to numeric necessary as apply treats int_slope_row as a character
+    #  matrix
+    intercept <- as.numeric(int_slopes_row[["intcp_temp_asyn"]])
+    slope     <- as.numeric(int_slopes_row[["slope_temp_asyn"]])
+    
+    diff_vec  <-  intercept + vec * slope
+    
+    return(data.frame(
+      plant = rep(int_slopes_row[["plant"]], n),
+      poll  = rep(int_slopes_row[["poll" ]], n),
+      group = rep(int_slopes_row[["group"]], n),
+      temp  = vec,
+      diff  = diff_vec
+      ))
+  }, temp_vec) %>% 
+  bind_rows()
+
+sim_int_diff_year <- apply(
+  int_slopes_asyn, 1,
+  function(int_slopes_row, vec) {
+    
+    n <- length(year_vec)
+    
+    # coercion to numeric necessary as apply treats int_slope_row as a character
+    #  matrix
+    intercept <- as.numeric(int_slopes_row[["intcp_year_asyn"]])
+    slope     <- as.numeric(int_slopes_row[["slope_year_asyn"]])
+    
+    diff_vec  <-  intercept + vec * slope
+    
+    return(data.frame(
+      plant = rep(int_slopes_row[["plant"]], n),
+      poll  = rep(int_slopes_row[["poll" ]], n),
+      group = rep(int_slopes_row[["group"]], n),
+      year  = vec,
+      diff  = diff_vec
+      ))
+  }, year_vec) %>% 
+  bind_rows()
+
+```
+
+
+
+```{r plot_diff_slopes}
+
+ggplot(sim_int_diff_temp, aes(temp, diff, col = group)) +
+  
+  geom_point() + 
+  
+  # line denoting 0
+  geom_hline    (yintercept = 0,
+                 col = col.line) +
+  
+  labs(title    = "Asynchrony in interactions",
+       subtitle = "with temperature",
+       x = "Temperature",
+       y = "Asynchrony [days]") +
+  
+  # add color
+  scale_color_manual(name = "Group",
+                     values = col.int$colour) +
+  
+  theme_shifts()
+
+ggplot(sim_int_diff_year, aes(year, diff, col = group)) +
+  
+  geom_point() + 
+  
+  # line denoting 0
+  geom_hline    (yintercept = 0,
+                 col = col.line) +
+  
+  labs(title    = "Asynchrony in interactions",
+       subtitle = "over time",
+       x = "Year",
+       y = "Asynchrony [days]") +
+  
+  # add color
+  scale_color_manual(name = "Group",
+                     values = col.int$colour) +
+  
+  theme_shifts()
+
+```
+
 ## Analysis of influence of plant traits
 
 ```{r get_and_sum_plant_traits_slopes}
