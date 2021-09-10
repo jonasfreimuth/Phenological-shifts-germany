@@ -24,7 +24,7 @@ test_run <- TRUE
 
 # save diagnostics plots
 # will take a very long time on the full dataset
-plot_diagnostics <- TRUE
+plot_diagnostics <- FALSE
 
 # additionally save facetted plots of diagnostic plots 
 #   will have no effect if plot_diagnostics == FALSE
