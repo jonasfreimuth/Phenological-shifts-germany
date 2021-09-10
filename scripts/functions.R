@@ -248,7 +248,7 @@ slopes <- function(data, formula = mean.doy ~ year,
     data <- filter(data, tax_level == x)
     
     log_msg("# of records for", quo_get_expr(tax_level), x,  "is",
-                nrow(data))
+            nrow(data))
     
     #if not enough records for taxlevel are present, skip
     if (nrow(data) < thr) {
@@ -640,12 +640,12 @@ dur_plot_2k <- function(x = decade,
 
 # function for generating species interaction plots on yearly data
 int_plot_year <- function(data = dat.i, x,
-                     filename = paste0(x, '_',
-                                    paste(unique(data$species),
-                                          collapse = '_'),
-                                    ".png"),
-                     dir = paste0("plots/interactions/", x),
-                     width = 20, height = 12.5
+                          filename = paste0(x, '_',
+                                            paste(unique(data$species),
+                                                  collapse = '_'),
+                                            ".png"),
+                          dir = paste0("plots/interactions/", x),
+                          width = 20, height = 12.5
 ) {
   # print(dir)
   dir.check(dir)
@@ -679,12 +679,12 @@ int_plot_year <- function(data = dat.i, x,
 # function for generating species interaction plots on decadal data
 # warning, does different things from yearly plot
 int_plot_dec <- function(data = dat.i, x,
-                     filename = paste0(x, '_',
-                                    paste(unique(data$species),
-                                          collapse = '_'),
-                                    ".png"),
-                     dir = paste0("plots/interactions/", x, "/"),
-                     width = 20, height = 12.5
+                         filename = paste0(x, '_',
+                                           paste(unique(data$species),
+                                                 collapse = '_'),
+                                           ".png"),
+                         dir = paste0("plots/interactions/", x, "/"),
+                         width = 20, height = 12.5
 ) {
   
   dir.check(dir)
@@ -735,12 +735,12 @@ sum_df <- function(df, group_vars) {
     summarise(tibble(
       across(where(is.character), char_list,
              .names = '{.col}.{.fn}'
-             ),
+      ),
       across(where(is.numeric), num_list,
              .names = '{.col}.{.fn}'
-             )
-             )
-      ) %>% 
+      )
+    )
+    ) %>% 
     ungroup()
   
   return(df_sum)
@@ -799,8 +799,8 @@ pairdiff <- function(data, formula, test = "Tukey",
     
     #find letters for non differing factor levels
     pairs <- multcompLetters(pvals,
-      Letters = Letters,
-      threshold = threshold)
+                             Letters = Letters,
+                             threshold = threshold)
     
     # save only Letters and factor levels
     levels_df <- data.frame(letter = pairs$Letters, level = names(pairs$Letters))
@@ -815,8 +815,8 @@ pairdiff <- function(data, formula, test = "Tukey",
     # extract names and pvals from test
     pvals <- test[["p.value"]]
     names(pvals) <-paste(str_extract(names(test[["estimate"]]),
-                                        "[:alpha:]+$"), 
-                            collapse = "-")
+                                     "[:alpha:]+$"), 
+                         collapse = "-")
     
     #find letters for non differeing factor levels
     pairs <- multcompLetters(pvals, Letters = Letters,
@@ -981,16 +981,16 @@ traitplot <- function(abb_trait) {
     #                   level_order = sort(
     #                     unique(stat.trait.time$stat[[quo_get_expr(abb_trait)]]))
     #                   ),
-    #   aes(
-    #     x = level,
-    #     y = ypos(stat.trait.time$stat$slope, frac = 0.1),
-    #     label = letter
-    #   ),
-    #   size = 13,
-    #   col = "gray31"
-    # ) +
-    labs(x = as.character(quo_get_expr(abb_trait)),
-         y = "Temporal change [days/decade]") +
+  #   aes(
+  #     x = level,
+  #     y = ypos(stat.trait.time$stat$slope, frac = 0.1),
+  #     label = letter
+  #   ),
+  #   size = 13,
+  #   col = "gray31"
+  # ) +
+  labs(x = as.character(quo_get_expr(abb_trait)),
+       y = "Temporal change [days/decade]") +
     scale_y_continuous(labels = mult_10_format()) +
     theme(axis.title = element_text(size = 40),
           axis.text = element_text(size = 40),
@@ -1031,17 +1031,17 @@ traitplot <- function(abb_trait) {
     #   data = pairdiff(stat.trait.temp$stat, pd.form,
     #                   level_order = sort(
     #                     unique(stat.trait.time$stat[[quo_get_expr(abb_trait)]]))
-    #   ),
-    #   aes(
-    #     x = level,
-    #     y = ypos(stat.trait.temp$stat$slope, frac = 0.1),
-    #     label = letter
-    #   ),
-    #   size = 13,
-    #   col = "gray31"
-    # ) +
-    labs(x = as.character(quo_get_expr(abb_trait)),
-         y = "Climate sensitivity [days/\u00B0C]") +
+  #   ),
+  #   aes(
+  #     x = level,
+  #     y = ypos(stat.trait.temp$stat$slope, frac = 0.1),
+  #     label = letter
+  #   ),
+  #   size = 13,
+  #   col = "gray31"
+  # ) +
+  labs(x = as.character(quo_get_expr(abb_trait)),
+       y = "Climate sensitivity [days/\u00B0C]") +
     theme(axis.title = element_text(size = 40),
           axis.text = element_text(size = 40),
           axis.ticks = element_line(colour = col.ax, size = 1.2),
@@ -1169,7 +1169,7 @@ dur_slope_plot_save <- function(x = id.grp,
                                 xlab = NULL, ylab = NULL,
                                 ylim = NULL,
                                 y_ax_explanation = NULL # currently unused
-                                ) {
+) {
   
   x <- enquo(x)
   y <- enquo(y)
@@ -1215,7 +1215,7 @@ dur_slope_plot_save <- function(x = id.grp,
                              !(id.grp %in% c(excl.group.year,
                                              col.grp$group[5]))),
                       formula(str_glue("{quo_get_expr(y)} ~ {quo_get_expr(x)}"))
-                      ),
+      ),
       aes(
         x = level,
         y = ypos(c(stat.all.dur$slope,
@@ -1230,7 +1230,7 @@ dur_slope_plot_save <- function(x = id.grp,
          y = ylab) +
     coord_cartesian(ylim = ylim,
                     # xlim = c(1, nrow(metadata) + 1) # extends plot to the right
-                    ) +
+    ) +
     scale_y_continuous(labels = mult_10_format(),
                        
     ) +
@@ -1243,7 +1243,7 @@ dur_slope_plot_save <- function(x = id.grp,
       axis.text.x = element_text(size = 35,
                                  # angle = 25,
                                  # hjust = 1
-                                 ),
+      ),
       axis.ticks = element_line(colour = col.ax, size = 1.2),
       axis.ticks.length.y.left = unit(8, "bigpts"),
       axis.ticks.length.x.bottom = unit(8, "bigpts"),
@@ -1638,6 +1638,18 @@ append.df <- function(name, value, multiplier = NULL, formattedValue = NULL,  ta
 
 # Lmm functions -----------------------------------------------------------
 
+# function to extract raw marginal residuals from lmer mod
+# Adapted from:
+# https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
+rawMargResid <- function (mod) {
+  if (class(mod) != "lmerMod") {
+    stop(paste("This only works for lme4 linear mixed effects models of",
+               "class lmerMod."))
+  }
+  res <- as.vector(mod@resp$y - (mod@pp$X %*% matrix(mod@beta, ncol = 1)))
+  return(res)
+}
+
 # function to plot precomputed residuals and fitted values of a lm against
 #   each other using ggplot. Formalized as a function mainly for consistency
 lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL, 
@@ -1664,7 +1676,7 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
   if (!is.null(col_vec)) {
     # if we have a separated line for groups, also add an overall line
     plot <- plot +
-    geom_smooth() +
+      geom_smooth() +
       geom_smooth(aes(fit, resid),
                   group = "overall", col = "red")
   }

@@ -1,1 +1,1 @@
-doy ~ year + lat + long + elev + (year | species)
+doy ~ year + lat + long + (year | species)

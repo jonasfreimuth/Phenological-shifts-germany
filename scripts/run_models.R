@@ -20,7 +20,7 @@ col.grp.sci <- c(Coleoptera  = "#9815db",
 
 # do a testing run? 
 # will reduce data size and save outputs into separate directories
-test_run <- FALSE
+test_run <- TRUE
 
 # save diagnostics plots
 # will take a very long time on the full dataset
@@ -483,8 +483,10 @@ for (form in form_vec) {
     
     log_msg("Extracting plotting data...")
     
-    mod_resid <- residuals(lm_mod)
-    mod_fitvl <- fitted   (lm_mod)
+    # extraction of raw marginal residuals nicked from the redress package:
+    # https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
+    mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+    mod_fitvl <- fitted(lm_mod)
     
     rm(lm_mod)
     
