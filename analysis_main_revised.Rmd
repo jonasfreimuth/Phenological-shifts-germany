@@ -774,7 +774,7 @@ int_data_sum
 temp_vec <- unique(dat.occ$temp)
 year_vec <- unique(dat.occ$year)
 
-int_slope_asyn <- int_data %>%
+int_slopes_asyn <- int_data %>%
   apply(1, function(int_data_row) {
 
     # get slope data for plant and poll
@@ -851,7 +851,7 @@ int_slope_asyn <- int_data %>%
 
 cat("Differences in slope of asynchrony with temperature:\n\n")
 
-aov_asyn_temp <- aov(data = int_slope_asyn, slope_temp_asyn ~ group,
+aov_asyn_temp <- aov(data = int_slopes_asyn, slope_temp_asyn ~ group,
                      weights = 1 / (slope_temp_asyn_std_err ^ 2))
 summary(aov_asyn_temp)
 
@@ -863,7 +863,7 @@ cat("\n\n")
 cat("----------------------------------------------------------\n\n")
 cat("Differences in slope of asynchrony over time:\n\n")
 
-aov_asyn_year <- aov(data = int_slope_asyn, slope_year_asyn ~ group,
+aov_asyn_year <- aov(data = int_slopes_asyn, slope_year_asyn ~ group,
                      weights = 1 / (slope_year_asyn_std_err ^ 2))
 summary(aov_asyn_year)
 
@@ -877,7 +877,7 @@ TukeyHSD(aov_asyn_year)
 
 ```{r summarize_slope_interactions}
 
-int_slope_asyn_sum <- int_slope_asyn %>% 
+int_slopes_asyn_sum <- int_slopes_asyn %>% 
   group_by(group) %>% 
   summarise(n_int                         = length(slope_temp_plant),
             
@@ -918,7 +918,7 @@ int_slope_asyn_sum <- int_slope_asyn %>%
   )
 
 
-int_slope_asyn_sum
+int_slopes_asyn_sum
 
 ```
 
@@ -930,21 +930,21 @@ int_slope_asyn_sum
 ggplot() +
   
   # raw data
-  geom_pointrange(data = int_slope_asyn,
+  geom_point     (data = int_slopes_asyn,
                   aes(x    = group,
                       y    = slope_temp_asyn),
                   col = col.pt,
                   position = position_jitter()) +
   
   # error bars
-  geom_errorbar (data = int_slope_asyn_sum,
+  geom_errorbar (data = int_slopes_asyn_sum,
                  aes(x    = group,
                      ymin = slope_temp_asyn_ci_min,
                      ymax = slope_temp_asyn_ci_max,
                      col  = group)) +
   
   # mean data
-  geom_point    (data = int_slope_asyn_sum,
+  geom_point    (data = int_slopes_asyn_sum,
                  aes(x   = group,
                      y   = slope_temp_asyn_mean,
                      col = group)) + 
@@ -972,21 +972,21 @@ ggplot() +
 ggplot() +
   
   # raw data
-  geom_pointrange(data = int_slope_asyn,
+  geom_point     (data = int_slopes_asyn,
                   aes(x    = group,
                       y    = slope_year_asyn),
                   col = col.pt,
                   position = position_jitter()) +
   
   # error bars
-  geom_errorbar (data = int_slope_asyn_sum,
+  geom_errorbar (data = int_slopes_asyn_sum,
                  aes(x    = group,
                      ymin = slope_year_asyn_ci_min,
                      ymax = slope_year_asyn_ci_max,
                      col  = group)) +
   
   # mean data
-  geom_point    (data = int_slope_asyn_sum,
+  geom_point    (data = int_slopes_asyn_sum,
                  aes(x   = group,
                      y   = slope_year_asyn_mean,
                      col = group)) + 
