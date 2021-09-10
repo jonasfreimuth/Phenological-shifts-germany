@@ -1118,6 +1118,33 @@ sim_diff_year <- apply(
   
   bind_rows()
 
+
+# summarize per temp differences over groups
+sim_diff_temp_sum <- sim_diff_temp %>%
+  
+  group_by(group, temp) %>%
+  
+  summarize(diff_n            = length(diff),
+            diff_mean         = mean(diff),
+            diff_sem          = sqrt( var(diff) / length(diff)),
+            diff_ci_min       = diff_mean - 1.96 * diff_sem,
+            diff_ci_max       = diff_mean + 1.96 * diff_sem,
+            perc_poll_earlier = (sum(diff > 0) / length(diff)) * 100)
+
+
+# summarize per year differences over groups
+sim_diff_year_sum <- sim_diff_year %>%
+
+  group_by(group, year) %>%
+  
+  summarize(diff_n            = length(diff),
+            diff_mean         = mean(diff),
+            diff_sem          = sqrt( var(diff) / length(diff)),
+            diff_ci_min       = diff_mean - 1.96 * diff_sem,
+            diff_ci_max       = diff_mean + 1.96 * diff_sem,
+            perc_poll_earlier = (sum(diff > 0) / length(diff)) * 100)
+
+
 ```
 
 
