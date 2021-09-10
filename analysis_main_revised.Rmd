@@ -774,9 +774,6 @@ int_data_sum
 
 ```{r compute_asynchrony}
 
-temp_vec <- unique(dat.occ$temp)
-year_vec <- unique(dat.occ$year)
-
 int_slopes_asyn <- int_data %>%
   apply(1, function(int_data_row) {
 
@@ -1025,11 +1022,34 @@ ggplot() +
 
 ```{r simulate_interaction_diff_slopes}
 
+# TODO: give error for estimated points
+
+# TODO: extract this along with random effects
+center <- TRUE
+scale  <- TRUE
+
+# extract sd and mean for temp and year
+# necessary to undo the scaling
+sd_temp   <- sd  (dat.occ$temp)
+mean_temp <- mean(dat.occ$temp)
+
+sd_year   <- sd  (dat.occ$year)
+mean_year <- mean(dat.occ$year)
+
+
+temp_vec <- unique(scale(dat.occ$temp,
+                         center = center,
+                         scale  = scale))
+
+year_vec <- unique(scale(dat.occ$year,
+                         center = center,
+                         scale  = scale))
+
 # for each interaction, derive the difference between the plant and the 
 #   pollinator in a given year or at a given temperature
-sim_int_diff_temp <- apply(
+sim_diff_temp <- apply(
   int_slopes_asyn, 1,
-  function(int_slopes_row, vec) {
+  function(int_slopes_row) {
     
     n <- length(temp_vec)
     
@@ -1038,21 +1058,34 @@ sim_int_diff_temp <- apply(
     intercept <- as.numeric(int_slopes_row[["intcp_temp_asyn"]])
     slope     <- as.numeric(int_slopes_row[["slope_temp_asyn"]])
     
-    diff_vec  <-  intercept + vec * slope
+    diff_vec  <-  intercept + temp_vec * slope
+    
+    # if vec has been scaled, undo scaling
+    if (center) {
+      diff_vec <- diff_vec * sd_temp
+      temp_vec <- temp_vec * sd_temp
+    }
+    if (scale) {
+      diff_vec <- diff_vec + mean_temp
+      temp_vec <- temp_vec + mean_temp
+    }
     
     return(data.frame(
       plant = rep(int_slopes_row[["plant"]], n),
       poll  = rep(int_slopes_row[["poll" ]], n),
       group = rep(int_slopes_row[["group"]], n),
-      temp  = vec,
+      temp  = temp_vec,
       diff  = diff_vec
       ))
-  }, temp_vec) %>% 
+    
+  }) %>% 
+  
   bind_rows()
 
-sim_int_diff_year <- apply(
+
+sim_diff_year <- apply(
   int_slopes_asyn, 1,
-  function(int_slopes_row, vec) {
+  function(int_slopes_row) {
     
     n <- length(year_vec)
     
@@ -1061,16 +1094,28 @@ sim_int_diff_year <- apply(
     intercept <- as.numeric(int_slopes_row[["intcp_year_asyn"]])
     slope     <- as.numeric(int_slopes_row[["slope_year_asyn"]])
     
-    diff_vec  <-  intercept + vec * slope
+    diff_vec  <-  intercept + year_vec * slope
+    
+    # if vec has been scaled, undo scaling
+    if (center) {
+      diff_vec <- diff_vec * sd_year
+      year_vec <- year_vec * sd_year
+    }
+    if (scale) {
+      diff_vec <- diff_vec + mean_year
+      year_vec <- year_vec + mean_year
+    }
     
     return(data.frame(
       plant = rep(int_slopes_row[["plant"]], n),
       poll  = rep(int_slopes_row[["poll" ]], n),
       group = rep(int_slopes_row[["group"]], n),
-      year  = vec,
+      year  = year_vec,
       diff  = diff_vec
       ))
-  }, year_vec) %>% 
+    
+  }) %>% 
+  
   bind_rows()
 
 ```
