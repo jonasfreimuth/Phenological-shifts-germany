@@ -359,9 +359,9 @@ slopes_temp_sum <- slopes_temp %>%
   summarise(n_spec              = length(slope),
             slope_mean          = mean(slope),
             slope_sd            = sd(slope),
-            slope_se            = sqrt(sum(slope_std_err ^ 2)) / length(slope),
-            slope_ci_min        = slope_mean - slope_se * 1.96,
-            slope_ci_max        = slope_mean + slope_se * 1.96,
+            slope_sem           = sqrt(sum(slope_std_err ^ 2)) / length(slope),
+            slope_ci_min        = slope_mean - slope_sem * 1.96,
+            slope_ci_max        = slope_mean + slope_sem * 1.96,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Temperature")
 
@@ -370,9 +370,9 @@ slopes_year_sum <- slopes_year %>%
   summarise(n_spec              = length(slope),
             slope_mean          = mean(slope),
             slope_sd            = sd(slope),
-            slope_se            = sqrt(sum(slope_std_err ^ 2)) / length(slope),
-            slope_ci_min        = slope_mean - slope_se * 1.96,
-            slope_ci_max        = slope_mean + slope_se * 1.96,
+            slope_sem           = sqrt(sum(slope_std_err ^ 2)) / length(slope),
+            slope_ci_min        = slope_mean - slope_sem * 1.96,
+            slope_ci_max        = slope_mean + slope_sem * 1.96,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Year")
 
@@ -887,36 +887,36 @@ int_slopes_asyn_sum <- int_slopes_asyn %>%
             # summarize temp asyn
             slope_temp_asyn_mean          = mean(slope_temp_asyn),
             slope_temp_asyn_sd            = sd(slope_temp_asyn),
-            slope_temp_asyn_se            = sqrt(
+            slope_temp_asyn_sem           = sqrt(
               sum(slope_temp_asyn_std_err ^ 2)) / length(slope_temp_asyn),
             slope_temp_asyn_ci_min        = slope_temp_asyn_mean - 
-              slope_temp_asyn_se * 1.96,
+              slope_temp_asyn_sem * 1.96,
             slope_temp_asyn_ci_max        = slope_temp_asyn_mean + 
-              slope_temp_asyn_se * 1.96,
+              slope_temp_asyn_sem * 1.96,
             slope_temp_asyn_frac_negative = sum(slope_temp_asyn < 0) /
               length(slope_temp_asyn),
             
             # summarize intercept
             intcp_temp_asyn_mean          = mean(intcp_temp_asyn),
-            intcp_temp_asyn_se            = sqrt(
+            intcp_temp_asyn_sem           = sqrt(
               sum(intcp_temp_asyn_std_err ^ 2)) / length(intcp_temp_asyn),
             
             
             # summarize year asyn
             slope_year_asyn_mean          = mean(slope_year_asyn),
             slope_year_asyn_sd            = sd(slope_year_asyn),
-            slope_year_asyn_se            = sqrt(
+            slope_year_asyn_sem           = sqrt(
               sum(slope_year_asyn_std_err ^ 2)) / length(slope_year_asyn),
             slope_year_asyn_ci_min        = slope_year_asyn_mean - 
-              slope_year_asyn_se * 1.96,
+              slope_year_asyn_sem * 1.96,
             slope_year_asyn_ci_max        = slope_year_asyn_mean + 
-              slope_year_asyn_se * 1.96,
+              slope_year_asyn_sem * 1.96,
             slope_year_asyn_frac_negative = sum(slope_year_asyn < 0) /
               length(slope_year_asyn),
             
             # summarize intercept
             intcp_year_asyn_mean          = mean(intcp_year_asyn),
-            intcp_year_asyn_se            = sqrt(
+            intcp_year_asyn_sem           = sqrt(
               sum(intcp_year_asyn_std_err ^ 2)) / length(intcp_year_asyn)
   )
 
@@ -1129,9 +1129,9 @@ slopes_temp_polldep_sum <- slopes_temp_polldep %>%
   summarise(n_spec              = length(slope),
             slope_mean          = mean(slope),
             slope_sd            = sd(slope),
-            slope_se            = sqrt(sum(slope_std_err ^ 2)) / length(slope),
-            slope_ci_min        = slope_mean - slope_se * 1.96,
-            slope_ci_max        = slope_mean + slope_se * 1.96,
+            slope_sem           = sqrt(sum(slope_std_err ^ 2)) / length(slope),
+            slope_ci_min        = slope_mean - slope_sem * 1.96,
+            slope_ci_max        = slope_mean + slope_sem * 1.96,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Temperature")
 
@@ -1140,9 +1140,9 @@ slopes_year_polldep_sum <- slopes_year_polldep %>%
   summarise(n_spec              = length(slope),
             slope_mean          = mean(slope),
             slope_sd            = sd(slope),
-            slope_se            = sqrt(sum(slope_std_err ^ 2)) / length(slope),
-            slope_ci_min        = slope_mean - slope_se * 1.96,
-            slope_ci_max        = slope_mean + slope_se * 1.96,
+            slope_sem           = sqrt(sum(slope_std_err ^ 2)) / length(slope),
+            slope_ci_min        = slope_mean - slope_sem * 1.96,
+            slope_ci_max        = slope_mean + slope_sem * 1.96,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Year")
 
