@@ -96,7 +96,8 @@ if (!(test_run && exists("dat.occ"))) {
     # calculate roughly how many species we want
     samp_size <- ceiling((uniqueN(dat.occ$species) * 0.02))
     
-    # TODO: Make this work
+    # calculate how many species from each group we need to represent the 
+    #   proportions in the overall data
     spec_sizes <- dat.occ %>% 
       group_by(id.grp) %>% 
       mutate(group_size = uniqueN(species)) %>%
@@ -128,17 +129,6 @@ if (!(test_run && exists("dat.occ"))) {
     
   }
   
-  # save mean and sd of dat occ as it is for later rescaling of data
-  fwrite(dat.occ %>%
-           summarise(across(tidyselect:::where(is.numeric),
-                            list(mean = mean, sd = sd))) %>% 
-           
-           # record what we did to the predictor variables
-           mutate(center = center_preds, scale = scale_preds),
-         paste0(run_path,
-                "data_summary", "_",
-                script_time_stamp, ".csv"))
-  
   dat.occ <- dat.occ %>%
     
     # if specified, center and / or scale data
@@ -146,6 +136,17 @@ if (!(test_run && exists("dat.occ"))) {
                   center = center_preds, scale = scale_preds))
   
 }
+
+# save mean and sd of dat occ as it is for later rescaling of data
+fwrite(dat.occ %>%
+         summarise(across(tidyselect:::where(is.numeric),
+                          list(mean = mean, sd = sd))) %>% 
+         
+         # record what we did to the predictor variables
+         mutate(center = center_preds, scale = scale_preds),
+       paste0(run_path,
+              "data_summary", "_",
+              script_time_stamp, ".csv"))
 
 log_msg("... Done.")
 
