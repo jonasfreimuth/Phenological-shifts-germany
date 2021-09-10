@@ -1234,6 +1234,77 @@ ggplot() +
 
 ```
 
+
+
+```{r plot_poll_early}
+
+# for temp
+ggplot(data = sim_diff_temp_sum,
+       aes(temp, perc_poll_earlier, col = group)) +
+  
+  # add group data as points
+  geom_line () +
+  
+  # line denoting 50%
+  geom_hline(yintercept = 50,
+                 col = col.line) +
+  
+  # ensure the whole range is visible
+  ylim      (c(0, 100)) + 
+  
+  # add facets
+  facet_wrap( ~ group ) +
+  
+  labs(title    = "Change in earlier partner",
+       subtitle = "with temperature",
+       x        = "Temperature [\u00B0C]",
+       y        = paste("Fraction of interactions with pollinators",
+                        "earlier than plants [%]",
+                        sep = "\n")) +
+  
+  # add color
+  scale_color_manual(name       = "Group",
+                     values     = col.int$colour,
+                     aesthetics = c("col", "fill")) +
+  
+  # suppress legend
+  theme_shifts(legend.position = "none")
+
+
+# for year
+ggplot(data = sim_diff_year_sum,
+       aes(year, perc_poll_earlier, col = group)) +
+  
+  # add group data as points
+  geom_line () +
+  
+  # line denoting 50%
+  geom_hline(yintercept = 50,
+                 col = col.line) +
+  
+  # ensure the whole range is visible
+  ylim      (c(0, 100)) + 
+  
+  # add facets
+  facet_wrap( ~ group ) +
+  
+  labs(title    = "Change in earlier partner",
+       subtitle = "over time",
+       x        = "Year",
+       y        = paste("Fraction of interactions with pollinators",
+                        "earlier than plants [%]",
+                        sep = "\n")) +
+  
+  # add color
+  scale_color_manual(name       = "Group",
+                     values     = col.int$colour,
+                     aesthetics = c("col", "fill")) +
+  
+  # suppress legend
+  theme_shifts(legend.position = "none")
+
+```
+
 ## Analysis of influence of plant traits
 
 ```{r get_and_sum_plant_traits_slopes}
