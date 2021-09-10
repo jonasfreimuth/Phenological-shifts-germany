@@ -1151,13 +1151,32 @@ sim_diff_year_sum <- sim_diff_year %>%
 
 ```{r plot_diff_slopes}
 
-ggplot(sim_int_diff_temp, aes(temp, diff, col = group)) +
+# for temp
+ggplot() +
   
-  geom_point() + 
+  # add per interaction data
+  geom_point(data = sim_diff_temp,
+             aes(temp, diff),
+             col = col.pt) + 
+  
+  # add confint for group average data as ribbon
+  geom_ribbon(data = sim_diff_temp_sum,
+              aes(x    = temp,
+                  ymin = diff_ci_min,
+                  ymax = diff_ci_max,
+                  fill = group),
+              alpha = alpha.ribbon) +
+  
+  # add group average data as a line
+  geom_line(data = sim_diff_temp_sum,
+            aes(temp, diff_mean, col = group)) +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
                  col = col.line) +
+  
+  # add facets
+  facet_wrap( ~ group ) +
   
   labs(title    = "Asynchrony in interactions",
        subtitle = "with temperature",
@@ -1165,18 +1184,40 @@ ggplot(sim_int_diff_temp, aes(temp, diff, col = group)) +
        y        = "Asynchrony [days] (\u00B1 95% CI)") +
   
   # add color
-  scale_color_manual(name = "Group",
-                     values = col.int$colour) +
+  scale_color_manual(name       = "Group",
+                     values     = col.int$colour,
+                     aesthetics = c("col", "fill")) +
   
-  theme_shifts()
+  # suppress legend
+  theme_shifts(legend.position = "none")
 
-ggplot(sim_int_diff_year, aes(year, diff, col = group)) +
+
+# for year
+ggplot() +
   
-  geom_point() + 
+  # add per interaction data
+  geom_point(data = sim_diff_year,
+             aes(year, diff),
+             col = col.pt) + 
+  
+  # add confint for group average data as ribbon
+  geom_ribbon(data = sim_diff_year_sum,
+              aes(x    = year,
+                  ymin = diff_ci_min,
+                  ymax = diff_ci_max,
+                  fill = group),
+              alpha = alpha.ribbon) +
+  
+  # add group average data as a line
+  geom_line(data = sim_diff_year_sum,
+            aes(year, diff_mean, col = group)) +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
                  col = col.line) +
+  
+  # add facets
+  facet_wrap( ~ group ) +
   
   labs(title    = "Asynchrony in interactions",
        subtitle = "over time",
@@ -1184,10 +1225,12 @@ ggplot(sim_int_diff_year, aes(year, diff, col = group)) +
        y        = "Asynchrony  (\u00B1 95% CI)") +
   
   # add color
-  scale_color_manual(name = "Group",
-                     values = col.int$colour) +
+  scale_color_manual(name       = "Group",
+                     values     = col.int$colour,
+                     aesthetics = c("col", "fill")) +
   
-  theme_shifts()
+  # suppress legend
+  theme_shifts(legend.position = "none")
 
 ```
 
