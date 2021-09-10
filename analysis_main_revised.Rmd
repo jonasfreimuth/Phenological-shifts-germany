@@ -47,7 +47,7 @@ force.traits.get    <- FALSE
 # force running of occurrence getting script
 force.occ.get       <- TRUE
 
-# control which of the downloaded files to delede
+# control which of the downloaded files to delete
 #   - "all": delete both .zip files and extracted occ .txt files
 #   - "zip": delete only .zip files, keep .txt
 #   - "txt": delete only .txt files, keep .zip
@@ -957,10 +957,10 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title = "Interaction asynchrony shifts",
+  labs(title    = "Interaction asynchrony shifts",
        subtitle = "with temperature",
-       x = "Group",
-       y = "Asynchrony shift [days / \u00B0C] (\u00B1 95% CI)") +
+       x        = "Group",
+       y        = "Asynchrony shift [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add color
   scale_color_manual(name   = "Group",
@@ -999,10 +999,10 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title = "Interaction asynchrony shifts",
+  labs(title    = "Interaction asynchrony shifts",
        subtitle = "over time",
-       x = "Group",
-       y = "Asynchrony shift [days / year] (\u00B1 95% CI)") +
+       x        = "Group",
+       y        = "Asynchrony shift [days / year] (\u00B1 95% CI)") +
   
   # add color
   scale_color_manual(name   = "Group",
@@ -1081,8 +1081,8 @@ ggplot(sim_int_diff_temp, aes(temp, diff, col = group)) +
   
   labs(title    = "Asynchrony in interactions",
        subtitle = "with temperature",
-       x = "Temperature",
-       y = "Asynchrony [days]") +
+       x        = "Temperature [\u00B0C]",
+       y        = "Asynchrony [days] (\u00B1 95% CI)") +
   
   # add color
   scale_color_manual(name = "Group",
@@ -1100,8 +1100,8 @@ ggplot(sim_int_diff_year, aes(year, diff, col = group)) +
   
   labs(title    = "Asynchrony in interactions",
        subtitle = "over time",
-       x = "Year",
-       y = "Asynchrony [days]") +
+       x        = "Year",
+       y        = "Asynchrony  (\u00B1 95% CI)") +
   
   # add color
   scale_color_manual(name = "Group",
@@ -1223,14 +1223,13 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title = "Between group differences in shift",
+  labs(title    = "Between group differences in shift",
        subtitle = "with temperature",
-       x = "Group",
-       y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
+       x        = "Group",
+       y        = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
-  scale_color_manual(name = "Pollinator Dependency",
-                     labels = col.PollDep$group,
+  scale_color_manual(name   = "Pollinator Dependency",
                      values = col.PollDep$colour) +
   
   # suppress legend
@@ -1266,14 +1265,13 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title = "Between group differences in shift",
+  labs(title    = "Between group differences in shift",
        subtitle = "over time",
-       x = "Group",
-       y = "Slope [days / year] (\u00B1 95% CI)") +
+       x        = "Group",
+       y        = "Slope [days / year] (\u00B1 95% CI)") +
   
   # add coloring
-  scale_color_manual(name = "Pollinator Dependency",
-                     labels = col.PollDep$group,
+  scale_color_manual(name   = "Pollinator Dependency",
                      values = col.PollDep$colour) +
   
   # suppress legend
