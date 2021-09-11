@@ -395,7 +395,8 @@ slopes_all_sum
 
 ```{r plot_slopes_vs_species_forest}
 
-slopes_temp %>% 
+# save plot for display and plotting
+slopes_spec_temp_for_plt <- slopes_temp %>% 
   
   # plot slopes in ascending order
   ggplot() +
@@ -415,8 +416,7 @@ slopes_temp %>%
   facet_wrap( ~ id.grp, scale = "free_y") +
   
   # add lables
-  labs(title = "Shifts with temperature",
-       y = "Slope [days / year] (\u00B1 95% CI) ",
+  labs(y = "Slope [days / year] (\u00B1 95% CI) ",
        x = "Species") +
   
   # add coloring
@@ -428,7 +428,14 @@ slopes_temp %>%
                axis.ticks.y = element_blank())
 
 
-slopes_year %>% 
+# display plot with title
+slopes_spec_temp_for_plt + 
+  labs(title = "Shifts with temperature")
+
+
+
+# save plot
+slopes_spec_year_for_plt <- slopes_year %>% 
   
   # plot slopes in ascending order
   ggplot() +
@@ -448,8 +455,7 @@ slopes_year %>%
   facet_wrap( ~ id.grp, scale = "free_y") +
   
   # add lables
-  labs(title = "Shifts with temperature",
-       y = "Slope [days / \u00B0C] (\u00B1 95% CI)",
+  labs(y = "Slope [days / \u00B0C] (\u00B1 95% CI)",
        x = "Species") +
   
   # add coloring
@@ -459,6 +465,11 @@ slopes_year %>%
   # remove labeling of individual species (too much information at once)
   theme_shifts(axis.text.y  = element_blank(),
                axis.ticks.y = element_blank())
+
+
+# display plot
+slopes_spec_year_for_plt +
+  labs(title = "Shifts over time")
 
 ```
 
@@ -499,7 +510,7 @@ ph_aov_year
 ```{r plot_slopes_vs_groups}
 
 # for temp
-ggplot() +
+slopes_grp_temp_mean_plt <- ggplot() +
   
   # raw data
   geom_point     (data = slopes_temp,
@@ -526,9 +537,7 @@ ggplot() +
                   col = col.line) +
   
   # add labels
-  labs(title = "Between group differences in shift",
-       subtitle = "with temperature",
-       x = "Group",
+  labs(x = "Group",
        y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
@@ -539,9 +548,14 @@ ggplot() +
   theme_shifts(legend.position = "none")
 
 
+slopes_grp_temp_mean_plt + 
+  labs(title = "Between group differences in shift",
+       subtitle = "with temperature")
+
+
 
 # for year
-ggplot() +
+slopes_grp_year_mean_plt <- ggplot() +
   
   # raw data
   geom_point     (data = slopes_year,
@@ -568,9 +582,7 @@ ggplot() +
                   col = col.line) +
   
   # add labels
-  labs(title = "Between group differences in shift",
-       subtitle = "over time",
-       x = "Group",
+  labs(x = "Group",
        y = "Slope [days / year] (\u00B1 95% CI)") +
   
   # add coloring
@@ -579,6 +591,10 @@ ggplot() +
   
   # suppress legend
   theme_shifts(legend.position = "none")
+
+slopes_grp_year_mean_plt + 
+  labs(title = "Between group differences in shift",
+       subtitle = "over time")
 
 ```
 
@@ -648,7 +664,7 @@ corr_slopes <- do.call(rbind, corr_slopes) %>%
 
 ```{r plot_year_vs_temp_slopes_correlation}
 
-ggplot() +
+slopes_grp_all_corr_plt <- ggplot() +
   
   # add 0 lines
   geom_hline     (yintercept = 0, col = col.line) + 
@@ -724,17 +740,15 @@ ggplot() +
   # disable the legend
   theme_shifts(legend.position = "none")
 
+
+slopes_grp_all_corr_plt +
+  labs(title = "Correlation of shifts over time with shifts with temperature")
+
 ```
 
-
 ## Analysis of interaction asynchrony
-
-Here asynchrony is defined as the difference between the peak doy of flowering 
-and the peak doy of flight in a given year or at a given temperature. Here, the
-peak doys are approximated by the predicted values given by the linear models 
-for the corresponding plant and pollinator. The shift in asynchrony is then 
-given by the change in the difference between the predicted values over time and
-with temperature.
+  
+Here asynchrony is defined as the difference between the peak doy of flowering and the peak doy of flight in a given year or at a given temperature. Here, the peak doys are approximated by the predicted values given by the linear models for the corresponding plant and pollinator. The shift in asynchrony is then given by the change in the difference between the predicted values over time and with temperature.
 
 ```{r summarize_interactions}
 
@@ -938,7 +952,7 @@ int_slopes_asyn_sum
 ```{r plot_slope_interactions}
 
 # for temp
-ggplot() +
+asyn_int_temp_mean_plt <- ggplot() +
   
   # raw data
   geom_point     (data = int_slopes_asyn,
@@ -965,9 +979,7 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title    = "Interaction asynchrony shifts",
-       subtitle = "with temperature",
-       x        = "Group",
+  labs(x        = "Group",
        y        = "Asynchrony shift [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add color
@@ -977,10 +989,14 @@ ggplot() +
   # suppress legend
   theme_shifts(legend.position = "none")
 
+asyn_int_temp_mean_plt +
+  labs(title    = "Interaction asynchrony shifts",
+       subtitle = "with temperature")
+
 
 
 # for year
-ggplot() +
+asyn_int_year_mean_plt <- ggplot() +
   
   # raw data
   geom_point     (data = int_slopes_asyn,
@@ -1007,9 +1023,7 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title    = "Interaction asynchrony shifts",
-       subtitle = "over time",
-       x        = "Group",
+  labs(x        = "Group",
        y        = "Asynchrony shift [days / year] (\u00B1 95% CI)") +
   
   # add color
@@ -1018,6 +1032,11 @@ ggplot() +
   
   # suppress legend
   theme_shifts(legend.position = "none")
+
+
+asyn_int_year_mean_plt +
+  labs(title    = "Interaction asynchrony shifts",
+       subtitle = "over time")
 
 ```
 
@@ -1155,7 +1174,7 @@ sim_diff_year_sum <- sim_diff_year %>%
 ```{r plot_diff_slopes}
 
 # for temp
-ggplot() +
+asyn_grp_temp_scatter_plt <- ggplot() +
   
   # add per interaction data
   geom_point(data = sim_diff_temp,
@@ -1181,9 +1200,7 @@ ggplot() +
   # add facets
   facet_wrap( ~ group ) +
   
-  labs(title    = "Asynchrony in interactions",
-       subtitle = "with temperature",
-       x        = "Temperature [\u00B0C]",
+  labs(x        = "Temperature [\u00B0C]",
        y        = "Asynchrony [days] (\u00B1 95% CI)") +
   
   # add color
@@ -1195,8 +1212,13 @@ ggplot() +
   theme_shifts(legend.position = "none")
 
 
+asyn_grp_temp_scatter_plt + 
+  labs(title    = "Asynchrony in interactions",
+       subtitle = "with temperature")
+
+
 # for year
-ggplot() +
+asyn_grp_year_scatter_plt <- ggplot() +
   
   # add per interaction data
   geom_point(data = sim_diff_year,
@@ -1222,9 +1244,7 @@ ggplot() +
   # add facets
   facet_wrap( ~ group ) +
   
-  labs(title    = "Asynchrony in interactions",
-       subtitle = "over time",
-       x        = "Year",
+  labs(x        = "Year",
        y        = "Asynchrony  (\u00B1 95% CI)") +
   
   # add color
@@ -1235,6 +1255,11 @@ ggplot() +
   # suppress legend
   theme_shifts(legend.position = "none")
 
+
+asyn_grp_year_scatter_plt + 
+  labs(title    = "Asynchrony in interactions",
+       subtitle = "over time")
+
 ```
 
 
@@ -1242,7 +1267,7 @@ ggplot() +
 ```{r plot_poll_early}
 
 # for temp
-ggplot(data = sim_diff_temp_sum,
+earlyfrac_grp_temp_line_plt <- ggplot(data = sim_diff_temp_sum,
        aes(temp, perc_poll_earlier, col = group)) +
   
   # add group data as points
@@ -1258,9 +1283,7 @@ ggplot(data = sim_diff_temp_sum,
   # add facets
   facet_wrap( ~ group ) +
   
-  labs(title    = "Change in earlier partner",
-       subtitle = "with temperature",
-       x        = "Temperature [\u00B0C]",
+  labs(x        = "Temperature [\u00B0C]",
        y        = paste("Fraction of interactions with pollinators",
                         "earlier than plants [%]",
                         sep = "\n")) +
@@ -1274,8 +1297,13 @@ ggplot(data = sim_diff_temp_sum,
   theme_shifts(legend.position = "none")
 
 
+earlyfrac_grp_temp_line_plt + 
+  labs(title    = "Change in earlier partner",
+       subtitle = "with temperature")
+
+
 # for year
-ggplot(data = sim_diff_year_sum,
+earlyfrac_grp_year_line_plt <-  ggplot(data = sim_diff_year_sum,
        aes(year, perc_poll_earlier, col = group)) +
   
   # add group data as points
@@ -1291,9 +1319,7 @@ ggplot(data = sim_diff_year_sum,
   # add facets
   facet_wrap( ~ group ) +
   
-  labs(title    = "Change in earlier partner",
-       subtitle = "over time",
-       x        = "Year",
+  labs(x        = "Year",
        y        = paste("Fraction of interactions with pollinators",
                         "earlier than plants [%]",
                         sep = "\n")) +
@@ -1305,6 +1331,11 @@ ggplot(data = sim_diff_year_sum,
   
   # suppress legend
   theme_shifts(legend.position = "none")
+
+
+earlyfrac_grp_year_line_plt + 
+  labs(title    = "Change in earlier partner",
+       subtitle = "over time")
 
 ```
 
@@ -1393,7 +1424,7 @@ TukeyHSD(aov_int_year)
 ```{r plot_plant_traits_slope}
 
 # for temp
-ggplot() +
+polldep_grp_temp_mean_plt <- ggplot() +
   
   # raw data
   geom_point     (data = slopes_temp_polldep,
@@ -1420,9 +1451,7 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title    = "Between group differences in shift",
-       subtitle = "with temperature",
-       x        = "Group",
+  labs(x        = "Group",
        y        = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
@@ -1433,9 +1462,13 @@ ggplot() +
   theme_shifts(legend.position = "none")
 
 
+polldep_grp_temp_mean_plt + 
+  labs(title    = "Between group differences in shift",
+       subtitle = "with temperature")
+
 
 # for year
-ggplot() +
+polldep_grp_year_mean_plt <- ggplot() +
   
   # raw data
   geom_point    (data = slopes_year_polldep,
@@ -1462,9 +1495,7 @@ ggplot() +
                  col = col.line) +
   
   # add labels
-  labs(title    = "Between group differences in shift",
-       subtitle = "over time",
-       x        = "Group",
+  labs(x        = "Group",
        y        = "Slope [days / year] (\u00B1 95% CI)") +
   
   # add coloring
@@ -1473,5 +1504,10 @@ ggplot() +
   
   # suppress legend
   theme_shifts(legend.position = "none")
+
+
+polldep_grp_year_mean_plt + 
+  labs(title    = "Between group differences in shift",
+       subtitle = "over time")
 
 ```
