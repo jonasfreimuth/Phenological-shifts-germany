@@ -1042,6 +1042,93 @@ asyn_int_year_mean_plt +
 
 
 
+```{r plot_year_vs_temp_asyn_slopes_correlation}
+
+asyn_int_all_corr_plt <- ggplot() +
+  
+  # add 0 lines
+  geom_hline     (yintercept = 0, col = col.line) + 
+  geom_vline     (xintercept = 0, col = col.line) +
+  
+  # # add errorbars for raw data
+  # geom_errorbar  (data = slopes_all,
+  #                 aes(x    = slope_year,
+  #                     ymin = slope_temp - slope_std_err_temp,
+  #                     ymax = slope_temp + slope_std_err_temp),
+  #                 col = col.pt) +
+  # 
+  # geom_errorbarh (data = slopes_all,
+  #                 aes(y    = slope_temp,
+  #                     xmin = slope_year - slope_std_err_year,
+  #                     xmax = slope_year + slope_std_err_year),
+  #                 col = col.pt) +
+  
+  # add raw data
+  geom_point     (data = int_slopes_asyn,
+                  aes(x = slope_year_asyn,
+                      y = slope_temp_asyn),
+                  col = col.pt) + 
+  
+  # add year errorbar 
+  geom_errorbarh (data = int_slopes_asyn_sum,
+                  aes(y    = slope_temp_asyn_mean,
+                      xmin = slope_year_asyn_ci_min,
+                      xmax = slope_year_asyn_ci_max,
+                      col  = group
+                      )) +
+  
+  # add temp errorbar
+  geom_errorbar  (data = int_slopes_asyn_sum,
+                  aes(x    = slope_year_asyn_mean,
+                      ymin = slope_temp_asyn_ci_min,
+                      ymax = slope_temp_asyn_ci_max,
+                      col  = group))  +
+  
+  # add group means
+  geom_point     (data = int_slopes_asyn_sum,
+                  aes(x    = slope_year_asyn_mean,
+                      y    = slope_temp_asyn_mean,
+                      col  = group)) +
+  
+  # # add group sizes, correlation coefficient and its significance
+  # geom_text      (data = corr_slopes,
+  #                 
+  #                 # set text at the middle of all time slopes and slightly 
+  #                 #   above the max of all temp slopes
+  #                 aes(x = mean(c(min(slopes_all$slope_year),
+  #                                max(slopes_all$slope_year))),
+  #                     y = ypos(slopes_all$slope_temp),
+  #                     
+  #                     label = str_glue("n = {n_spec_temp}, ",
+  #                                      "r = {round(cor, 2)}\n{pval.sig}")),
+  #                 col = col.note) +
+  # 
+  # # adjust ylim to fit text
+  # ylim(c(min(int_slopes_asyn$slope_year_asyn),
+  #        max(int_slopes_asyn$slope_temp_asyn) * 2)) +
+  
+  # split the plot based on the group
+  facet_wrap( ~ group, nrow = 1) + 
+  
+  # improve axis lables 
+  labs(x = "Asynchrony shift over time [days / year] (\u00B1 95% CI)",
+       y = "Asynchrony temperature shift [days / \u00B0C] (\u00B1 95% CI)") +
+  
+  # add coloring
+  scale_color_manual(name   = "Group",
+                     values = col.int$colour) +
+  
+  # disable the legend
+  theme_shifts(legend.position = "none")
+
+asyn_int_all_corr_plt +
+  labs(title = paste("Correlation of asynchrony shifts over time",
+                     "and with temperature"))
+
+```
+
+
+
 ```{r simulate_interaction_diff_slopes}
 
 # TODO: give error for estimated points
