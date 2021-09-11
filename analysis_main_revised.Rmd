@@ -4,6 +4,7 @@ output: html_notebook
 ---
 
 
+
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(fig.align = "center", echo = FALSE)
@@ -350,7 +351,7 @@ slopes_all <- left_join(slopes_temp,
 
 ```
 
-## Summary of Shifts
+## Summary of Shifts  
 
 ```{r summarize_slopes}
 
@@ -581,6 +582,7 @@ ggplot() +
 
 ```
 
+
 ## Analysis of correlation of time and temperature shifts
 
 ```{r analyse_year_temp_corr}
@@ -641,6 +643,7 @@ corr_slopes <- do.call(rbind, corr_slopes) %>%
 
 
 ```
+
 
 
 ```{r plot_year_vs_temp_slopes_correlation}
