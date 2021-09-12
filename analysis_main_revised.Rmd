@@ -420,6 +420,34 @@ slopes_all <- left_join(slopes_temp,
 
 ```
 
+
+```{r plot_shifts}
+
+if (test_run) {
+  for (id.grp.var in unique(dat.occ$id.grp)) {
+    
+    dat.occ.plt <- dat.occ %>% filter(id.grp == id.grp.var)
+    slopes.plt  <- slopes_year %>% filter(id.grp == id.grp.var)
+    
+    print(
+    ggplot() +
+      geom_point(data = dat.occ.plt,
+                 aes(year, doy, col = id.grp)) +
+      geom_abline(data = slopes.plt,
+                  aes(intercept = intercept, slope = slope),
+                  col = col.line) +
+      facet_wrap(~ species) +
+      scale_color_manual(name = "Group",
+                         values = col.grp.vec) +
+      theme_shifts()
+    )
+    
+  }
+}
+
+```
+
+
 ## Summary of Shifts  
 
 ```{r summarize_slopes}
