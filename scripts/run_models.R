@@ -59,7 +59,7 @@ if (!test_run) {
 if (!test_run) {
   dat_occ_file <- "data/occurrences_full_pruned_clim_elev.csv"
 } else {
-  dat_occ_file <- "data/occurrences_full_pruned_clim_elev_temp_test.csv"
+  dat_occ_file <- "data/occurrences_full_pruned_clim_elev_test.csv"
 }
 
 # set model formula paths
