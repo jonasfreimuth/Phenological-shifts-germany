@@ -58,6 +58,9 @@ delete.occ.download <- "non"
 # force pruning of data and addition of climate and elevation
 force.occ.prune     <- FALSE
 
+# force running of model generation script
+force.models        <- TRUE
+
 
 ## Path names ---------------------------------------------
 
@@ -269,7 +272,8 @@ if (!all(file.exists(dat_occ_file)) ||
   source("scripts/get_occ_data_all_in_one.R")
 }
 
-if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file))) {
+if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file)) ||
+    force.models) {
   source("scripts/run_models.R")
 }
 
