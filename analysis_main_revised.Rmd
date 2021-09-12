@@ -335,10 +335,40 @@ dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>%
   mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
 
 
+
 # load slope data
 slopes_temp <- fread(dat_slope_temp_file)
 slopes_year <- fread(dat_slope_year_file)
 
+
+# re-scale data
+if (scale_preds) {
+  sd_temp   <- sd(dat.occ$temp)
+  
+  slopes_temp <- slopes_temp %>% 
+    mutate(slope         = slope         / sd_temp,
+           slope_std_err = slope_std_err / sd_temp)
+  
+  
+  sd_year   <- sd(dat.occ$year)
+  
+  slopes_year <- slopes_year %>% 
+    mutate(slope         = slope         / sd_year,
+           slope_std_err = slope_std_err / sd_year)
+}
+
+if (center_preds) {
+  scale_mean_temp <- mean(dat.occ$temp / sd(dat.occ$temp))
+  
+  slopes_temp <- slopes_temp %>% 
+    mutate(intercept = intercept - slope * scale_mean_temp)
+  
+  
+  scale_mean_year <- mean(dat.occ$year / sd(dat.occ$temp))
+  
+  slopes_year <- slopes_year %>% 
+    mutate(intercept = intercept - slope * scale_mean_year)
+}
 
 # add taxonomic and trait data to slopes
 col_vec <- c("kingdom",
@@ -1172,26 +1202,9 @@ asyn_int_all_corr_plt +
 
 # TODO: give error for estimated points
 
-# TODO: extract this along with random effects
-center <- TRUE
-scale  <- TRUE
+temp_vec <- unique(dat.occ$temp)
 
-# extract sd and mean for temp and year
-# necessary to undo the scaling
-sd_temp   <- sd  (dat.occ$temp)
-mean_temp <- mean(dat.occ$temp)
-
-sd_year   <- sd  (dat.occ$year)
-mean_year <- mean(dat.occ$year)
-
-
-temp_vec <- unique(scale(dat.occ$temp,
-                         center = center,
-                         scale  = scale))
-
-year_vec <- unique(scale(dat.occ$year,
-                         center = center,
-                         scale  = scale))
+year_vec <- unique(dat.occ$year)
 
 # for each interaction, derive the difference between the plant and the 
 #   pollinator in a given year or at a given temperature
@@ -1207,16 +1220,6 @@ sim_diff_temp <- apply(
     slope     <- as.numeric(int_slopes_row[["slope_temp_asyn"]])
     
     diff_vec  <-  intercept + temp_vec * slope
-    
-    # if vec has been scaled, undo scaling
-    if (center) {
-      diff_vec <- diff_vec * sd_temp
-      temp_vec <- temp_vec * sd_temp
-    }
-    if (scale) {
-      diff_vec <- diff_vec + mean_temp
-      temp_vec <- temp_vec + mean_temp
-    }
     
     return(data.frame(
       plant = rep(int_slopes_row[["plant"]], n),
@@ -1243,16 +1246,6 @@ sim_diff_year <- apply(
     slope     <- as.numeric(int_slopes_row[["slope_year_asyn"]])
     
     diff_vec  <-  intercept + year_vec * slope
-    
-    # if vec has been scaled, undo scaling
-    if (center) {
-      diff_vec <- diff_vec * sd_year
-      year_vec <- year_vec * sd_year
-    }
-    if (scale) {
-      diff_vec <- diff_vec + mean_year
-      year_vec <- year_vec + mean_year
-    }
     
     return(data.frame(
       plant = rep(int_slopes_row[["plant"]], n),
