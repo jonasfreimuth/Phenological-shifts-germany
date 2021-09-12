@@ -109,6 +109,9 @@ if (!file.exists(dat_occ_file) && test_run) {
     drop_na(temp, elev)
   
   # calculate roughly how many species we want
+  #   this is likely lower than the # of species sampled at the end in order
+  #   to increase the probability of at least one species for each id.grp
+  #   to be present
   samp_size <- ceiling((uniqueN(dat.occ$species) * 0.02))
   
   # calculate how many species from each group we need to represent the 
@@ -121,21 +124,28 @@ if (!file.exists(dat_occ_file) && test_run) {
     mutate(group_size = group_size / sum(unique(group_size))) %>% 
     mutate(sample_n = ceiling(group_size * samp_size))
   
+  # intialize overall species vector
   spec_vec <- character(0)
   
+  # for each id.grp sample the determined amount of species
   for (id.grp_var in unique(spec_sizes$id.grp)) {
     
+    # filter down to current id.grp
     spec_size_id_grp <- spec_sizes %>% 
       filter(id.grp == id.grp_var) 
     
+    # get amount of species to be sampled
     n <- spec_size_id_grp$sample_n[1]
     
+    # sample species
     spec_size_id_grp <- spec_size_id_grp %>% 
       slice_sample(n = n)
     
+    # add species to overall species vector
     spec_vec <- c(spec_vec, spec_size_id_grp$species)
   }
   
+  # filter data down to sampled species
   dat.occ <- dat.occ %>% 
     filter(species %in% spec_vec)
   
