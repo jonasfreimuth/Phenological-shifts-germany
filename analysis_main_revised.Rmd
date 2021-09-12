@@ -259,12 +259,6 @@ names(col.group.sci) <- c("Coleoptera",
                           "Lepidoptera",
                           "Plants")
 
-# Save options and parameters -----------------------------
-
-# done so that reloading an older workspace does not overwrite changes to
-# parameters, options and loaded functions
-save.image('data/curr_environment.RData')
-
 ```
 
 
