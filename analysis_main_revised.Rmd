@@ -263,13 +263,13 @@ if (run.traits.get | force.traits.get) {
 ```{r get_occurrence_data, include=FALSE}
 
 # for now, only check whether data and random effects are present
-if (!any(file.exists(dat_occ_file)) || 
+if (!all(file.exists(dat_occ_file)) || 
     force.occ.get                   ||
     force.occ.prune) {
   source("scripts/get_occ_data_all_in_one.R")
 }
 
-if (!any(file.exists(dat_slope_temp_file, dat_slope_year_file))) {
+if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file))) {
   source("scripts/run_models.R")
 }
 
