@@ -435,6 +435,8 @@ for (form in form_vec) {
     rnd_eff$slope_std_err     <- sqrt(rnd_eff$slope_std_err     ^ 2 +
                                         mod_coef[2,2] ^ 2)
     
+    rm(mod_coef)
+    
     fwrite(rnd_eff,
            paste0(mod_path, 
                   "lmm_rnd_eff_",
@@ -442,8 +444,23 @@ for (form in form_vec) {
                   time_stamp,
                   ".csv"))
     
-    rm(mod_coef)
+    # quick and dirty way to save ran effs as slope data for the main script
+    # assumption of only two models must hold for this to work properly
+    if (main_var == "year") {
+      data_path <- "data/rnd_eff_year"
+    } else if (main_var == "temp") {
+      data_path <- "data/rnd_eff_temp"
+    }
     
+    if (test_run) {
+      data_path <- paste0(data_path, "_test")
+    }
+    
+    data_path <- paste0(data_path, ".csv")
+    
+    fwrite(rnd_eff, data_path, showProgress = FALSE)
+    
+    # plot random effect slopes
     if (plot_rnd_slopes) {
       
       # generate plotting dir
