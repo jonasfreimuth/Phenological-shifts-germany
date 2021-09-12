@@ -506,6 +506,9 @@ for (form in form_vec) {
               
               geom_point() +
               
+              # add indication of high density of points
+              geom_density2d(col = col.line) +
+              
               # add gam curve to check if linear model is actually applicable
               geom_smooth(method = "gam", col = "red") +
               
@@ -602,12 +605,17 @@ for (form in form_vec) {
                     str_replace(simple_form, "~", "_"), "_",
                     time_stamp,
                     ".png"),
+             
              lm_res_fit_plot +
+               
+               # add indication of high density of points
+               geom_density2d(col = col.line) +
                
                # add red regression curve for better visibility
                geom_smooth(col = "red") +
                
                facet_wrap( ~ cols ),
+             
              width = 20, height = 12)
       
     }
@@ -682,12 +690,17 @@ for (form in form_vec) {
                       str_replace(simple_form, "~", "_"), "_",
                       time_stamp,
                       ".png"),
+               
                fix_var_plot + 
+                 
+                 # add indication of high density of points
+                 geom_density2d(col = col.line) +
                  
                  # add red regression curve for better visibility
                  geom_smooth(col = "red") +
                  
                  facet_wrap( ~id.grp ),
+               
                width = 20, height = 12)
         
       }
