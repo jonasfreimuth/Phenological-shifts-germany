@@ -24,7 +24,7 @@ test_run <- TRUE
 
 # save diagnostics plots
 # will take a very long time on the full dataset
-plot_diagnostics <- TRUE
+plot_diagnostics <- FALSE
 
 # additionally save facetted plots of diagnostic plots 
 #   will have no effect if plot_diagnostics == FALSE
@@ -55,6 +55,21 @@ if (!test_run) {
   model_root <- "temp_models/"
 }
 
+# set data paths
+if (!test_run) {
+  dat_occ_file <- "data/occurrences_full_pruned_clim_elev.csv"
+} else {
+  dat_occ_file <- "data/occurrences_full_pruned_clim_elev_temp_test.csv"
+}
+
+# set model formula paths
+
+if (!test_run) {
+  mod_form_file <- "static_data/model_formulas.txt"
+} else {
+  mod_form_file <- "static_data/model_formulas.txt"
+}
+
 #  ensure path exists
 dir.check(model_root)
 
@@ -82,86 +97,104 @@ select_cols <- c('family', 'species', 'year', 'doy',
 
 log_msg("Loading and centering data...")
 
-if (!(test_run && exists("dat.occ"))) {
+# TODO: make this fit into the overall concepts of generating testing data
+# This here serves to re-generate testing data with different species
+if (!file.exists(dat_occ_file) && test_run) {
   
-  dat.occ <- fread(paste0("data/occurrences_full_pruned_clim_elev.csv"),
+  dat.occ <- fread("data/occurrences_full_pruned_clim_elev.csv",
                    select = select_cols,
-                   showProgress = FALSE) %>%
+                   showProgress = FALSE)  %>%
     
     # remove records w/o determined temp, shouldnt be necessary any more
     drop_na(temp, elev)
   
-  if (test_run) {
+  # calculate roughly how many species we want
+  samp_size <- ceiling((uniqueN(dat.occ$species) * 0.02))
+  
+  # calculate how many species from each group we need to represent the 
+  #   proportions in the overall data
+  spec_sizes <- dat.occ %>% 
+    group_by(id.grp) %>% 
+    mutate(group_size = uniqueN(species)) %>%
+    ungroup() %>% 
+    distinct(id.grp, species, group_size) %>% 
+    mutate(group_size = group_size / sum(unique(group_size))) %>% 
+    mutate(sample_n = ceiling(group_size * samp_size))
+  
+  spec_vec <- character(0)
+  
+  for (id.grp_var in unique(spec_sizes$id.grp)) {
     
-    # calculate roughly how many species we want
-    samp_size <- ceiling((uniqueN(dat.occ$species) * 0.02))
+    spec_size_id_grp <- spec_sizes %>% 
+      filter(id.grp == id.grp_var) 
     
-    # calculate how many species from each group we need to represent the 
-    #   proportions in the overall data
-    spec_sizes <- dat.occ %>% 
-      group_by(id.grp) %>% 
-      mutate(group_size = uniqueN(species)) %>%
-      ungroup() %>% 
-      distinct(id.grp, species, group_size) %>% 
-      mutate(group_size = group_size / sum(unique(group_size))) %>% 
-      mutate(sample_n = ceiling(group_size * samp_size))
+    n <- spec_size_id_grp$sample_n[1]
     
-    spec_vec <- character(0)
+    spec_size_id_grp <- spec_size_id_grp %>% 
+      slice_sample(n = n)
     
-    for (id.grp_var in unique(spec_sizes$id.grp)) {
-      
-      spec_size_id_grp <- spec_sizes %>% 
-        filter(id.grp == id.grp_var) 
-      
-      n <- spec_size_id_grp$sample_n[1]
-      
-      spec_size_id_grp <- spec_size_id_grp %>% 
-        slice_sample(n = n)
-      
-      spec_vec <- c(spec_vec, spec_size_id_grp$species)
-    }
-    
-    dat.occ <- dat.occ %>% 
-      filter(species %in% spec_vec)
-    
-    log_msg("Test run, pruning data down to species: ",
-            paste(spec_vec, collapse = ", "))
-    
+    spec_vec <- c(spec_vec, spec_size_id_grp$species)
   }
   
-  dat.occ <- dat.occ %>%
+  dat.occ <- dat.occ %>% 
+    filter(species %in% spec_vec)
+  
+  # save reduced dataset as test data
+  fwrite(dat.occ, dat_occ_file)
+  
+} else {
+  
+  # standard loading of data
+  dat.occ <- fread(dat_occ_file,
+                   select = select_cols,
+                   showProgress = FALSE)  %>%
     
-    # if specified, center and / or scale data
-    mutate(across(tidyselect:::where(is.numeric) & !doy, scale,
-                  center = center_preds, scale = scale_preds))
+    # remove records w/o determined temp, shouldnt be necessary any more
+    drop_na(temp, elev)
   
 }
-
-# save mean and sd of dat occ as it is for later rescaling of data
-fwrite(dat.occ %>%
-         summarise(across(tidyselect:::where(is.numeric),
-                          list(mean = mean, sd = sd))) %>% 
-         
-         # record what we did to the predictor variables
-         mutate(center = center_preds, scale = scale_preds),
-       paste0(run_path,
-              "data_summary", "_",
-              script_time_stamp, ".csv"))
-
-log_msg("... Done.")
 
 
 if (test_run) {
   
-  # read in preset model formulas
-  form_vec <- readLines("static_data/model_formulas_test.txt")
+  spec_vec <- unique(dat.occ$species)
   
-} else {
-  
-  # read in preset model formulas
-  form_vec <- readLines("static_data/model_formulas.txt")
+  log_msg("Test run, using data pruned down to species: ",
+          paste(spec_vec, collapse = ", "))
   
 }
+
+# calulate mean and sd of dat occ (as it is necessary for later rescaling of 
+# data) and save it
+dat.occ %>%
+  
+  # save mean and sd of predictors
+  summarise(across(tidyselect:::where(is.numeric),
+                   list(mean = mean, sd = sd))) %>% 
+  
+  # record what we did to the predictor variables
+  mutate(center = center_preds, scale = scale_preds,
+         nrow = length(dat.occ)) %>% 
+  
+  fwrite(paste0(run_path,
+                "data_summary", "_",
+                script_time_stamp, ".csv"))
+
+
+# Center and scale
+dat.occ <- dat.occ %>%
+  
+  # if specified, center and / or scale data
+  mutate(across(tidyselect:::where(is.numeric) & !doy, scale,
+                center = center_preds, scale = scale_preds))
+
+
+
+log_msg("... Done.")
+
+
+# read in preset model formulas
+form_vec <- readLines(mod_form_file)
 
 
 # Model loop --------------------------------------------------------------
@@ -659,7 +692,7 @@ for (form in form_vec) {
               rnd_var = sort(unique(dat.occ[[rnd_var]])),
               lab = paste0("n = ", table(dat.occ[[rnd_var]])),
               ypos = ypos(mod_resid)), 
-            aes(rnd_var, ypos, label = lab)) +
+              aes(rnd_var, ypos, label = lab)) +
             facet_wrap(~ rnd_var, scale = "free_x") +
             labs(title = toupper(rnd_var),
                  subtitle = form,
