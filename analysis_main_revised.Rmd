@@ -72,6 +72,14 @@ force.occ.prune     <- FALSE
 # force running of model generation script
 force.models           <- TRUE
 
+# how to treat predictor variables
+center_preds           <- FALSE
+scale_preds            <- FALSE
+
+# save plot of random regression slopes over data?
+# will add additional running time, increasing with # of data points
+plot_rnd_slopes        <- TRUE
+
 # save diagnostics plots
 # will take a very long time on the full dataset
 plot_diagnostics       <- FALSE
@@ -80,16 +88,8 @@ plot_diagnostics       <- FALSE
 #   will have no effect if plot_diagnostics == FALSE
 plot_diagnostics_facet <- TRUE
 
-# save plot of random regression slopes over data?
-# will add additional running time, increasing with # of data points
-plot_rnd_slopes        <- TRUE
-
 # set number of times a model with failed convergence will attempt to restart
 n_restart               <- 4
-
-# how to treat predictor variables
-center_preds            <- TRUE
-scale_preds             <- TRUE
 
 
 ## Path names ---------------------------------------------
