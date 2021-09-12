@@ -17,6 +17,8 @@ options(dplyr.summarise.inform = FALSE,
 library("data.table")
 library("rgbif")
 library("raster")
+library("broom.mixed")
+library("lme4")
 
 # tidyverse stuff last to avoid masking these functions
 library("magrittr")
@@ -35,7 +37,13 @@ source("scripts/functions.R")
 
 ## Script control -----------------------------------------
 
-test_run            <- TRUE
+# do an overall test run? 
+# this will mean working with a dataset with reduce number of species
+# so everything will be faster
+test_run <- TRUE
+
+
+## Data getting:
 
 # run script for retrieving climate data from DWD regardless of data being 
 # already present?
@@ -58,8 +66,30 @@ delete.occ.download <- "non"
 # force pruning of data and addition of climate and elevation
 force.occ.prune     <- FALSE
 
+
+## Modeling
+
 # force running of model generation script
-force.models        <- TRUE
+force.models           <- TRUE
+
+# save diagnostics plots
+# will take a very long time on the full dataset
+plot_diagnostics       <- FALSE
+
+# additionally save facetted plots of diagnostic plots 
+#   will have no effect if plot_diagnostics == FALSE
+plot_diagnostics_facet <- TRUE
+
+# save plot of random regression slopes over data?
+# will add additional running time, increasing with # of data points
+plot_rnd_slopes        <- TRUE
+
+# set number of times a model with failed convergence will attempt to restart
+n_restart               <- 4
+
+# how to treat predictor variables
+center_preds            <- TRUE
+scale_preds             <- TRUE
 
 
 ## Path names ---------------------------------------------
@@ -72,6 +102,13 @@ if (!test_run) {
   dat_occ_file        <- "data/occurrences_full_pruned_clim_elev_test.csv"
   dat_slope_temp_file <- "data/rnd_eff_temp_test.csv"
   dat_slope_year_file <- "data/rnd_eff_year_test.csv"
+}
+
+# set model formula paths
+if (!test_run) {
+  mod_form_file <- "static_data/model_formulas.txt"
+} else {
+  mod_form_file <- "static_data/model_formulas.txt"
 }
 
 ## Set graphics parameters --------------------------------
@@ -270,6 +307,10 @@ if (!all(file.exists(dat_occ_file)) ||
     force.occ.get                   ||
     force.occ.prune) {
   source("scripts/get_occ_data_all_in_one.R")
+  
+  if (test_run) {
+    source("scripts/get_occ_test_data.R")
+  }
 }
 
 if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file)) ||

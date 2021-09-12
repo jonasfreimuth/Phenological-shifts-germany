@@ -1,45 +1,24 @@
 
 # Setup -------------------------------------------------------------------
 
-library("broom.mixed")
-library("data.table")
-library("lme4")
-library("stringr")
-library("dplyr")
-library("tidyr")
-library("tidyselect")
-library("ggplot2")
+# library("broom.mixed")
+# library("data.table")
+# library("lme4")
+# library("stringr")
+# library("dplyr")
+# library("tidyr")
+# library("tidyselect")
+# library("ggplot2")
+# 
+# source("scripts/functions.R")
+# 
+# col.group.sci <- c(Coleoptera  = "#9815db",
+#                  Diptera     = "#f41d0f",
+#                  Hymenoptera = "#ffa500",
+#                  Lepidoptera = "#4744ff",
+#                  Plants      = "#008a00")
 
-source("scripts/functions.R")
 
-col.grp.sci <- c(Coleoptera  = "#9815db",
-                 Diptera     = "#f41d0f",
-                 Hymenoptera = "#ffa500",
-                 Lepidoptera = "#4744ff",
-                 Plants      = "#008a00")
-
-# do a testing run? 
-# will reduce data size and save outputs into separate directories
-test_run <- TRUE
-
-# save diagnostics plots
-# will take a very long time on the full dataset
-plot_diagnostics <- FALSE
-
-# additionally save facetted plots of diagnostic plots 
-#   will have no effect if plot_diagnostics == FALSE
-plot_diagnostics_facet <- TRUE
-
-# save plot of random regression slopes over data?
-# will add additional running time, increasing with # of data points
-plot_rnd_slopes <- TRUE
-
-# set number of times a model with failed convergence will attempt to restart
-n_restart <- 4
-
-# how to treat predictor variables
-center_preds <- TRUE
-scale_preds  <- TRUE
 
 # Directory structure:
 #   - timestamp script start
@@ -53,21 +32,6 @@ if (!test_run) {
   model_root <- "models/"
 } else {
   model_root <- "temp_models/"
-}
-
-# set data paths
-if (!test_run) {
-  dat_occ_file <- "data/occurrences_full_pruned_clim_elev.csv"
-} else {
-  dat_occ_file <- "data/occurrences_full_pruned_clim_elev_test.csv"
-}
-
-# set model formula paths
-
-if (!test_run) {
-  mod_form_file <- "static_data/model_formulas.txt"
-} else {
-  mod_form_file <- "static_data/model_formulas.txt"
 }
 
 #  ensure path exists
@@ -97,72 +61,13 @@ select_cols <- c('family', 'species', 'year', 'doy',
 
 log_msg("Loading and centering data...")
 
-# TODO: make this fit into the overall concepts of generating testing data
-# This here serves to re-generate testing data with different species
-if (!file.exists(dat_occ_file) && test_run) {
-  
-  dat.occ <- fread("data/occurrences_full_pruned_clim_elev.csv",
+
+dat.occ <- fread(dat_occ_file,
                    select = select_cols,
                    showProgress = FALSE)  %>%
     
     # remove records w/o determined temp, shouldnt be necessary any more
     drop_na(temp, elev)
-  
-  # calculate roughly how many species we want
-  #   this is likely lower than the # of species sampled at the end in order
-  #   to increase the probability of at least one species for each id.grp
-  #   to be present
-  samp_size <- ceiling((uniqueN(dat.occ$species) * 0.02))
-  
-  # calculate how many species from each group we need to represent the 
-  #   proportions in the overall data
-  spec_sizes <- dat.occ %>% 
-    group_by(id.grp) %>% 
-    mutate(group_size = uniqueN(species)) %>%
-    ungroup() %>% 
-    distinct(id.grp, species, group_size) %>% 
-    mutate(group_size = group_size / sum(unique(group_size))) %>% 
-    mutate(sample_n = ceiling(group_size * samp_size))
-  
-  # intialize overall species vector
-  spec_vec <- character(0)
-  
-  # for each id.grp sample the determined amount of species
-  for (id.grp_var in unique(spec_sizes$id.grp)) {
-    
-    # filter down to current id.grp
-    spec_size_id_grp <- spec_sizes %>% 
-      filter(id.grp == id.grp_var) 
-    
-    # get amount of species to be sampled
-    n <- spec_size_id_grp$sample_n[1]
-    
-    # sample species
-    spec_size_id_grp <- spec_size_id_grp %>% 
-      slice_sample(n = n)
-    
-    # add species to overall species vector
-    spec_vec <- c(spec_vec, spec_size_id_grp$species)
-  }
-  
-  # filter data down to sampled species
-  dat.occ <- dat.occ %>% 
-    filter(species %in% spec_vec)
-  
-  # save reduced dataset as test data
-  fwrite(dat.occ, dat_occ_file)
-  
-} else {
-  
-  # standard loading of data
-  dat.occ <- fread(dat_occ_file,
-                   select = select_cols,
-                   showProgress = FALSE)  %>%
-    
-    # remove records w/o determined temp, shouldnt be necessary any more
-    drop_na(temp, elev)
-  
-}
 
 
 if (test_run) {
@@ -522,7 +427,7 @@ for (form in form_vec) {
               
               # add coloring
               scale_color_manual(name   = "Group",
-                                 values = col.grp.sci) +
+                                 values = col.group.sci) +
               
               facet_wrap( ~ species) +
               
@@ -588,7 +493,7 @@ for (form in form_vec) {
       
       # add coloring
       scale_color_manual(name   = "Group",
-                         values = col.grp.sci)
+                         values = col.group.sci)
     
     ggsave(paste0(plot_path,
                   "lmm_resid_fit_",
@@ -640,7 +545,7 @@ for (form in form_vec) {
                   xlab = "Residuals",
                   ylab = "Density") +
              scale_color_manual(name   = "Group",
-                                values = col.grp.sci) +
+                                values = col.group.sci) +
              theme_minimal() +
              theme(panel.grid = element_blank()),
            width = 20, height = 12)
@@ -669,7 +574,7 @@ for (form in form_vec) {
              x = toupper(fix_var),
              y = "Residuals") +
         scale_color_manual(name   = "Group",
-                           values = col.grp.sci) +
+                           values = col.group.sci) +
         theme_minimal() +
         theme(panel.grid = element_blank())
       
@@ -744,7 +649,7 @@ for (form in form_vec) {
                  xlab = toupper(rnd_var),
                  ylab = "Residuals") +
             scale_color_manual(name   = "Group",
-                               values = col.grp.sci) +
+                               values = col.group.sci) +
             theme_minimal() +
             theme(panel.grid = element_blank(),
                   axis.text.x = element_blank())
@@ -772,6 +677,8 @@ for (form in form_vec) {
   log_msg("Done with model ", form, "...")
   
 }
+
+rm(dat.occ)
 
 log_msg("All done.")
 
