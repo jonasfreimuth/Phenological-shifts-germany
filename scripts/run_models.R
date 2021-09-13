@@ -288,13 +288,24 @@ for (form in form_vec) {
   
   # Directory stuff -------------------
   
-  mod_path <- paste0(run_path,
-                     dep_var, "_vs_",
-                     paste(fix_vars, collapse = "_"), "_",
-                     paste(str_c(rnd_var_df$group, rnd_var_df$rnd_var,
-                                 sep = "-"),
-                           collapse = "_"), "_",
-                     time_stamp, "/")
+  if (has_ranef) {
+    
+    mod_path <- paste0(run_path,
+                       dep_var, "_vs_",
+                       paste(fix_vars, collapse = "_"), "_",
+                       paste(str_c(rnd_var_df$group, rnd_var_df$rnd_var,
+                                   sep = "-"),
+                             collapse = "_"), "_",
+                       time_stamp, "/")
+    
+  } else {
+    
+    mod_path <- paste0(run_path,
+                       dep_var, "_vs_",
+                       paste(fix_vars, collapse = "_"), "_",
+                       time_stamp, "/")
+    
+  }
   
   dir.check(mod_path)
   
@@ -526,9 +537,14 @@ for (form in form_vec) {
     
     log_msg("Extracting plotting data...")
     
-    # extraction of raw marginal residuals nicked from the redress package:
-    # https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
-    mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+    
+    if (has_ranef) {
+      # extraction of raw marginal residuals nicked from the redress package:
+      # https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
+      mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+    } else {
+      mod_resid <- residuals(lm_mod)
+    }
     mod_fitvl <- fitted(lm_mod)
     
     rm(lm_mod)
