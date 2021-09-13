@@ -110,12 +110,15 @@ log_msg("... Done.")
 # read in preset model formulas
 form_vec <- readLines(mod_form_file)
 
-# ensure we are only dealing with two formulas, one for temp and one for year
-if (!(length(form_vec) == 2 &&
-    sum(str_detect(form_vec, "temp"), str_detect(form_vec, "year")) == 2)) {
-  stop("Fomulas not correctly specified.")
+# if we are doing a run whose results will be analysed, check if the 
+#   assumptions abt model number and composition hold
+if (!run.models.ind) {
+  # ensure we are only dealing with two formulas, one for temp and one for year
+  if (!(length(form_vec) == 2 &&
+        sum(str_detect(form_vec, "temp"), str_detect(form_vec, "year")) == 2)) {
+    stop("Fomulas not correctly specified.")
+  }
 }
-
 
 # Model loop --------------------------------------------------------------
 
@@ -360,21 +363,24 @@ for (form in form_vec) {
                   time_stamp,
                   ".csv"))
     
-    # quick and dirty way to save ran effs as slope data for the main script
-    # assumption of only two models must hold for this to work properly
-    if (main_var == "year") {
-      data_path <- "data/rnd_eff_year"
-    } else if (main_var == "temp") {
-      data_path <- "data/rnd_eff_temp"
+    # if models are supposed to be analysed, save their random effects
+    if (!run.models.ind){
+      # quick and dirty way to save ran effs as slope data for the main script
+      # assumption of only two models must hold for this to work properly
+      if (main_var == "year") {
+        data_path <- "data/rnd_eff_year"
+      } else if (main_var == "temp") {
+        data_path <- "data/rnd_eff_temp"
+      }
+      
+      if (test_run) {
+        data_path <- paste0(data_path, "_test")
+      }
+      
+      data_path <- paste0(data_path, ".csv")
+      
+      fwrite(rnd_eff, data_path, showProgress = FALSE)
     }
-    
-    if (test_run) {
-      data_path <- paste0(data_path, "_test")
-    }
-    
-    data_path <- paste0(data_path, ".csv")
-    
-    fwrite(rnd_eff, data_path, showProgress = FALSE)
     
     # plot random effect slopes
     if (plot_rnd_slopes) {
@@ -704,3 +710,8 @@ options("log_file" = NULL)
 # explicitly print warnings
 # necessary as warnings would not be displayed if there were too many
 warnings()
+
+# if script is to be run independently, stop running
+if (run.models.ind) {
+  stop(paste("Ran models independently, stopping now."))
+}

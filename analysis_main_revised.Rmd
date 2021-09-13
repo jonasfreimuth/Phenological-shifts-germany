@@ -72,6 +72,13 @@ force.occ.prune     <- FALSE
 # force running of model generation script
 force.models           <- TRUE
 
+# run model script independently? 
+# * models will be taken from the testing model formula file
+# * no checks will be performed whether the models are appropriate for the main
+#   analysis
+# * The results will not be integrated into the analysis
+run.models.ind         <- TRUE
+
 # how to treat predictor variables
 center_preds           <- FALSE
 scale_preds            <- FALSE
@@ -105,7 +112,7 @@ if (!test_run) {
 }
 
 # set model formula paths
-if (!test_run) {
+if (!test_run && !run.models.ind) {
   mod_form_file <- "static_data/model_formulas.txt"
 } else {
   mod_form_file <- "static_data/model_formulas.txt"
@@ -308,7 +315,8 @@ if (!all(file.exists(dat_occ_file)) ||
 }
 
 if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file)) ||
-    force.models) {
+    force.models                                                ||
+    run.models.ind) {
   source("scripts/run_models.R")
 }
 
