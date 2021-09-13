@@ -17,6 +17,8 @@ options(dplyr.summarise.inform = FALSE,
 library("data.table")
 library("rgbif")
 library("raster")
+library("broom.mixed")
+library("lme4")
 
 # tidyverse stuff last to avoid masking these functions
 library("magrittr")
@@ -35,7 +37,13 @@ source("scripts/functions.R")
 
 ## Script control -----------------------------------------
 
-test_run            <- TRUE
+# do an overall test run? 
+# this will mean working with a dataset with reduce number of species
+# so everything will be faster
+test_run <- TRUE
+
+
+## Data getting:
 
 # run script for retrieving climate data from DWD regardless of data being 
 # already present?
@@ -59,6 +67,31 @@ delete.occ.download <- "non"
 force.occ.prune     <- FALSE
 
 
+## Modeling
+
+# force running of model generation script
+force.models           <- TRUE
+
+# how to treat predictor variables
+center_preds           <- FALSE
+scale_preds            <- FALSE
+
+# save plot of random regression slopes over data?
+# will add additional running time, increasing with # of data points
+plot_rnd_slopes        <- TRUE
+
+# save diagnostics plots
+# will take a very long time on the full dataset
+plot_diagnostics       <- FALSE
+
+# additionally save facetted plots of diagnostic plots 
+#   will have no effect if plot_diagnostics == FALSE
+plot_diagnostics_facet <- TRUE
+
+# set number of times a model with failed convergence will attempt to restart
+n_restart               <- 4
+
+
 ## Path names ---------------------------------------------
 
 if (!test_run) {
@@ -69,6 +102,13 @@ if (!test_run) {
   dat_occ_file        <- "data/occurrences_full_pruned_clim_elev_test.csv"
   dat_slope_temp_file <- "data/rnd_eff_temp_test.csv"
   dat_slope_year_file <- "data/rnd_eff_year_test.csv"
+}
+
+# set model formula paths
+if (!test_run) {
+  mod_form_file <- "static_data/model_formulas.txt"
+} else {
+  mod_form_file <- "static_data/model_formulas.txt"
 }
 
 ## Set graphics parameters --------------------------------
@@ -219,12 +259,6 @@ names(col.group.sci) <- c("Coleoptera",
                           "Lepidoptera",
                           "Plants")
 
-# Save options and parameters -----------------------------
-
-# done so that reloading an older workspace does not overwrite changes to
-# parameters, options and loaded functions
-save.image('data/curr_environment.RData')
-
 ```
 
 
@@ -267,9 +301,14 @@ if (!all(file.exists(dat_occ_file)) ||
     force.occ.get                   ||
     force.occ.prune) {
   source("scripts/get_occ_data_all_in_one.R")
+  
+  if (test_run) {
+    source("scripts/get_occ_test_data.R")
+  }
 }
 
-if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file))) {
+if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file)) ||
+    force.models) {
   source("scripts/run_models.R")
 }
 
@@ -296,10 +335,40 @@ dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>%
   mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
 
 
+
 # load slope data
 slopes_temp <- fread(dat_slope_temp_file)
 slopes_year <- fread(dat_slope_year_file)
 
+
+# re-scale data
+if (scale_preds) {
+  sd_temp   <- sd(dat.occ$temp)
+  
+  slopes_temp <- slopes_temp %>% 
+    mutate(slope         = slope         / sd_temp,
+           slope_std_err = slope_std_err / sd_temp)
+  
+  
+  sd_year   <- sd(dat.occ$year)
+  
+  slopes_year <- slopes_year %>% 
+    mutate(slope         = slope         / sd_year,
+           slope_std_err = slope_std_err / sd_year)
+}
+
+if (center_preds) {
+  scale_mean_temp <- mean(dat.occ$temp / sd(dat.occ$temp))
+  
+  slopes_temp <- slopes_temp %>% 
+    mutate(intercept = intercept - slope * scale_mean_temp)
+  
+  
+  scale_mean_year <- mean(dat.occ$year / sd(dat.occ$temp))
+  
+  slopes_year <- slopes_year %>% 
+    mutate(intercept = intercept - slope * scale_mean_year)
+}
 
 # add taxonomic and trait data to slopes
 col_vec <- c("kingdom",
@@ -350,6 +419,34 @@ slopes_all <- left_join(slopes_temp,
                         "main_var_")))
 
 ```
+
+
+```{r plot_shifts}
+
+if (test_run) {
+  for (id.grp.var in unique(dat.occ$id.grp)) {
+    
+    dat.occ.plt <- dat.occ %>% filter(id.grp == id.grp.var)
+    slopes.plt  <- slopes_year %>% filter(id.grp == id.grp.var)
+    
+    print(
+    ggplot() +
+      geom_point(data = dat.occ.plt,
+                 aes(year, doy, col = id.grp)) +
+      geom_abline(data = slopes.plt,
+                  aes(intercept = intercept, slope = slope),
+                  col = col.line) +
+      facet_wrap(~ species) +
+      scale_color_manual(name = "Group",
+                         values = col.grp.vec) +
+      theme_shifts()
+    )
+    
+  }
+}
+
+```
+
 
 ## Summary of Shifts  
 
@@ -1133,26 +1230,9 @@ asyn_int_all_corr_plt +
 
 # TODO: give error for estimated points
 
-# TODO: extract this along with random effects
-center <- TRUE
-scale  <- TRUE
+temp_vec <- unique(dat.occ$temp)
 
-# extract sd and mean for temp and year
-# necessary to undo the scaling
-sd_temp   <- sd  (dat.occ$temp)
-mean_temp <- mean(dat.occ$temp)
-
-sd_year   <- sd  (dat.occ$year)
-mean_year <- mean(dat.occ$year)
-
-
-temp_vec <- unique(scale(dat.occ$temp,
-                         center = center,
-                         scale  = scale))
-
-year_vec <- unique(scale(dat.occ$year,
-                         center = center,
-                         scale  = scale))
+year_vec <- unique(dat.occ$year)
 
 # for each interaction, derive the difference between the plant and the 
 #   pollinator in a given year or at a given temperature
@@ -1168,16 +1248,6 @@ sim_diff_temp <- apply(
     slope     <- as.numeric(int_slopes_row[["slope_temp_asyn"]])
     
     diff_vec  <-  intercept + temp_vec * slope
-    
-    # if vec has been scaled, undo scaling
-    if (center) {
-      diff_vec <- diff_vec * sd_temp
-      temp_vec <- temp_vec * sd_temp
-    }
-    if (scale) {
-      diff_vec <- diff_vec + mean_temp
-      temp_vec <- temp_vec + mean_temp
-    }
     
     return(data.frame(
       plant = rep(int_slopes_row[["plant"]], n),
@@ -1204,16 +1274,6 @@ sim_diff_year <- apply(
     slope     <- as.numeric(int_slopes_row[["slope_year_asyn"]])
     
     diff_vec  <-  intercept + year_vec * slope
-    
-    # if vec has been scaled, undo scaling
-    if (center) {
-      diff_vec <- diff_vec * sd_year
-      year_vec <- year_vec * sd_year
-    }
-    if (scale) {
-      diff_vec <- diff_vec + mean_year
-      year_vec <- year_vec + mean_year
-    }
     
     return(data.frame(
       plant = rep(int_slopes_row[["plant"]], n),
