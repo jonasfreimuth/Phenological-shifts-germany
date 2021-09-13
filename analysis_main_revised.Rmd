@@ -70,14 +70,14 @@ force.occ.prune     <- FALSE
 ## Modeling
 
 # force running of model generation script
-force.models           <- TRUE
+force.models           <- FALSE
 
 # run model script independently? 
 # * models will be taken from the testing model formula file
 # * no checks will be performed whether the models are appropriate for the main
 #   analysis
 # * The results will not be integrated into the analysis
-run.models.ind         <- TRUE
+run.models.ind         <- FALSE
 
 # how to treat predictor variables
 center_preds           <- FALSE
@@ -91,7 +91,7 @@ plot_rnd_slopes        <- TRUE
 # will take a very long time on the full dataset
 plot_diagnostics       <- FALSE
 
-# additionally save facetted plots of diagnostic plots 
+# additionally save faceted plots of diagnostic plots 
 #   will have no effect if plot_diagnostics == FALSE
 plot_diagnostics_facet <- TRUE
 
