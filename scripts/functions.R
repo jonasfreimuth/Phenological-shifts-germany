@@ -1678,13 +1678,13 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
     plot <- plot +
       geom_smooth() +
       geom_smooth(aes(fit, resid),
-                  group = "overall", col = "red")
+                  group = "overall", col = "black")
   }
   
   if (facet && !is.null(col_vec)) {
     plot <- plot +
       geom_density2d(col = "gray31") +
-      geom_smooth(col = "red") +
+      geom_smooth(col = "black") +
       facet_wrap( ~ cols)
   }
   
