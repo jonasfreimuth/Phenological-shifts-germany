@@ -614,6 +614,29 @@ slopes_spec_year_for_plt +
 
 ## Analysis of differences between groups
 
+```{r boxplot_between_group_diffs}
+
+ggplot(slopes_temp,
+       aes(id.grp, slope, fill = id.grp)) +
+  geom_hline(yintercept = 0) +
+  geom_boxplot() + 
+  labs(x = "Group",
+       y = "Slope [days / \u00B0C]") +
+  scale_fill_manual(values = col.grp.vec) +
+  theme_shifts(legend.position = "none")
+
+ggplot(slopes_year,
+       aes(id.grp, slope, fill = id.grp)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() + 
+  labs(x = "Group",
+       y = "Slope [days / year]") +
+  scale_fill_manual(values = col.grp.vec) +
+  theme_shifts(legend.position = "none")
+
+```
+
+
 ```{r analyse_between_group_diffs}
 
 cat("Differences in slope with temperature:\n\n")
@@ -1014,6 +1037,30 @@ int_slopes_asyn <- int_data %>%
   }) %>%
 
   bind_rows()
+
+```
+
+
+
+```{r boxplot_between_group_asynchrony_diffs}
+
+ggplot(int_slopes_asyn,
+       aes(group, slope_temp_asyn, fill = group)) +
+  geom_hline(yintercept = 0) +
+  geom_boxplot() + 
+  labs(x        = "Group",
+       y        = "Asynchrony shift [days / \u00B0C]") +
+  scale_fill_manual(values = col.grp.vec) +
+  theme_shifts(legend.position = "none")
+
+ggplot(int_slopes_asyn,
+       aes(group, slope_year_asyn, fill = group)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() +
+  labs(x        = "Group",
+       y        = "Asynchrony shift [days / year]") +
+  scale_fill_manual(values = col.grp.vec) +
+  theme_shifts(legend.position = "none")
 
 ```
 
@@ -1598,6 +1645,31 @@ slopes_all_polldep_sum
 
 
 ```
+
+
+
+```{r boxplots_plant_traits_slope}
+
+ggplot(slopes_temp_polldep,
+       aes(PollDep, slope, fill = PollDep)) +
+  geom_hline(yintercept = 0) +
+  geom_boxplot() + 
+  labs(x        = "Group",
+       y        = "Shift [days / \u00B0C]") +
+  scale_fill_manual(values = col.grp.vec) +
+  theme_shifts(legend.position = "none")
+
+ggplot(slopes_year_polldep,
+       aes(PollDep, slope, fill = PollDep)) +
+  geom_hline(yintercept = 0) +
+  geom_boxplot() +
+  labs(x        = "Group",
+       y        = "Shift [days / year]") +
+  scale_fill_manual(values = col.grp.vec) +
+  theme_shifts(legend.position = "none")
+
+```
+
 
 
 
