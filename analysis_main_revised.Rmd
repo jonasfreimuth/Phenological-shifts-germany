@@ -161,7 +161,7 @@ theme_shifts <- function (...) {
   
 }
 
-## define trivial group names -----------------------------
+## define clearer group names -----------------------------
 
 # set named vector for recoding group names to common names
 recode.vec <- c(
@@ -172,10 +172,14 @@ recode.vec <- c(
 )
 
 # make alternative vector for interactions
-recode.vec.int      <- recode.vec[2:4]
-recode.vec.int[1:3] <- c("Hoverfly - Plant",
-                         "Bee - Plant",
-                         "Butterfly - Plant")
+recode.vec.int <- c("Hoverfly"  = "Hoverfly - Plant",
+                    "Bee"       = "Bee - Plant",
+                    "Butterfly" = "Butterfly - Plant")
+
+# recode vec for PollDep
+recode.vec.PollDep <- c("Yes"          = "Insect dependent",
+                        "No"           = "Insect independent",
+                        "Intermediate" = "Intermediate")
 
 ### set colour tables -------------------------------------------------------
 
@@ -324,7 +328,10 @@ if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file)) ||
 plant_traits <- fread("static_data/bioflor_traits.csv") %>% 
   
   # prune out some unecessary data
-  select(-all_of(c("AccName", "GbifKey", "OrigName", "bioflor_id")))
+  select(-all_of(c("AccName", "GbifKey", "OrigName", "bioflor_id"))) %>%
+  
+  # recode PollDep to use clearer names 
+  mutate(PollDep = recode_factor(PollDep, !!! recode.vec.PollDep))
 
 # load occurrence data
 dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>% 
@@ -876,15 +883,16 @@ int_data <- read.csv(paste0("static_data/",
     poll  %in% unique(dat.occ$species)
     ) %>% 
   
-  #add the plant trait data to the interactions
+  # add the plant trait data to the interactions
   left_join(plant_traits,
             by = c("plant" = "species")) %>%
   
-  #exclude interactions with pollinator independent plants
+  # exclude interactions with pollinator independent plants
   filter(PollDep != "No") %>%
   
-  #reorder factor levels for more intuitive plotting
-  mutate(group = fct_relevel(group, "Hoverfly", "Bee", "Butterfly"))
+  # recode group to use clearer names 
+  # (recode only takes name/value pairs, so !!! expansion necessary)
+  mutate(group = recode_factor(group, !!! recode.vec.int))
 
 
 # display numbers of unique plants and pollinators there are per group
@@ -1223,7 +1231,7 @@ asyn_int_all_corr_plt <- ggplot() +
   # split the plot based on the group
   facet_wrap( ~ group, nrow = 1) + 
   
-  # improve axis lables 
+  # improve axis labels 
   labs(x = "Asynchrony shift over time [days / year] (\u00B1 95% CI)",
        y = "Asynchrony temperature shift [days / \u00B0C] (\u00B1 95% CI)") +
   
