@@ -129,19 +129,25 @@ if (!test_run && !run.models.ind) {
 ## Set graphics parameters --------------------------------
 
 # set colour for raw data points
-col.pt   <- "black"
+col.pt         <- "black"
+
+# set alpha for raw data points
+alpha.pt       <- 0.5
+
+# set size of data lines
+size.dat.line    <- 2
 
 # set colour for static lines
-col.line <- "gray40"
+col.stc.line       <- "gray40"
 
 # set colour for axis elements
-col.ax   <- "gray40"
-
-# set col for annotations
-col.note <- "gray31"
+col.ax         <- "gray40"
 
 # ribbon alpha
 alpha.ribbon   <- 0.3
+
+# set col for annotations
+col.annot      <- "gray31"
 
 # size of annotations
 size.annot.txt <- 3
@@ -431,7 +437,7 @@ if (test_run) {
                  aes(year, doy, col = id.grp)) +
       geom_abline(data = slopes.plt,
                   aes(intercept = intercept, slope = slope),
-                  col = col.line) +
+                  col = col.stc.line) +
       facet_wrap(~ species) +
       scale_color_manual(name = "Group",
                          values = col.grp.vec) +
@@ -613,7 +619,8 @@ slopes_grp_temp_mean_plt <- ggplot() +
   geom_point     (data = slopes_temp,
                   aes(x    = id.grp,
                       y    = slope),
-                  col = col.pt,
+                  col   = col.pt,
+                  alpha = alpha.pt,
                   position = position_jitter()) +
   
   # error bars
@@ -631,7 +638,7 @@ slopes_grp_temp_mean_plt <- ggplot() +
   
   # line denoting 0
   geom_hline     (yintercept = 0,
-                  col = col.line) +
+                  col = col.stc.line) +
   
   # add labels
   labs(x = "Group",
@@ -658,7 +665,8 @@ slopes_grp_year_mean_plt <- ggplot() +
   geom_point     (data = slopes_year,
                   aes(x    = id.grp,
                       y    = slope),
-                  col = col.pt,
+                  col   = col.pt,
+                  alpha = alpha.pt,
                   position = position_jitter()) +
   
   # error bars
@@ -676,7 +684,7 @@ slopes_grp_year_mean_plt <- ggplot() +
   
   # line denoting 0
   geom_hline     (yintercept = 0,
-                  col = col.line) +
+                  col = col.stc.line) +
   
   # add labels
   labs(x = "Group",
@@ -764,11 +772,11 @@ corr_slopes <- do.call(rbind, corr_slopes) %>%
 slopes_grp_all_corr_plt <- ggplot() +
   
   # add 0 lines
-  geom_hline     (yintercept = 0, col = col.line) + 
+  geom_hline     (yintercept = 0, col = col.stc.line) + 
   geom_segment   (data = slopes_all,
                   aes(x = 0, y = -Inf,
                       xend = 0, yend = ypos(slope_temp)),
-                  col = col.line) +
+                  col = col.stc.line) +
   
   # # add errorbars for raw data
   # geom_errorbar  (data = slopes_all,
@@ -787,7 +795,8 @@ slopes_grp_all_corr_plt <- ggplot() +
   geom_point     (data = slopes_all,
                   aes(x = slope_year,
                       y = slope_temp),
-                  col = col.pt) + 
+                  col   = col.pt,
+                  alpha = alpha.pt) + 
   
   # add year errorbar 
   geom_errorbarh (data = slopes_all_sum,
@@ -821,7 +830,7 @@ slopes_grp_all_corr_plt <- ggplot() +
                       
                       label = str_glue("n = {n_spec_temp}, ",
                                        "r = {round(cor, 2)}\n{pval.sig}")),
-                  col  = col.note,
+                  col  = col.annot,
                   size = size.annot.txt) +
   
   # adjust ylim to fit text
@@ -1059,7 +1068,8 @@ asyn_int_temp_mean_plt <- ggplot() +
   geom_point     (data = int_slopes_asyn,
                   aes(x    = group,
                       y    = slope_temp_asyn),
-                  col = col.pt,
+                  col   = col.pt,
+                  alpha = alpha.pt,
                   position = position_jitter()) +
   
   # error bars
@@ -1077,7 +1087,7 @@ asyn_int_temp_mean_plt <- ggplot() +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # add labels
   labs(x        = "Group",
@@ -1103,7 +1113,8 @@ asyn_int_year_mean_plt <- ggplot() +
   geom_point     (data = int_slopes_asyn,
                   aes(x    = group,
                       y    = slope_year_asyn),
-                  col = col.pt,
+                  col   = col.pt,
+                  alpha = alpha.pt,
                   position = position_jitter()) +
   
   # error bars
@@ -1121,7 +1132,7 @@ asyn_int_year_mean_plt <- ggplot() +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # add labels
   labs(x        = "Group",
@@ -1148,8 +1159,8 @@ asyn_int_year_mean_plt +
 asyn_int_all_corr_plt <- ggplot() +
   
   # add 0 lines
-  geom_hline     (yintercept = 0, col = col.line) + 
-  geom_vline     (xintercept = 0, col = col.line) +
+  geom_hline     (yintercept = 0, col = col.stc.line) + 
+  geom_vline     (xintercept = 0, col = col.stc.line) +
   
   # # add errorbars for raw data
   # geom_errorbar  (data = slopes_all,
@@ -1168,7 +1179,8 @@ asyn_int_all_corr_plt <- ggplot() +
   geom_point     (data = int_slopes_asyn,
                   aes(x = slope_year_asyn,
                       y = slope_temp_asyn),
-                  col = col.pt) + 
+                  col   = col.pt,
+                  alpha = alpha.pt) + 
   
   # add year errorbar 
   geom_errorbarh (data = int_slopes_asyn_sum,
@@ -1328,13 +1340,14 @@ sim_diff_year_sum <- sim_diff_year %>%
 asyn_grp_temp_scatter_plt <- ggplot() +
   
   # # add per interaction data
-  # geom_point(data = sim_diff_temp,
-  #            aes(temp, diff),
-  #            col = col.pt) + 
+  geom_point(data = sim_diff_temp,
+             aes(temp, diff),
+             col   = col.pt,
+             alpha = alpha.pt,) +
   
   geom_density2d(data = sim_diff_temp,
                  aes(temp, diff),
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # add confint for group average data as ribbon
   geom_ribbon(data = sim_diff_temp_sum,
@@ -1350,7 +1363,7 @@ asyn_grp_temp_scatter_plt <- ggplot() +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # add facets
   facet_wrap( ~ group ) +
@@ -1376,13 +1389,14 @@ asyn_grp_temp_scatter_plt <- ggplot() +
 asyn_grp_year_scatter_plt <- ggplot() +
   
   # add per interaction data
-  # geom_point(data = sim_diff_year,
-  #            aes(year, diff),
-  #            col = col.pt) + 
+  geom_point(data = sim_diff_year,
+             aes(year, diff),
+             col   = col.pt,
+             alpha = alpha.pt,) +
   
   geom_density2d(data = sim_diff_year,
                  aes(year, diff),
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # add confint for group average data as ribbon
   geom_ribbon(data = sim_diff_year_sum,
@@ -1398,7 +1412,7 @@ asyn_grp_year_scatter_plt <- ggplot() +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # add facets
   facet_wrap( ~ group ) +
@@ -1430,11 +1444,11 @@ earlyfrac_grp_temp_line_plt <- ggplot(data = sim_diff_temp_sum,
        aes(temp, perc_poll_earlier, col = group)) +
   
   # add group data as points
-  geom_line () +
+  geom_line (size = sz.dat.line) +
   
   # line denoting 50%
   geom_hline(yintercept = 50,
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # ensure the whole range is visible
   ylim      (c(0, 100)) + 
@@ -1466,11 +1480,11 @@ earlyfrac_grp_year_line_plt <-  ggplot(data = sim_diff_year_sum,
        aes(year, perc_poll_earlier, col = group)) +
   
   # add group data as points
-  geom_line () +
+  geom_line (size = sz.dat.line) +
   
   # line denoting 50%
   geom_hline(yintercept = 50,
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # ensure the whole range is visible
   ylim      (c(0, 100)) + 
@@ -1589,7 +1603,8 @@ polldep_grp_temp_mean_plt <- ggplot() +
   geom_point     (data = slopes_temp_polldep,
                   aes(x    = PollDep,
                       y    = slope),
-                  col = col.pt,
+                  col   = col.pt,
+                  alpha = alpha.pt,
                   position = position_jitter()) +
   
   # error bars
@@ -1607,7 +1622,7 @@ polldep_grp_temp_mean_plt <- ggplot() +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # add labels
   labs(x        = "Group",
@@ -1631,10 +1646,11 @@ polldep_grp_year_mean_plt <- ggplot() +
   
   # raw data
   geom_point    (data = slopes_year_polldep,
-                  aes(x    = PollDep,
-                      y    = slope),
-                  col = col.pt,
-                  position = position_jitter()) +
+                 aes(x    = PollDep,
+                     y    = slope),
+                 col   = col.pt,
+                 alpha = alpha.pt,
+                 position = position_jitter()) +
   
   # error bars
   geom_errorbar (data = slopes_year_polldep_sum,
@@ -1651,7 +1667,7 @@ polldep_grp_year_mean_plt <- ggplot() +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
-                 col = col.line) +
+                 col = col.stc.line) +
   
   # add labels
   labs(x        = "Group",
