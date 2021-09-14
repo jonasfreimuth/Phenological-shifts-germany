@@ -430,6 +430,35 @@ slopes_all <- left_join(slopes_temp,
 ```
 
 
+
+```{r plot_record_distributions}
+
+record_dist_plot <- ggplot(dat.occ,
+                           aes(year, col = id.grp)) +
+  
+  geom_bar(size = 5, position = "dodge", width = 0.8, orientation = "x") +
+  
+  labs(x = "Year",
+       y = "log10 # Records") +
+  
+  facet_wrap( ~ id.grp,
+              nrow = 2,
+              scales = "free_y") +
+  
+  scale_y_log10() +
+  
+  scale_color_manual(name = "Group",
+                     aesthetics = c("color", "fill"),
+                     values = col.grp.vec) +
+  
+  theme_shifts(legend.position = "none")
+
+record_dist_plot
+
+```
+
+
+
 ```{r plot_shifts}
 
 if (test_run) {
