@@ -19,6 +19,8 @@ library("rgbif")
 library("raster")
 library("broom.mixed")
 library("lme4")
+library("cowplot")
+library("magick")
 
 # tidyverse stuff last to avoid masking these functions
 library("magrittr")
@@ -40,7 +42,7 @@ source("scripts/functions.R")
 # do an overall test run? 
 # this will mean working with a dataset with reduce number of species
 # so everything will be faster
-test_run <- TRUE
+test_run <- FALSE
 
 
 ## Data getting:
@@ -99,6 +101,12 @@ plot_diagnostics_facet <- TRUE
 n_restart               <- 4
 
 
+## Plot saving
+
+# save plots to disk?
+save.plots <- TRUE
+
+
 ## Path names ---------------------------------------------
 
 if (!test_run) {
@@ -121,42 +129,22 @@ if (!test_run && !run.models.ind) {
 ## Set graphics parameters --------------------------------
 
 # set colour for raw data points
-col.pt   <- "gray31"
+col.pt   <- "black"
 
 # set colour for static lines
-col.line <- "gray31"
+col.line <- "gray40"
 
 # set colour for axis elements
-col.ax   <- "gray31"
+col.ax   <- "gray40"
 
 # set col for annotations
 col.note <- "gray31"
 
 # ribbon alpha
-alpha.ribbon            <- 0.3
+alpha.ribbon   <- 0.3
 
-# annotation text size
-annot_text              <- 20
-
-# line types
-lty.sec                 <- 3
-
-# line size
-hline_size_large        <- 2
-line_size_large         <- 2.5
-
-# text size
-text_size_large         <- 50
-legend_text_size_large  <- 40
-
-# axis parameters
-axis_size_large         <- 2
-axis_ticks_size_large   <- 2
-axis_ticks_length_large <- 16
-
-# size of plot labels for cowplot
-# when plots were optimized for 22 x 14 in
-label_size              <- 50
+# size of annotations
+size.annot.txt <- 3
 
 ## define custom plotting theme ---------------------------
 
@@ -773,7 +761,10 @@ slopes_grp_all_corr_plt <- ggplot() +
   
   # add 0 lines
   geom_hline     (yintercept = 0, col = col.line) + 
-  geom_vline     (xintercept = 0, col = col.line) +
+  geom_segment   (data = slopes_all,
+                  aes(x = 0, y = -Inf,
+                      xend = 0, yend = ypos(slope_temp)),
+                  col = col.line) +
   
   # # add errorbars for raw data
   # geom_errorbar  (data = slopes_all,
@@ -822,11 +813,12 @@ slopes_grp_all_corr_plt <- ggplot() +
                   #   above the max of all temp slopes
                   aes(x = mean(c(min(slopes_all$slope_year),
                                  max(slopes_all$slope_year))),
-                      y = ypos(slopes_all$slope_temp),
+                      y = ypos(slopes_all$slope_temp, frac = 0.5),
                       
                       label = str_glue("n = {n_spec_temp}, ",
                                        "r = {round(cor, 2)}\n{pval.sig}")),
-                  col = col.note) +
+                  col  = col.note,
+                  size = size.annot.txt) +
   
   # adjust ylim to fit text
   ylim(c(min(slopes_all$slope_temp), max(slopes_all$slope_temp) * 2)) +
@@ -1331,10 +1323,14 @@ sim_diff_year_sum <- sim_diff_year %>%
 # for temp
 asyn_grp_temp_scatter_plt <- ggplot() +
   
-  # add per interaction data
-  geom_point(data = sim_diff_temp,
-             aes(temp, diff),
-             col = col.pt) + 
+  # # add per interaction data
+  # geom_point(data = sim_diff_temp,
+  #            aes(temp, diff),
+  #            col = col.pt) + 
+  
+  geom_density2d(data = sim_diff_temp,
+                 aes(temp, diff),
+                 col = col.line) +
   
   # add confint for group average data as ribbon
   geom_ribbon(data = sim_diff_temp_sum,
@@ -1367,18 +1363,22 @@ asyn_grp_temp_scatter_plt <- ggplot() +
   theme_shifts(legend.position = "none")
 
 
-asyn_grp_temp_scatter_plt + 
-  labs(title    = "Asynchrony in interactions",
-       subtitle = "with temperature")
+# asyn_grp_temp_scatter_plt + 
+#   labs(title    = "Asynchrony in interactions",
+#        subtitle = "with temperature")
 
 
 # for year
 asyn_grp_year_scatter_plt <- ggplot() +
   
   # add per interaction data
-  geom_point(data = sim_diff_year,
-             aes(year, diff),
-             col = col.pt) + 
+  # geom_point(data = sim_diff_year,
+  #            aes(year, diff),
+  #            col = col.pt) + 
+  
+  geom_density2d(data = sim_diff_year,
+                 aes(year, diff),
+                 col = col.line) +
   
   # add confint for group average data as ribbon
   geom_ribbon(data = sim_diff_year_sum,
@@ -1411,9 +1411,9 @@ asyn_grp_year_scatter_plt <- ggplot() +
   theme_shifts(legend.position = "none")
 
 
-asyn_grp_year_scatter_plt + 
-  labs(title    = "Asynchrony in interactions",
-       subtitle = "over time")
+# asyn_grp_year_scatter_plt + 
+#   labs(title    = "Asynchrony in interactions",
+#        subtitle = "over time")
 
 ```
 
@@ -1666,3 +1666,89 @@ polldep_grp_year_mean_plt +
        subtitle = "over time")
 
 ```
+
+
+
+```{r save_plots_to_disc}
+
+if (save.plots) {
+  
+  dir.check("plots")
+  
+  # Correlation plot --------------------------------------
+  
+  # TODO: fix flags of ci whiskers
+  
+  # modify plot for saving
+  slopes_grp_all_corr_plt <- slopes_grp_all_corr_plt +
+    
+    # ensure its only 1 row of data
+    facet_wrap( ~ id.grp, nrow = 1) +
+    
+    theme(plot.margin = unit(c(50, 10, 10, 10), "bigpts"))
+  
+  
+  slopes_grp_all_corr_pic <- ggdraw() +
+    
+    # draw original plot
+    draw_plot(slopes_grp_all_corr_plt) +
+    
+    # add pictograms for id.grps
+    draw_image(image = "assets/Beetle.png",
+               x = 0.182, y = 0.90,
+               scale = 0.15, hjust = 0.5, vjust = 0.5) +
+    draw_image(image = "assets/Hoverfly.png",
+               x = 0.361, y = 0.90,
+               scale = 0.15, hjust = 0.5, vjust = 0.5) +
+    draw_image(image = "assets/Bee.png",
+               x = 0.539, y = 0.90,
+               scale = 0.15, hjust = 0.5, vjust = 0.5) +
+    draw_image(image = "assets/Butterfly.png",
+               x = 0.717, y = 0.90,
+               scale = 0.15, hjust = 0.5, vjust = 0.5) +
+    draw_image(image = "assets/Plant.png",
+               x = 0.894, y = 0.90,
+               scale = 0.15, hjust = 0.5, vjust = 0.5)
+  
+  save_plot("plots/slopes_correlation.png",
+            plot = slopes_grp_all_corr_pic,
+            bg = "transparent")
+  
+  
+  # Asynchrony plots --------------------------------------
+  
+  
+  # modify plots for saving
+  asyn_int_year_mean_plt <- asyn_int_year_mean_plt +
+    theme(plot.margin = unit(c(50, 10, 10, 10), "bigpts"))
+  
+  
+  # add lables to plots and combine plots
+  asyn_pic               <- plot_grid(asyn_int_year_mean_plt,
+                                      asyn_grp_year_scatter_plt,
+                                      earlyfrac_grp_year_line_plt,
+                                      labels = c("A", "B", "C"),
+                                      ncol = 1)
+  
+  # add pictograms
+  asyn_pic <- ggdraw() +
+    draw_plot(asyn_pic) +
+    draw_image(image = "assets/Hoverfly_and_Plant.png",
+               x = 0.265, y = 0.97,
+               scale = 0.25, hjust = 0.5, vjust = 0.5) +
+    draw_image(image = "assets/Bee_and_Plant.png",
+               x = 0.542, y = 0.97,
+               scale = 0.25, hjust = 0.5, vjust = 0.5) +
+    draw_image(image = "assets/Butterfly_and_Plant.png",
+               x = 0.820, y = 0.97,
+               scale = 0.25, hjust = 0.5, vjust = 0.5)
+  
+  
+  save_plot("plots/interactions_all.png", asyn_pic,
+            nrow = 3,
+            bg = "transparent")
+  
+}
+
+```
+
