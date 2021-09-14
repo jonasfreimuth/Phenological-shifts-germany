@@ -517,8 +517,10 @@ slopes_spec_temp_for_plt <- slopes_temp %>%
                      values = col.grp.vec) +
   
   # remove labeling of individual species (too much information at once)
-  theme_shifts(axis.text.y  = element_blank(),
-               axis.ticks.y = element_blank())
+  # remove the legend
+  theme_shifts(axis.text.y     = element_blank(),
+               axis.ticks.y    = element_blank(),
+               legend.position = "none")
 
 
 # display plot with title
@@ -556,8 +558,10 @@ slopes_spec_year_for_plt <- slopes_year %>%
                      values = col.grp.vec) +
   
   # remove labeling of individual species (too much information at once)
-  theme_shifts(axis.text.y  = element_blank(),
-               axis.ticks.y = element_blank())
+  # remove the legend
+  theme_shifts(axis.text.y     = element_blank(),
+               axis.ticks.y    = element_blank(),
+               legend.position = "none")
 
 
 # display plot
@@ -1746,6 +1750,26 @@ if (save.plots) {
   
   save_plot("plots/interactions_all.png", asyn_pic,
             nrow = 3,
+            bg = "transparent")
+  
+  
+  # Slope forest plots ------------------------------------
+  
+  # modify plots for saving
+  slopes_spec_temp_for_plt <- slopes_spec_temp_for_plt + 
+    facet_wrap( ~ id.grp, nrow = 1, scales = "free_y")
+  
+  slopes_spec_year_for_plt <- slopes_spec_year_for_plt + 
+    facet_wrap( ~ id.grp, nrow = 1, scales = "free_y")
+  
+  
+  slopes_spec_all_for_pic <- plot_grid(slopes_spec_temp_for_plt,
+                                       slopes_spec_year_for_plt,
+                                       labels = c("A", "B"),
+                                       nrow   = 2)
+  
+  save_plot("plots/forest_plot_slopes_all.png", slopes_spec_all_for_pic,
+            nrow = 2,
             bg = "transparent")
   
 }
