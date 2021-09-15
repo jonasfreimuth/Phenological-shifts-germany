@@ -808,6 +808,9 @@ corr_slopes <- lapply(
 # bind_rows was acting up, so do.call(rbind) it is
 corr_slopes <- do.call(rbind, corr_slopes) %>%
   
+  # adjust pvals for multiple testing
+  mutate(pval_fdr = p.adjust(pval, method="fdr")) %>% 
+  
   # format pvalues into significance symbols
   mutate(pval.sig = cut(
     pval,
