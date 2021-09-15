@@ -1887,6 +1887,12 @@ if (save.plots) {
             nrow = 2,
             bg = "transparent")
   
+  # Records by year ---------------------------------------
+  
+  save_plot("plots/record_numbers_time.png", record_dist_plot,
+            nrow = 2,
+            bg = "transparent")
+  
 }
 
 ```
