@@ -1179,7 +1179,7 @@ asyn_int_temp_mean_plt <- ggplot() +
   
   # add color
   scale_color_manual(name   = "Group",
-                     values = col.int$colour) +
+                     values = col.grp.vec) +
   
   # suppress legend
   theme_shifts(legend.position = "none")
@@ -1224,7 +1224,7 @@ asyn_int_year_mean_plt <- ggplot() +
   
   # add color
   scale_color_manual(name   = "Group",
-                     values = col.int$colour) +
+                     values = col.grp.vec) +
   
   # suppress legend
   theme_shifts(legend.position = "none")
@@ -1287,23 +1287,6 @@ asyn_int_all_corr_plt <- ggplot() +
                       y    = slope_temp_asyn_mean,
                       col  = group)) +
   
-  # # add group sizes, correlation coefficient and its significance
-  # geom_text      (data = corr_slopes,
-  #                 
-  #                 # set text at the middle of all time slopes and slightly 
-  #                 #   above the max of all temp slopes
-  #                 aes(x = mean(c(min(slopes_all$slope_year),
-  #                                max(slopes_all$slope_year))),
-  #                     y = ypos(slopes_all$slope_temp),
-  #                     
-  #                     label = str_glue("n = {n_spec_temp}, ",
-  #                                      "r = {round(cor, 2)}\n{pval.sig}")),
-  #                 col = col.note) +
-  # 
-  # # adjust ylim to fit text
-  # ylim(c(min(int_slopes_asyn$slope_year_asyn),
-  #        max(int_slopes_asyn$slope_temp_asyn) * 2)) +
-  
   # split the plot based on the group
   facet_wrap( ~ group, nrow = 1) + 
   
@@ -1313,7 +1296,7 @@ asyn_int_all_corr_plt <- ggplot() +
   
   # add coloring
   scale_color_manual(name   = "Group",
-                     values = col.int$colour) +
+                     values = col.grp.vec) +
   
   # disable the legend
   theme_shifts(legend.position = "none")
@@ -1457,7 +1440,7 @@ asyn_grp_temp_scatter_plt <- ggplot() +
   
   # add color
   scale_color_manual(name       = "Group",
-                     values     = col.int$colour,
+                     values     = col.grp.vec,
                      aesthetics = c("col", "fill")) +
   
   # suppress legend
@@ -1506,7 +1489,7 @@ asyn_grp_year_scatter_plt <- ggplot() +
   
   # add color
   scale_color_manual(name       = "Group",
-                     values     = col.int$colour,
+                     values     = col.grp.vec,
                      aesthetics = c("col", "fill")) +
   
   # suppress legend
@@ -1528,7 +1511,7 @@ earlyfrac_grp_temp_line_plt <- ggplot(data = sim_diff_temp_sum,
        aes(temp, perc_poll_earlier, col = group)) +
   
   # add group data as points
-  geom_line (size = sz.dat.line) +
+  geom_line (size = size.dat.line) +
   
   # line denoting 50%
   geom_hline(yintercept = 50,
@@ -1547,7 +1530,7 @@ earlyfrac_grp_temp_line_plt <- ggplot(data = sim_diff_temp_sum,
   
   # add color
   scale_color_manual(name       = "Group",
-                     values     = col.int$colour,
+                     values     = col.grp.vec,
                      aesthetics = c("col", "fill")) +
   
   # suppress legend
@@ -1564,7 +1547,7 @@ earlyfrac_grp_year_line_plt <-  ggplot(data = sim_diff_year_sum,
        aes(year, perc_poll_earlier, col = group)) +
   
   # add group data as points
-  geom_line (size = sz.dat.line) +
+  geom_line (size = size.dat.line) +
   
   # line denoting 50%
   geom_hline(yintercept = 50,
@@ -1583,7 +1566,7 @@ earlyfrac_grp_year_line_plt <-  ggplot(data = sim_diff_year_sum,
   
   # add color
   scale_color_manual(name       = "Group",
-                     values     = col.int$colour,
+                     values     = col.grp.vec,
                      aesthetics = c("col", "fill")) +
   
   # suppress legend
@@ -1853,22 +1836,22 @@ if (save.plots) {
   
   
   # add lables to plots and combine plots
-  asyn_pic               <- plot_grid(asyn_int_year_mean_plt,
-                                      asyn_grp_year_scatter_plt,
-                                      earlyfrac_grp_year_line_plt,
-                                      labels = c("A", "B", "C"),
-                                      ncol = 1)
+  asyn_pic  <- plot_grid(asyn_int_year_mean_plt,
+                         asyn_grp_year_scatter_plt,
+                         earlyfrac_grp_year_line_plt,
+                         labels = c("A", "B", "C"),
+                         ncol = 1)
   
   # add pictograms
   asyn_pic <- ggdraw() +
     draw_plot(asyn_pic) +
-    draw_image(image = "assets/Hoverfly_and_Plant.png",
+    draw_image(image = "assets/Bee_and_Plant.png",
                x = 0.265, y = 0.97,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
-    draw_image(image = "assets/Bee_and_Plant.png",
+    draw_image(image = "assets/Butterfly_and_Plant.png",
                x = 0.542, y = 0.97,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
-    draw_image(image = "assets/Butterfly_and_Plant.png",
+    draw_image(image = "assets/Hoverfly_and_Plant.png",
                x = 0.820, y = 0.97,
                scale = 0.25, hjust = 0.5, vjust = 0.5)
   
