@@ -1501,14 +1501,14 @@ sim_diff_year_sum <- sim_diff_year %>%
 asyn_grp_temp_scatter_plt <- ggplot() +
   
   # # add per interaction data
-  geom_point(data = sim_diff_temp,
-             aes(temp, diff),
-             col   = col.pt,
-             alpha = alpha.pt,) +
+  geom_line(data = sim_diff_temp,
+            aes(temp, diff, group = id),
+            col   = col.pt,
+            alpha = alpha.pt,) +
   
-  geom_density2d(data = sim_diff_temp,
-                 aes(temp, diff),
-                 col = col.stc.line) +
+  # geom_density2d(data = sim_diff_temp,
+  #                aes(temp, diff),
+  #                col = col.stc.line) +
   
   # add confint for group average data as ribbon
   geom_ribbon(data = sim_diff_temp_sum,
@@ -1541,7 +1541,7 @@ asyn_grp_temp_scatter_plt <- ggplot() +
   theme_shifts(legend.position = "none")
 
 
-# asyn_grp_temp_scatter_plt + 
+# asyn_grp_temp_scatter_plt +
 #   labs(title    = "Asynchrony in interactions",
 #        subtitle = "with temperature")
 
@@ -1550,14 +1550,14 @@ asyn_grp_temp_scatter_plt <- ggplot() +
 asyn_grp_year_scatter_plt <- ggplot() +
   
   # add per interaction data
-  geom_point(data = sim_diff_year,
-             col   = col.pt,
-             alpha = alpha.pt,) +
+  geom_line(data = sim_diff_year,
             aes(year * 10, diff, group = id),
+            col   = col.pt,
+            alpha = alpha.pt,) +
   
-  geom_density2d(data = sim_diff_year,
-                 col = col.stc.line) +
+  # geom_density2d(data = sim_diff_year,
   #                aes(year * 10, diff),
+  #                col = col.stc.line) +
   
   # add confint for group average data as ribbon
   geom_ribbon(data = sim_diff_year_sum,
@@ -1592,7 +1592,7 @@ asyn_grp_year_scatter_plt <- ggplot() +
                                           hjust = 0.5))
 
 
-# asyn_grp_year_scatter_plt + 
+# asyn_grp_year_scatter_plt +
 #   labs(title    = "Asynchrony in interactions",
 #        subtitle = "over time")
 
@@ -1619,8 +1619,8 @@ earlyfrac_grp_temp_line_plt <- ggplot(data = sim_diff_temp_sum,
   # add facets
   facet_wrap( ~ group ) +
   
-  labs(x        = "Temperature [\u00B0C]",
-       y        = paste("Fraction of interactions with pollinators",
+  labs(x = "Temperature [\u00B0C]",
+       y = paste("Fraction of interactions with pollinators",
                         "earlier than plants [%]",
                         sep = "\n")) +
   
@@ -1655,8 +1655,8 @@ earlyfrac_grp_year_line_plt <-  ggplot(data = sim_diff_year_sum,
   # add facets
   facet_wrap( ~ group ) +
   
-  labs(x        = "Year",
-       y        = paste("Fraction of interactions with pollinators",
+  labs(x = "Year",
+       y = paste("Fraction of interactions with pollinators",
                         "earlier than plants [%]",
                         sep = "\n")) +
   
