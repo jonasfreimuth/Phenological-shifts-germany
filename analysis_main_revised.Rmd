@@ -486,8 +486,26 @@ record_dist_plot
 ```{r analyze_time_temp_association}
 
 dat.temp <- dat.occ %>% 
-  select(year, temp) %>% 
+  select(year, temp, lat, long) %>% 
+  
+  # reconstruct climate tiles from lat and long
+  mutate(lat  = cut(lat,
+                    breaks = seq(min(floor(lat)),
+                                 max(ceiling(lat)),
+                                 0.5)),
+         long = cut(long,
+                    breaks = seq(min(floor(long)),
+                                 max(ceiling(long)),
+                                 0.5))) %>% 
+  
   distinct() %>% 
+  
+  mutate(lat  = str_extract_all(lat,  "[0-9\\.]+"),
+         long = str_extract_all(long, "[0-9\\.]+")) %>% 
+  
+  mutate(lat  = sapply(lat,  function(x) mean(as.numeric(x))),
+         long = sapply(long, function(x) mean(as.numeric(x)))) %>% 
+  
   group_by(year) %>% 
   # summarize(temp = mean(temp)) %>% 
   ungroup()
