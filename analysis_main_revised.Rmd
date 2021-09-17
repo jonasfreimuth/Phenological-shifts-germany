@@ -1576,7 +1576,9 @@ asyn_grp_year_scatter_plt <- ggplot() +
                      aesthetics = c("col", "fill")) +
   
   # suppress legend
-  theme_shifts(legend.position = "none")
+  theme_shifts(legend.position = "none",
+               axis.text.x = element_text(angle = 45,
+                                          hjust = 0.5))
 
 
 # asyn_grp_year_scatter_plt + 
@@ -1653,7 +1655,9 @@ earlyfrac_grp_year_line_plt <-  ggplot(data = sim_diff_year_sum,
                      aesthetics = c("col", "fill")) +
   
   # suppress legend
-  theme_shifts(legend.position = "none")
+  theme_shifts(legend.position = "none",
+               axis.text.x = element_text(angle = 45,
+                                          hjust = 0.5))
 
 
 earlyfrac_grp_year_line_plt + 
