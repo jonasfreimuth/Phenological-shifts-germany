@@ -1568,7 +1568,7 @@ asyn_grp_year_scatter_plt <- ggplot() +
   facet_wrap( ~ group ) +
   
   labs(x        = "Year",
-       y        = "Asynchrony  (\u00B1 95% CI)") +
+       y        = "Asynchrony [days] (\u00B1 95% CI)") +
   
   # add color
   scale_color_manual(name       = "Group",
