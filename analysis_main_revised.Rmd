@@ -601,11 +601,17 @@ slopes_spec_temp_for_plt <- slopes_temp %>%
   
   # plot slopes in ascending order
   ggplot() +
+  
   geom_pointrange(aes(x    = reorder(species,  -slope),
                       y    = slope,
                       ymin = slope - slope_std_err * 1.96,
                       ymax = slope + slope_std_err * 1.96,
-                      col  = id.grp)) +
+                      col  = id.grp),
+                      alpha = alpha.pt) +
+  
+  geom_point(aes(x = reorder(species,  -slope),
+                 y = slope,
+                 col = id.grp)) +
   
   # clearly denote the 0 line
   geom_hline(yintercept = 0) +
@@ -642,11 +648,17 @@ slopes_spec_year_for_plt <- slopes_year %>%
   
   # plot slopes in ascending order
   ggplot() +
+  
   geom_pointrange(aes(x    = reorder(species,  -slope),
                       y    = slope,
                       ymin = slope - slope_std_err * 1.96,
                       ymax = slope + slope_std_err * 1.96,
-                      col  = id.grp)) +
+                      col  = id.grp),
+                      alpha = alpha.pt) +
+  
+  geom_point(aes(x = reorder(species,  -slope),
+                 y = slope,
+                 col = id.grp)) +
   
   # clearly denote the 0 line
   geom_hline(yintercept = 0) +
