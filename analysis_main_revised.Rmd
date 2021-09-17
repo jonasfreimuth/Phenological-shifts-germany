@@ -731,7 +731,7 @@ summary(aov_temp)
 cat("\n Significant pairwise differences: \n")
 
 ph_aov_temp <- TukeyHSD(aov_temp)
-ph_aov_temp$id.grp[ph_aov_temp$id.grp[, 4] < 0.1,]
+ph_aov_temp$id.grp[ph_aov_temp$id.grp[, 4] < 0.05,]
 
 cat("\n\n")
 cat("----------------------------------------------------------\n\n")
@@ -745,7 +745,7 @@ summary(aov_year)
 cat("\n Significant pairwise differences: \n")
 
 ph_aov_year <- TukeyHSD(aov_year)
-ph_aov_year$id.grp[ph_aov_year$id.grp[, 4] < 0.1,]
+ph_aov_year$id.grp[ph_aov_year$id.grp[, 4] < 0.05,]
 
 ```
 
@@ -1759,28 +1759,28 @@ ggplot(slopes_year_polldep,
 cat("Differences in slope with temperature between levels of pollinator ",
     "dependence:\n\n")
 
-aov_int_temp <- aov(data = slopes_temp_polldep, slope ~ PollDep,
+aov_polldep_temp <- aov(data = slopes_temp_polldep, slope ~ PollDep,
                     weights = 1 / (slope_std_err ^ 2))
-summary(aov_int_temp)
+summary(aov_polldep_temp)
 
 cat("\n Significant pairwise differences: \n")
 
-ph_aov_int_temp <- TukeyHSD(aov_int_temp)
-ph_aov_int_temp$PollDep[ph_aov_int_temp$PollDep[,4] < 0.1,]
+ph_aov_polldep_temp <- TukeyHSD(aov_polldep_temp)
+ph_aov_polldep_temp # $PollDep[ph_aov_polldep_temp$PollDep[, 4] < 0.05, ]
 
 cat("\n\n")
 cat("----------------------------------------------------------\n\n")
 cat("Differences in in slope over time between levels of pollinator ",
     "dependence:\n\n")
 
-aov_int_year <- aov(data = slopes_year_polldep, slope ~ PollDep,
+aov_polldep_year <- aov(data = slopes_year_polldep, slope ~ PollDep,
                     weights = 1 / (slope_std_err ^ 2))
-summary(aov_int_year)
+summary(aov_polldep_year)
 
 cat("\n Significant pairwise differences: \n")
 
-ph_aov_int_year <- TukeyHSD(aov_int_year)
-ph_aov_int_year$PollDep[ph_aov_int_year$PollDep[,4] < 0.1,]
+ph_aov_polldep_year <- TukeyHSD(aov_polldep_year)
+ph_aov_polldep_year # $PollDep[ph_aov_polldep_year$PollDep[, 4] < 0.05, ]
 
 ```
 
