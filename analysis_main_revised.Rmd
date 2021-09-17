@@ -1887,6 +1887,36 @@ if (save.plots) {
   
   dir.check("plots")
   
+  # Records by year ---------------------------------------
+  
+  save_plot("plots/record_numbers_time.png", record_dist_plot,
+            bg = "transparent")
+  
+  # Temperature by year -----------------------------------
+  
+  save_plot("plots/temp_over_time.png", time_temp_plt,
+            bg = "transparent")
+  
+  
+  # Slope forest plots ------------------------------------
+  
+  # modify plots for saving
+  slopes_spec_temp_for_plt <- slopes_spec_temp_for_plt + 
+    facet_wrap( ~ id.grp, nrow = 1, scales = "free_y")
+  
+  slopes_spec_year_for_plt <- slopes_spec_year_for_plt + 
+    facet_wrap( ~ id.grp, nrow = 1, scales = "free_y")
+  
+  
+  slopes_spec_all_for_pic <- plot_grid(slopes_spec_temp_for_plt,
+                                       slopes_spec_year_for_plt,
+                                       labels = c("A", "B"),
+                                       nrow   = 2)
+  
+  save_plot("plots/forest_plot_slopes_all.png", slopes_spec_all_for_pic,
+            nrow = 2,
+            bg = "transparent")
+  
   # Correlation plot --------------------------------------
   
   # TODO: fix flags of ci whiskers
@@ -1961,32 +1991,107 @@ if (save.plots) {
             bg = "transparent")
   
   
-  # Slope forest plots ------------------------------------
-  
-  # modify plots for saving
-  slopes_spec_temp_for_plt <- slopes_spec_temp_for_plt + 
-    facet_wrap( ~ id.grp, nrow = 1, scales = "free_y")
-  
-  slopes_spec_year_for_plt <- slopes_spec_year_for_plt + 
-    facet_wrap( ~ id.grp, nrow = 1, scales = "free_y")
+  # PollDep plots -----------------------------------------
   
   
-  slopes_spec_all_for_pic <- plot_grid(slopes_spec_temp_for_plt,
-                                       slopes_spec_year_for_plt,
-                                       labels = c("A", "B"),
-                                       nrow   = 2)
+  polldep_pic <- plot_grid(polldep_grp_year_mean_plt,
+                           polldep_grp_temp_mean_plt,
+                           labels = c("A", "B"),
+                           ncol = 1)
   
-  save_plot("plots/forest_plot_slopes_all.png", slopes_spec_all_for_pic,
-            nrow = 2,
-            bg = "transparent")
-  
-  # Records by year ---------------------------------------
-  
-  save_plot("plots/record_numbers_time.png", record_dist_plot,
+  save_plot("plots/polldep_diffs.png", polldep_pic,
             nrow = 2,
             bg = "transparent")
   
 }
+
+```
+
+
+```{r save_tables}
+
+# library("huxtable")
+library("flextable")
+library("officer")
+
+dir.check("plots")
+
+# set up export docx file
+doc_file <- read_docx()
+
+# Slopes tables -------------------------------------------
+
+slopes_all_tab <- slopes_all_sum %>% 
+    
+    mutate(across(matches("frac_negative"), ~ .x * 100)) %>% 
+    mutate(across(where(is.numeric), round, 2)) %>% 
+    
+    select(
+      Group                                    = id.grp,
+      `n species`                              = n_spec_year,
+      `Average time slope`                     = slope_mean_year,
+      `Time slope SEM`                         = slope_sem_year,
+      `Percentage advancing\nover time`        = slope_frac_negative_year,
+      `Average temperature slope`              = slope_mean_temp,
+      `Temperature slope SEM`                  = slope_sem_temp,
+      `Percentage advancing\nwith temperature` = slope_frac_negative_temp) %>% 
+  
+  flextable() %>% 
+  autofit()
+
+# add table to the docx file
+doc_file <- body_add_flextable(doc_file, slopes_all_tab)
+
+
+# PollDep table -------------------------------------------
+
+polldep_tab <- slopes_all_polldep_sum %>% 
+    
+    mutate(across(matches("frac_negative"), ~ .x * 100)) %>% 
+    mutate(across(where(is.numeric), round, 2)) %>% 
+    
+    select(
+      `Insect Dependence`                      = PollDep,
+      `n species`                              = n_spec_year,
+      `Average time slope`                     = slope_mean_year,
+      `Time slope SEM`                         = slope_sem_year,
+      `Percentage advancing\nover time`        = slope_frac_negative_year,
+      `Average temperature slope`              = slope_mean_temp,
+      `Temperature slope SEM`                  = slope_sem_temp,
+      `Percentage advancing\nwith temperature` = slope_frac_negative_temp) %>% 
+  
+  flextable() %>% 
+  autofit()
+
+# add table to the docx file
+doc_file <- body_add_flextable(doc_file, polldep_tab)
+
+
+# Asyn table ----------------------------------------------
+
+asyn_tab <- int_slopes_asyn_sum %>% 
+  
+    mutate(across(where(is.numeric), round, 2)) %>% 
+    
+    select(
+      `Group`                                 = group,
+      `n interactions`                        = n_int,
+      `n plant species`                       = n_plant,
+      `n pollinator species`                  = n_poll,
+      `Average asynchrony\ntime slope`        = slope_year_asyn_mean,
+      `Time slope SEM`                        = slope_year_asyn_sem,
+      `Average asynchrony\ntemperature slope` = slope_temp_asyn_mean,
+      `Temperature slope SEM`                 = slope_temp_asyn_sem) %>% 
+  
+  flextable() %>% 
+  autofit()
+
+# add table to the docx file
+doc_file <- body_add_flextable(doc_file, asyn_tab)
+  
+  
+# save the docx file
+print(doc_file, "plots/tables.docx")
 
 ```
 
