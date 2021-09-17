@@ -407,6 +407,10 @@ slopes_year <- slopes_year %>%
   # add taxonomic data
   left_join(tax_df, by = "species") %>% 
   
+  # scale slopes and std_err from days per year to days per decade
+  mutate(slope         = slope         * 10,
+         slope_std_err = slope_std_err * 10) %>% 
+  
   # add trait data
   left_join(plant_traits, by = "species")
 
@@ -623,7 +627,7 @@ slopes_spec_temp_for_plt <- slopes_temp %>%
   facet_wrap( ~ id.grp, scale = "free_y") +
   
   # add lables
-  labs(y = "Slope [days / year] (\u00B1 95% CI) ",
+  labs(y = "Slope [days / decade] (\u00B1 95% CI) ",
        x = "Species") +
   
   # add coloring
@@ -708,7 +712,7 @@ ggplot(slopes_year,
   geom_hline(yintercept = 0) +
   geom_boxplot() + 
   labs(x = "Group",
-       y = "Slope [days / year]") +
+       y = "Slope [days / decade]") +
   scale_fill_manual(values = col.grp.vec) +
   theme_shifts(legend.position = "none")
 
@@ -825,7 +829,7 @@ slopes_grp_year_mean_plt <- ggplot() +
   
   # add labels
   labs(x = "Group",
-       y = "Slope [days / year] (\u00B1 95% CI)") +
+       y = "Slope [days / decade] (\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -980,7 +984,7 @@ slopes_grp_all_corr_plt <- ggplot() +
   facet_wrap( ~ id.grp) + 
   
   # improve axis lables 
-  labs(x = "Shift over time [days / year] (\u00B1 95% CI)",
+  labs(x = "Shift over time [days / decade] (\u00B1 95% CI)",
        y = "Shift with temperature [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
@@ -1139,7 +1143,7 @@ ggplot(int_slopes_asyn,
   geom_hline(yintercept = 0) +
   geom_boxplot() +
   labs(x        = "Group",
-       y        = "Asynchrony shift [days / year]") +
+       y        = "Asynchrony shift [days / decade]") +
   scale_fill_manual(values = col.grp.vec) +
   theme_shifts(legend.position = "none")
 
@@ -1303,7 +1307,7 @@ asyn_int_year_mean_plt <- ggplot() +
   
   # add labels
   labs(x        = "Group",
-       y        = "Asynchrony shift [days / year] (\u00B1 95% CI)") +
+       y        = "Asynchrony shift [days / decade] (\u00B1 95% CI)") +
   
   # add color
   scale_color_manual(name   = "Group",
@@ -1374,7 +1378,7 @@ asyn_int_all_corr_plt <- ggplot() +
   facet_wrap( ~ group, nrow = 1) + 
   
   # improve axis labels 
-  labs(x = "Asynchrony shift over time [days / year] (\u00B1 95% CI)",
+  labs(x = "Asynchrony shift over time [days / decade] (\u00B1 95% CI)",
        y = "Asynchrony temperature shift [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
@@ -1398,7 +1402,8 @@ asyn_int_all_corr_plt +
 
 temp_vec <- unique(dat.occ$temp)
 
-year_vec <- unique(dat.occ$year)
+# scale by 0.1 to match slopes being in days / decade
+year_vec <- unique(dat.occ$year * 0.1)
 
 # for each interaction, derive the difference between the plant and the 
 #   pollinator in a given year or at a given temperature
@@ -1540,17 +1545,17 @@ asyn_grp_year_scatter_plt <- ggplot() +
   
   # add per interaction data
   geom_point(data = sim_diff_year,
-             aes(year, diff),
              col   = col.pt,
              alpha = alpha.pt,) +
+            aes(year * 10, diff, group = id),
   
   geom_density2d(data = sim_diff_year,
-                 aes(year, diff),
                  col = col.stc.line) +
+  #                aes(year * 10, diff),
   
   # add confint for group average data as ribbon
   geom_ribbon(data = sim_diff_year_sum,
-              aes(x    = year,
+              aes(x    = year * 10,
                   ymin = diff_ci_min,
                   ymax = diff_ci_max,
                   fill = group),
@@ -1558,7 +1563,7 @@ asyn_grp_year_scatter_plt <- ggplot() +
   
   # add group average data as a line
   geom_line(data = sim_diff_year_sum,
-            aes(year, diff_mean, col = group)) +
+            aes(year * 10, diff_mean, col = group)) +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
@@ -1627,9 +1632,9 @@ earlyfrac_grp_temp_line_plt +
        subtitle = "with temperature")
 
 
-# for year
+# for year (rescale by 10 to convert back from decade to year)
 earlyfrac_grp_year_line_plt <-  ggplot(data = sim_diff_year_sum,
-       aes(year, perc_poll_earlier, col = group)) +
+       aes(year * 10, perc_poll_earlier, col = group)) +
   
   # add group data as points
   geom_line (size = size.dat.line) +
@@ -1734,7 +1739,7 @@ ggplot(slopes_year_polldep,
   geom_hline(yintercept = 0) +
   geom_boxplot() +
   labs(x        = "Group",
-       y        = "Shift [days / year]") +
+       y        = "Shift [days / decade]") +
   scale_fill_manual(values = col.grp.vec) +
   theme_shifts(legend.position = "none")
 
@@ -1852,7 +1857,7 @@ polldep_grp_year_mean_plt <- ggplot() +
   
   # add labels
   labs(x        = "Group",
-       y        = "Slope [days / year] (\u00B1 95% CI)") +
+       y        = "Slope [days / decade] (\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Pollinator Dependency",
