@@ -439,7 +439,7 @@ record_dist_plot <- ggplot(dat.occ,
   geom_bar(size = 5, position = "dodge", width = 0.8, orientation = "x") +
   
   labs(x = "Year",
-       y = "log10 # Records") +
+       y = "# Records") +
   
   facet_wrap( ~ id.grp,
               nrow = 2,
