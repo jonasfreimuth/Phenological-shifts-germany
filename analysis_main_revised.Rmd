@@ -479,6 +479,52 @@ record_dist_plot
 
 
 
+```{r analyze_time_temp_association}
+
+dat.temp <- dat.occ %>% 
+  select(year, temp) %>% 
+  distinct() %>% 
+  group_by(year) %>% 
+  # summarize(temp = mean(temp)) %>% 
+  ungroup()
+
+
+lm_time_temp     <- lm(data = dat.temp, temp ~ year)
+lm_time_temp_sum <- summary(lm_time_temp)
+
+r_sqare   <- lm_time_temp_sum[["adj.r.squared"]]
+slope     <- coef(lm_time_temp_sum)[2,1]
+slope_sig <- coef(lm_time_temp_sum)[2,4] %>% cut(
+    breaks = c(0, 0.001, 0.01, 0.05, 0.1, 1),
+    labels = c("***", "**", "*", ".", " "),
+    right  = FALSE )
+
+time_temp_plt <- ggplot(dat.temp, aes(year, temp)) +
+  geom_point() + 
+  stat_summary(geom = "line") +
+  geom_smooth(method = "lm") +
+  stat_summary(col = "red") +
+  geom_text(aes(x = mean(unique(year)), y = ypos(temp, frac = 0.1),
+                label = paste(
+                  paste("R² =", round(r_sqare, 2)),
+                  paste("slope =", round(slope * 10, 2), "[\u00B0C / decade]"),
+                  slope_sig,
+                  sep = "\n")),
+            col = col.annot) +
+  labs(x = "Year",
+       y = "Temperature [\u00B0C]") +
+  ylim(NA, ypos(dat.temp$temp, frac = 0.2)) +
+  theme_shifts(legend.position = "none")
+
+
+time_temp_plt + 
+  labs(title = "Change in temperature at record location")
+
+```
+
+
+
+
 ```{r plot_shifts}
 
 if (test_run) {
@@ -1808,7 +1854,7 @@ polldep_grp_year_mean_plt +
 
 
 
-```{r save_plots_to_disc}
+```{r save_plots_to_disk}
 
 if (save.plots) {
   
