@@ -431,6 +431,26 @@ slopes_all <- left_join(slopes_temp,
 
 
 
+```{r show_record_sizes_by_group}
+
+dat_nrec <- fread("data/n_records_by_idgrp_pruned.csv",
+      showProgress = FALSE) %>%
+  
+  # recode id.grp to use trivial names 
+  # (recode only takes name/value pairs, so !!! expansion necessary)
+  mutate(id.grp = recode_factor(id.grp, !!! recode.vec)) %>% 
+  
+  rename(Group = id.grp, `n records` = n_rec, `n species` = n_species,
+         `Min records per species` = min_species_rec,
+         `Max records per species` = max_species_rec,
+         `Median records per species` = median_species_rec)
+  
+dat_nrec
+
+```
+
+
+
 ```{r plot_record_distributions}
 
 record_dist_plot <- ggplot(dat.occ,
