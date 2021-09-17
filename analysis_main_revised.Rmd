@@ -1684,10 +1684,20 @@ earlyfrac_grp_year_line_plt +
 # filter out species without determined PollDep
 #   (includes insects)
 slopes_temp_polldep <- slopes_temp %>% 
-  drop_na(PollDep)
+  drop_na(PollDep) %>% 
+  mutate(PollDep = fct_reorder(PollDep, slope))
 
 slopes_year_polldep <- slopes_year %>% 
-  drop_na(PollDep)
+  drop_na(PollDep) %>% 
+  mutate(PollDep = fct_reorder(PollDep, slope))
+
+slopes_all_polldep <- left_join(slopes_temp_polldep,
+                                slopes_year_polldep,
+                                by = c("group",
+                                       names(tax_df),
+                                       names(plant_traits)[-1]),
+                                suffix = c("_temp", "_year")) %>% 
+  select(- contains("main_var"))
 
 # summarise data sets
 slopes_temp_polldep_sum <- slopes_temp_polldep %>% 
@@ -1793,8 +1803,8 @@ polldep_grp_temp_mean_plt <- ggplot() +
   
   # raw data
   geom_point     (data = slopes_temp_polldep,
-                  aes(x    = PollDep,
-                      y    = slope),
+                  aes(x  = PollDep,
+                      y  = slope),
                   col   = col.pt,
                   alpha = alpha.pt,
                   position = position_jitter()) +
@@ -1822,7 +1832,7 @@ polldep_grp_temp_mean_plt <- ggplot() +
   
   # add coloring
   scale_color_manual(name   = "Pollinator Dependency",
-                     values = col.PollDep$colour) +
+                     values = col.grp.vec) +
   
   # suppress legend
   theme_shifts(legend.position = "none")
@@ -1867,7 +1877,7 @@ polldep_grp_year_mean_plt <- ggplot() +
   
   # add coloring
   scale_color_manual(name   = "Pollinator Dependency",
-                     values = col.PollDep$colour) +
+                     values = col.grp.vec) +
   
   # suppress legend
   theme_shifts(legend.position = "none")
