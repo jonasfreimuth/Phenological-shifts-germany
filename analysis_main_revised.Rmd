@@ -523,9 +523,9 @@ slope_sig <- coef(lm_time_temp_sum)[2,4] %>% cut(
 
 time_temp_plt <- ggplot(dat.temp, aes(year, temp)) +
   geom_point() + 
-  stat_summary(geom = "line") +
-  geom_smooth(method = "lm") +
-  stat_summary(col = "red") +
+  stat_summary(geom = "line", fun.data = mean_se, fun.args = 1.96) +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  stat_summary(col = "red", fun.data = mean_se, fun.args = 1.96) +
   geom_text(aes(x = mean(unique(year)), y = ypos(temp, frac = 0.1),
                 label = paste(
                   paste("R² =", round(r_sqare, 2)),
@@ -534,7 +534,7 @@ time_temp_plt <- ggplot(dat.temp, aes(year, temp)) +
                   sep = "\n")),
             col = col.annot) +
   labs(x = "Year",
-       y = "Temperature [\u00B0C]") +
+       y = "Temperature [\u00B0C] (\u00B1 95% CI)") +
   ylim(NA, ypos(dat.temp$temp, frac = 0.2)) +
   theme_shifts(legend.position = "none")
 
