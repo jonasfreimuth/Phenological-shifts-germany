@@ -1186,6 +1186,8 @@ ph_aov_asyn_year$group[ph_aov_asyn_year$group[,4] < 0.1,]
 int_slopes_asyn_sum <- int_slopes_asyn %>% 
   group_by(group) %>% 
   summarise(n_int                         = length(slope_temp_plant),
+            n_poll                        = length(unique(poll)),
+            n_plant                       = length(unique(plant)),
             
             # summarize temp asyn
             slope_temp_asyn_mean          = mean(slope_temp_asyn),
@@ -1424,6 +1426,8 @@ sim_diff_temp <- apply(
       plant = rep(int_slopes_row[["plant"]], n),
       poll  = rep(int_slopes_row[["poll" ]], n),
       group = rep(int_slopes_row[["group"]], n),
+      id    = rep(paste(int_slopes_row[["plant"]],
+                        int_slopes_row[["poll" ]]), n),
       temp  = temp_vec,
       diff  = diff_vec
       ))
@@ -1450,6 +1454,8 @@ sim_diff_year <- apply(
       plant = rep(int_slopes_row[["plant"]], n),
       poll  = rep(int_slopes_row[["poll" ]], n),
       group = rep(int_slopes_row[["group"]], n),
+      id    = rep(paste(int_slopes_row[["plant"]],
+                        int_slopes_row[["poll" ]]), n),
       year  = year_vec,
       diff  = diff_vec
       ))
