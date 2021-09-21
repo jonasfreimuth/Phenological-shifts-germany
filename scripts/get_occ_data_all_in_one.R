@@ -373,6 +373,7 @@ if (run.occ.prune) {
     
     # filter out records of species with less than 30 records overall
     # after records without elevation and temp pruned
+    # this is made obsolete by the 10 records per decade requirement
     group_by(species) %>% 
     filter(n() >= 30) %>% 
     ungroup() %>% 
@@ -387,6 +388,41 @@ if (run.occ.prune) {
     
     # rename coordinate columns to fit with the rest
     rename(lat = decimalLatitude, long = decimalLongitude)
+  
+  
+  # save number of records per species
+  dat.occ.prepruned %>% 
+    group_by(id.grp, species) %>% 
+    count() %>%
+    fwrite("data/n_species_pruned_sum.csv",
+           showProgress = FALSE)
+  
+  # save number of species per id.grp
+  n_spec_id_grp <- dat.occ.prepruned %>% 
+    select(id.grp, species) %>% 
+    distinct() %>% 
+    group_by(id.grp) %>% 
+    count() %>% 
+    rename(n_species = n)
+  
+  # save ranges of number of records per species
+  range_spec_id_grp <- dat.occ.prepruned %>% 
+    group_by(id.grp, species) %>% 
+    count() %>%
+    group_by(id.grp) %>% 
+    summarise(min_species_rec    = min(n),
+              max_species_rec    = max(n),
+              median_species_rec = median(n))
+  
+  # save number of records per id.grp
+  dat.occ.prepruned %>% 
+    group_by(id.grp) %>% 
+    count() %>%
+    rename(n_rec = n) %>% 
+    left_join(n_spec_id_grp, by = "id.grp") %>% 
+    left_join(range_spec_id_grp, by = "id.grp") %>% 
+    fwrite("data/n_records_by_idgrp_pruned.csv",
+           showProgress = FALSE)
   
   # save data
   fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv",

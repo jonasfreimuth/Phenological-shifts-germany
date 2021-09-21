@@ -1,4 +1,2 @@
-doy ~ temp * id.grp + lat + long + elev + (temp | species)
-doy ~ year * id.grp + lat + long + elev + (year | species)
-doy ~ temp * id.grp                     + (temp | species)
-doy ~ year * id.grp                     + (year | species)
+doy ~ temp + lat + long + elev + (temp | species)
+doy ~ year + lat + long + elev + (year | species)

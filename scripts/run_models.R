@@ -1,45 +1,24 @@
 
 # Setup -------------------------------------------------------------------
 
-library("broom.mixed")
-library("data.table")
-library("lme4")
-library("stringr")
-library("dplyr")
-library("tidyr")
-library("tidyselect")
-library("ggplot2")
+# library("broom.mixed")
+# library("data.table")
+# library("lme4")
+# library("stringr")
+# library("dplyr")
+# library("tidyr")
+# library("tidyselect")
+# library("ggplot2")
+# 
+# source("scripts/functions.R")
+# 
+# col.group.sci <- c(Coleoptera  = "#9815db",
+#                  Diptera     = "#f41d0f",
+#                  Hymenoptera = "#ffa500",
+#                  Lepidoptera = "#4744ff",
+#                  Plants      = "#008a00")
 
-source("scripts/functions.R")
 
-col.grp.sci <- c(Coleoptera  = "#9815db",
-                 Diptera     = "#f41d0f",
-                 Hymenoptera = "#ffa500",
-                 Lepidoptera = "#4744ff",
-                 Plants      = "#008a00")
-
-# do a testing run? 
-# will reduce data size and save outputs into separate directories
-test_run <- TRUE
-
-# save diagnostics plots
-# will take a very long time on the full dataset
-plot_diagnostics <- FALSE
-
-# additionally save facetted plots of diagnostic plots 
-#   will have no effect if plot_diagnostics == FALSE
-plot_diagnostics_facet <- TRUE
-
-# save plot of random regression slopes over data?
-# will add additional running time, increasing with # of data points
-plot_rnd_slopes <- TRUE
-
-# set number of times a model with failed convergence will attempt to restart
-n_restart <- 4
-
-# how to treat predictor variables
-center_preds <- TRUE
-scale_preds  <- TRUE
 
 # Directory structure:
 #   - timestamp script start
@@ -82,87 +61,64 @@ select_cols <- c('family', 'species', 'year', 'doy',
 
 log_msg("Loading and centering data...")
 
-if (!(test_run && exists("dat.occ"))) {
-  
-  dat.occ <- fread(paste0("data/occurrences_full_pruned_clim_elev.csv"),
+
+dat.occ <- fread(dat_occ_file,
                    select = select_cols,
-                   showProgress = FALSE) %>%
+                   showProgress = FALSE)  %>%
     
     # remove records w/o determined temp, shouldnt be necessary any more
     drop_na(temp, elev)
-  
-  if (test_run) {
-    
-    # calculate roughly how many species we want
-    samp_size <- ceiling((uniqueN(dat.occ$species) * 0.02))
-    
-    # calculate how many species from each group we need to represent the 
-    #   proportions in the overall data
-    spec_sizes <- dat.occ %>% 
-      group_by(id.grp) %>% 
-      mutate(group_size = uniqueN(species)) %>%
-      ungroup() %>% 
-      distinct(id.grp, species, group_size) %>% 
-      mutate(group_size = group_size / sum(unique(group_size))) %>% 
-      mutate(sample_n = ceiling(group_size * samp_size))
-    
-    spec_vec <- character(0)
-    
-    for (id.grp_var in unique(spec_sizes$id.grp)) {
-      
-      spec_size_id_grp <- spec_sizes %>% 
-        filter(id.grp == id.grp_var) 
-      
-      n <- spec_size_id_grp$sample_n[1]
-      
-      spec_size_id_grp <- spec_size_id_grp %>% 
-        slice_sample(n = n)
-      
-      spec_vec <- c(spec_vec, spec_size_id_grp$species)
-    }
-    
-    dat.occ <- dat.occ %>% 
-      filter(species %in% spec_vec)
-    
-    log_msg("Test run, pruning data down to species: ",
-            paste(spec_vec, collapse = ", "))
-    
-  }
-  
-  dat.occ <- dat.occ %>%
-    
-    # if specified, center and / or scale data
-    mutate(across(tidyselect:::where(is.numeric) & !doy, scale,
-                  center = center_preds, scale = scale_preds))
-  
-}
-
-# save mean and sd of dat occ as it is for later rescaling of data
-fwrite(dat.occ %>%
-         summarise(across(tidyselect:::where(is.numeric),
-                          list(mean = mean, sd = sd))) %>% 
-         
-         # record what we did to the predictor variables
-         mutate(center = center_preds, scale = scale_preds),
-       paste0(run_path,
-              "data_summary", "_",
-              script_time_stamp, ".csv"))
-
-log_msg("... Done.")
 
 
 if (test_run) {
   
-  # read in preset model formulas
-  form_vec <- readLines("static_data/model_formulas_test.txt")
+  spec_vec <- unique(dat.occ$species)
   
-} else {
-  
-  # read in preset model formulas
-  form_vec <- readLines("static_data/model_formulas.txt")
+  log_msg("Test run, using data pruned down to species: ",
+          paste(spec_vec, collapse = ", "))
   
 }
 
+# calulate mean and sd of dat occ (as it is necessary for later rescaling of 
+# data) and save it
+dat.occ %>%
+  
+  # save mean and sd of predictors
+  summarise(across(tidyselect:::where(is.numeric),
+                   list(mean = mean, sd = sd))) %>% 
+  
+  # record what we did to the predictor variables
+  mutate(center = center_preds, scale = scale_preds,
+         nrow = length(dat.occ)) %>% 
+  
+  fwrite(paste0(run_path,
+                "data_summary", "_",
+                script_time_stamp, ".csv"))
+
+
+# Center and scale
+dat.occ <- dat.occ %>%
+  
+  # if specified, center and / or scale data
+  mutate(across(tidyselect:::where(is.numeric) & !doy, scale,
+                center = center_preds, scale = scale_preds))
+
+
+log_msg("... Done.")
+
+
+# read in preset model formulas
+form_vec <- readLines(mod_form_file)
+
+# if we are doing a run whose results will be analysed, check if the 
+#   assumptions abt model number and composition hold
+if (!run.models.ind) {
+  # ensure we are only dealing with two formulas, one for temp and one for year
+  if (!(length(form_vec) == 2 &&
+        sum(str_detect(form_vec, "temp"), str_detect(form_vec, "year")) == 2)) {
+    stop("Fomulas not correctly specified.")
+  }
+}
 
 # Model loop --------------------------------------------------------------
 
@@ -245,13 +201,24 @@ for (form in form_vec) {
   
   # Directory stuff -------------------
   
-  mod_path <- paste0(run_path,
-                     dep_var, "_vs_",
-                     paste(fix_vars, collapse = "_"), "_",
-                     paste(str_c(rnd_var_df$group, rnd_var_df$rnd_var,
-                                 sep = "-"),
-                           collapse = "_"), "_",
-                     time_stamp, "/")
+  if (has_ranef) {
+    
+    mod_path <- paste0(run_path,
+                       dep_var, "_vs_",
+                       paste(fix_vars, collapse = "_"), "_",
+                       paste(str_c(rnd_var_df$group, rnd_var_df$rnd_var,
+                                   sep = "-"),
+                             collapse = "_"), "_",
+                       time_stamp, "/")
+    
+  } else {
+    
+    mod_path <- paste0(run_path,
+                       dep_var, "_vs_",
+                       paste(fix_vars, collapse = "_"), "_",
+                       time_stamp, "/")
+    
+  }
   
   dir.check(mod_path)
   
@@ -387,6 +354,8 @@ for (form in form_vec) {
     rnd_eff$slope_std_err     <- sqrt(rnd_eff$slope_std_err     ^ 2 +
                                         mod_coef[2,2] ^ 2)
     
+    rm(mod_coef)
+    
     fwrite(rnd_eff,
            paste0(mod_path, 
                   "lmm_rnd_eff_",
@@ -394,8 +363,26 @@ for (form in form_vec) {
                   time_stamp,
                   ".csv"))
     
-    rm(mod_coef)
+    # if models are supposed to be analysed, save their random effects
+    if (!run.models.ind){
+      # quick and dirty way to save ran effs as slope data for the main script
+      # assumption of only two models must hold for this to work properly
+      if (main_var == "year") {
+        data_path <- "data/rnd_eff_year"
+      } else if (main_var == "temp") {
+        data_path <- "data/rnd_eff_temp"
+      }
+      
+      if (test_run) {
+        data_path <- paste0(data_path, "_test")
+      }
+      
+      data_path <- paste0(data_path, ".csv")
+      
+      fwrite(rnd_eff, data_path, showProgress = FALSE)
+    }
     
+    # plot random effect slopes
     if (plot_rnd_slopes) {
       
       # generate plotting dir
@@ -441,6 +428,9 @@ for (form in form_vec) {
               
               geom_point() +
               
+              # add indication of high density of points
+              geom_density2d(col = col.line) +
+              
               # add gam curve to check if linear model is actually applicable
               geom_smooth(method = "gam", col = "red") +
               
@@ -454,7 +444,7 @@ for (form in form_vec) {
               
               # add coloring
               scale_color_manual(name   = "Group",
-                                 values = col.grp.sci) +
+                                 values = col.group.sci) +
               
               facet_wrap( ~ species) +
               
@@ -483,9 +473,14 @@ for (form in form_vec) {
     
     log_msg("Extracting plotting data...")
     
-    # extraction of raw marginal residuals nicked from the redress package:
-    # https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
-    mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+    
+    if (has_ranef) {
+      # extraction of raw marginal residuals nicked from the redress package:
+      # https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
+      mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+    } else {
+      mod_resid <- residuals(lm_mod)
+    }
     mod_fitvl <- fitted(lm_mod)
     
     rm(lm_mod)
@@ -520,7 +515,7 @@ for (form in form_vec) {
       
       # add coloring
       scale_color_manual(name   = "Group",
-                         values = col.grp.sci)
+                         values = col.group.sci)
     
     ggsave(paste0(plot_path,
                   "lmm_resid_fit_",
@@ -537,12 +532,17 @@ for (form in form_vec) {
                     str_replace(simple_form, "~", "_"), "_",
                     time_stamp,
                     ".png"),
+             
              lm_res_fit_plot +
+               
+               # add indication of high density of points
+               geom_density2d(col = col.line) +
                
                # add red regression curve for better visibility
                geom_smooth(col = "red") +
                
                facet_wrap( ~ cols ),
+             
              width = 20, height = 12)
       
     }
@@ -567,7 +567,7 @@ for (form in form_vec) {
                   xlab = "Residuals",
                   ylab = "Density") +
              scale_color_manual(name   = "Group",
-                                values = col.grp.sci) +
+                                values = col.group.sci) +
              theme_minimal() +
              theme(panel.grid = element_blank()),
            width = 20, height = 12)
@@ -596,7 +596,7 @@ for (form in form_vec) {
              x = toupper(fix_var),
              y = "Residuals") +
         scale_color_manual(name   = "Group",
-                           values = col.grp.sci) +
+                           values = col.group.sci) +
         theme_minimal() +
         theme(panel.grid = element_blank())
       
@@ -617,12 +617,17 @@ for (form in form_vec) {
                       str_replace(simple_form, "~", "_"), "_",
                       time_stamp,
                       ".png"),
+               
                fix_var_plot + 
+                 
+                 # add indication of high density of points
+                 geom_density2d(col = col.line) +
                  
                  # add red regression curve for better visibility
                  geom_smooth(col = "red") +
                  
                  facet_wrap( ~id.grp ),
+               
                width = 20, height = 12)
         
       }
@@ -659,14 +664,14 @@ for (form in form_vec) {
               rnd_var = sort(unique(dat.occ[[rnd_var]])),
               lab = paste0("n = ", table(dat.occ[[rnd_var]])),
               ypos = ypos(mod_resid)), 
-            aes(rnd_var, ypos, label = lab)) +
+              aes(rnd_var, ypos, label = lab)) +
             facet_wrap(~ rnd_var, scale = "free_x") +
             labs(title = toupper(rnd_var),
                  subtitle = form,
                  xlab = toupper(rnd_var),
                  ylab = "Residuals") +
             scale_color_manual(name   = "Group",
-                               values = col.grp.sci) +
+                               values = col.group.sci) +
             theme_minimal() +
             theme(panel.grid = element_blank(),
                   axis.text.x = element_blank())
@@ -695,6 +700,8 @@ for (form in form_vec) {
   
 }
 
+rm(dat.occ)
+
 log_msg("All done.")
 
 # reset logging file
@@ -703,3 +710,8 @@ options("log_file" = NULL)
 # explicitly print warnings
 # necessary as warnings would not be displayed if there were too many
 warnings()
+
+# if script is to be run independently, stop running
+if (run.models.ind) {
+  stop(paste("Ran models independently, stopping now."))
+}
