@@ -429,7 +429,7 @@ for (form in form_vec) {
               geom_point() +
               
               # add indication of high density of points
-              geom_density2d(col = col.line) +
+              geom_density2d(col = col.stc.line) +
               
               # add gam curve to check if linear model is actually applicable
               geom_smooth(method = "gam", col = "red") +
@@ -465,7 +465,7 @@ for (form in form_vec) {
   
   # Diagnostic plots ------------------
   
-  if (plot_diagnostics) {
+  if (any(plot_diagnostics, plot_diagnostics_facet)) {
     
     # generate plotting dir
     plot_path <- paste0(mod_path, "plots/")
@@ -477,7 +477,8 @@ for (form in form_vec) {
     if (has_ranef) {
       # extraction of raw marginal residuals nicked from the redress package:
       # https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
-      mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+      # mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+      mod_resid <- resdiduals(lm_mod)
     } else {
       mod_resid <- residuals(lm_mod)
     }
@@ -517,13 +518,17 @@ for (form in form_vec) {
       scale_color_manual(name   = "Group",
                          values = col.group.sci)
     
-    ggsave(paste0(plot_path,
-                  "lmm_resid_fit_",
-                  str_replace(simple_form, "~", "_"), "_",
-                  time_stamp,
-                  ".png"),
-           lm_res_fit_plot,
-           width = 20, height = 12)
+    if (plot_diagnostics){
+      
+      ggsave(paste0(plot_path,
+                    "lmm_resid_fit_",
+                    str_replace(simple_form, "~", "_"), "_",
+                    time_stamp,
+                    ".png"),
+             lm_res_fit_plot,
+             width = 20, height = 12)
+      
+    }
     
     if (plot_diagnostics_facet) {
       
@@ -536,7 +541,7 @@ for (form in form_vec) {
              lm_res_fit_plot +
                
                # add indication of high density of points
-               geom_density2d(col = col.line) +
+               geom_density2d(col = col.stc.line) +
                
                # add red regression curve for better visibility
                geom_smooth(col = "red") +
@@ -600,15 +605,20 @@ for (form in form_vec) {
         theme_minimal() +
         theme(panel.grid = element_blank())
       
-      # save plot
-      ggsave(paste0(plot_path,
-                    "lmm_resid_fix_eff_", fix_var, "_",
-                    str_replace(simple_form, "~", "_"), "_",
-                    time_stamp,
-                    ".png"),
-             fix_var_plot,
-             width = 20, height = 12)
-      
+      # if we don't plot normal diagnostics but this plot would not be saved 
+      # under faceting, save it anyways
+      if (plot_diagnostics || !(is.numeric(dat.occ[[fix_var]]))) {
+        
+        # save plot
+        ggsave(paste0(plot_path,
+                      "lmm_resid_fix_eff_", fix_var, "_",
+                      str_replace(simple_form, "~", "_"), "_",
+                      time_stamp,
+                      ".png"),
+               fix_var_plot,
+               width = 20, height = 12)
+        
+      }
       
       if (plot_diagnostics_facet && is.numeric(dat.occ[[fix_var]])) {
         
@@ -621,7 +631,7 @@ for (form in form_vec) {
                fix_var_plot + 
                  
                  # add indication of high density of points
-                 geom_density2d(col = col.line) +
+                 geom_density2d(col = col.stc.line) +
                  
                  # add red regression curve for better visibility
                  geom_smooth(col = "red") +

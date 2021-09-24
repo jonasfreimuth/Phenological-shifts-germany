@@ -93,8 +93,7 @@ plot_rnd_slopes        <- TRUE
 # will take a very long time on the full dataset
 plot_diagnostics       <- FALSE
 
-# additionally save faceted plots of diagnostic plots 
-#   will have no effect if plot_diagnostics == FALSE
+#save faceted plots of diagnostic plots 
 plot_diagnostics_facet <- TRUE
 
 # set number of times a model with failed convergence will attempt to restart
