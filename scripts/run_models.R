@@ -465,7 +465,7 @@ for (form in form_vec) {
   
   # Diagnostic plots ------------------
   
-  if (plot_diagnostics) {
+  if (any(plot_diagnostics, plot_diagnostics_facet)) {
     
     # generate plotting dir
     plot_path <- paste0(mod_path, "plots/")
@@ -518,13 +518,17 @@ for (form in form_vec) {
       scale_color_manual(name   = "Group",
                          values = col.group.sci)
     
-    ggsave(paste0(plot_path,
-                  "lmm_resid_fit_",
-                  str_replace(simple_form, "~", "_"), "_",
-                  time_stamp,
-                  ".png"),
-           lm_res_fit_plot,
-           width = 20, height = 12)
+    if (plot_diagnostics){
+      
+      ggsave(paste0(plot_path,
+                    "lmm_resid_fit_",
+                    str_replace(simple_form, "~", "_"), "_",
+                    time_stamp,
+                    ".png"),
+             lm_res_fit_plot,
+             width = 20, height = 12)
+      
+    }
     
     if (plot_diagnostics_facet) {
       
@@ -601,15 +605,20 @@ for (form in form_vec) {
         theme_minimal() +
         theme(panel.grid = element_blank())
       
-      # save plot
-      ggsave(paste0(plot_path,
-                    "lmm_resid_fix_eff_", fix_var, "_",
-                    str_replace(simple_form, "~", "_"), "_",
-                    time_stamp,
-                    ".png"),
-             fix_var_plot,
-             width = 20, height = 12)
-      
+      # if we don't plot normal diagnostics but this plot would not be saved 
+      # under faceting, save it anyways
+      if (plot_diagnostics || !(is.numeric(dat.occ[[fix_var]]))) {
+        
+        # save plot
+        ggsave(paste0(plot_path,
+                      "lmm_resid_fix_eff_", fix_var, "_",
+                      str_replace(simple_form, "~", "_"), "_",
+                      time_stamp,
+                      ".png"),
+               fix_var_plot,
+               width = 20, height = 12)
+        
+      }
       
       if (plot_diagnostics_facet && is.numeric(dat.occ[[fix_var]])) {
         
