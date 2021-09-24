@@ -477,7 +477,8 @@ for (form in form_vec) {
     if (has_ranef) {
       # extraction of raw marginal residuals nicked from the redress package:
       # https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
-      mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+      # mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+      mod_resid <- resdiduals(lm_mod)
     } else {
       mod_resid <- residuals(lm_mod)
     }
