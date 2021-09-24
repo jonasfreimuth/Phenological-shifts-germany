@@ -269,19 +269,6 @@ names(col.group.sci) <- c("Coleoptera",
 
 ```{r Ensure additional data is present}
 
-# Climate data --------------------------------------------
-
-if (all(file.exists('static_data/overall_mean_temperature.csv',
-                    'static_data/decadal_mean_temperature.csv'))) {
-  run.clim.get <- FALSE
-} else {
-  run.clim.get <- TRUE
-}
-
-if (run.clim.get | force.clim.get) {
-  source('scripts/get_german_climate_data.R')
-}
-
 # Plant trait data ----------------------------------------
 
 if (file.exists('static_data/bioflor_traits.csv')) {
