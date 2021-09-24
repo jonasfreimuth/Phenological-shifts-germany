@@ -2037,7 +2037,6 @@ if (save.plots) {
 
 ```{r save_tables}
 
-# library("huxtable")
 library("flextable")
 library("officer")
 
@@ -2046,79 +2045,148 @@ dir.check("plots")
 # set up export docx file
 doc_file <- read_docx()
 
+# Record numbers ------------------------------------------
+
+n_rec_tab <- fread("data/n_records_by_idgrp_pruned.csv",
+                   showProgress = FALSE) %>%
+  
+  # recode id.grp to use trivial names 
+  # (recode only takes name/value pairs, so !!! expansion necessary)
+  mutate(id.grp = recode_factor(id.grp, !!! recode.vec)) %>% 
+  
+  select(
+    "\u200B"             = id.grp,
+    "\u200B\u200B"       = n_rec,
+    "\u200B\u200B\u200B" = n_species,
+    "Min"                = min_species_rec,
+    "Max"                = max_species_rec,
+    "Median"             = median_species_rec) %>% 
+  
+  flextable() %>% 
+  
+  add_header_row(values = c("Group", "# Records", "# Species",
+                            "# Records / Species"),
+                 colwidths = c(1, 1, 2, 2)) %>%
+  
+  theme_booktabs(bold_header = TRUE)
+
+# add table to the docx file
+doc_file <- body_add_flextable(doc_file, n_rec_tab) %>% 
+  body_add_break()
+
 # Slopes tables -------------------------------------------
 
 slopes_all_tab <- slopes_all_sum %>% 
-    
-    mutate(across(matches("frac_negative"), ~ .x * 100)) %>% 
-    mutate(across(where(is.numeric), round, 2)) %>% 
-    
-    select(
-      Group                                    = id.grp,
-      `n species`                              = n_spec_year,
-      `Average time slope`                     = slope_mean_year,
-      `Time slope SEM`                         = slope_sem_year,
-      `Percentage advancing\nover time`        = slope_frac_negative_year,
-      `Average temperature slope`              = slope_mean_temp,
-      `Temperature slope SEM`                  = slope_sem_temp,
-      `Percentage advancing\nwith temperature` = slope_frac_negative_temp) %>% 
+  
+  mutate(across(where(is.numeric), round, 2)) %>% 
+  mutate(across(matches("frac_negative"), ~ paste0(.x * 100, "%"))) %>% 
+  
+  mutate(slope_mean_year          = paste(slope_mean_year,
+                                          slope_sem_year,
+                                          sep = " \u00B1 "),
+         slope_mean_temp          = paste(slope_mean_temp,
+                                          slope_sem_temp,
+                                          sep = " \u00B1 ")) %>% 
+  
+  # colnames are just 0 width spaces in order to have something unique there
+  #  that would show up as nothing in word
+  select("\u200B"        = id.grp,
+         "\u200B\u200B"  = n_spec_year,
+         "Days / decade" = slope_mean_year,
+         "% Advancing"   = slope_frac_negative_year,
+         "Days / 1 °C"   = slope_mean_temp,
+         "% Advancing\u200B"  = slope_frac_negative_temp) %>% 
   
   flextable() %>% 
-  autofit()
+  
+  add_header_row(values = c("Group", "# Species", "Temporal shifts",
+                            "Temperature sensitivity"),
+                 colwidths = c(1, 1, 2, 2)) %>%
+  
+  theme_booktabs(bold_header = TRUE)
+
 
 # add table to the docx file
-doc_file <- body_add_flextable(doc_file, slopes_all_tab)
+doc_file <- body_add_flextable(doc_file, slopes_all_tab) %>% 
+  body_add_break()
 
 
 # PollDep table -------------------------------------------
 
 polldep_tab <- slopes_all_polldep_sum %>% 
-    
-    mutate(across(matches("frac_negative"), ~ .x * 100)) %>% 
-    mutate(across(where(is.numeric), round, 2)) %>% 
-    
-    select(
-      `Insect Dependence`                      = PollDep,
-      `n species`                              = n_spec_year,
-      `Average time slope`                     = slope_mean_year,
-      `Time slope SEM`                         = slope_sem_year,
-      `Percentage advancing\nover time`        = slope_frac_negative_year,
-      `Average temperature slope`              = slope_mean_temp,
-      `Temperature slope SEM`                  = slope_sem_temp,
-      `Percentage advancing\nwith temperature` = slope_frac_negative_temp) %>% 
+  
+  mutate(across(where(is.numeric), round, 2)) %>% 
+  mutate(across(matches("frac_negative"), ~ paste0(.x * 100, "%"))) %>% 
+  
+  mutate(slope_mean_year = paste(slope_mean_year,
+                                 slope_sem_year,
+                                 sep = " \u00B1 ")) %>% 
+  mutate(slope_mean_temp = paste(slope_mean_temp,
+                                 slope_sem_temp,
+                                 sep = " \u00B1 ")) %>% 
+  
+  select(
+    "\u200B"            = PollDep,
+    "\u200B\u200B"      = n_spec_year,
+    "Days / decade"     = slope_mean_year,
+    "% Advancing"       = slope_frac_negative_year,
+    "Days / 1 °C"       = slope_mean_temp,
+    "% Advancing\u200B" = slope_frac_negative_temp) %>%
   
   flextable() %>% 
-  autofit()
+  
+  add_header_row(values = c("Insect dependence", "# Species", "Temporal shifts",
+                            "Temperature sensitivity"),
+                 colwidths = c(1, 1, 2, 2)) %>%
+  
+  theme_booktabs(bold_header = TRUE)
+
 
 # add table to the docx file
-doc_file <- body_add_flextable(doc_file, polldep_tab)
+doc_file <- body_add_flextable(doc_file, polldep_tab) %>% 
+  body_add_break()
 
 
 # Asyn table ----------------------------------------------
 
 asyn_tab <- int_slopes_asyn_sum %>% 
   
-    mutate(across(where(is.numeric), round, 2)) %>% 
-    
-    select(
-      `Group`                                 = group,
-      `n interactions`                        = n_int,
-      `n plant species`                       = n_plant,
-      `n pollinator species`                  = n_poll,
-      `Average asynchrony\ntime slope`        = slope_year_asyn_mean,
-      `Time slope SEM`                        = slope_year_asyn_sem,
-      `Average asynchrony\ntemperature slope` = slope_temp_asyn_mean,
-      `Temperature slope SEM`                 = slope_temp_asyn_sem) %>% 
+  mutate(across(where(is.numeric), round, 2)) %>% 
+  
+  mutate(slope_year_asyn_mean = paste(slope_year_asyn_mean,
+                                      slope_year_asyn_sem,
+                                      sep = " \u00B1 ")) %>% 
+  mutate(slope_temp_asyn_mean = paste(slope_temp_asyn_mean,
+                                      slope_temp_asyn_sem,
+                                      sep = " \u00B1 ")) %>% 
+  
+  select(
+    "\u200B"             = group,
+    "Total interactions" = n_int,
+    "Plant species"      = n_plant,
+    "Pollinator species" = n_poll,
+    "Days / decade"      = slope_year_asyn_mean,
+    "Days / 1 °C"        = slope_temp_asyn_mean) %>% 
   
   flextable() %>% 
-  autofit()
+  
+  add_header_row(values = c("Interaction Group", "Numbers of",
+                            "Temporal shifts",
+                            "Temperature sensitivity"),
+                 colwidths = c(1, 3, 1, 1)) %>%
+  
+  theme_booktabs(bold_header = TRUE)
 
 # add table to the docx file
-doc_file <- body_add_flextable(doc_file, asyn_tab)
+doc_file <- body_add_flextable(doc_file, asyn_tab) %>% 
+  body_add_break()
   
   
 # save the docx file
-print(doc_file, "plots/tables.docx")
+print(doc_file %>% 
+  
+  # set it in landscape mode
+  body_end_section_landscape(), "plots/tables.docx")
 
 ```
 
