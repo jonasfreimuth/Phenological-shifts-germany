@@ -11,6 +11,7 @@ DWDdata
 logs
 models
 plots
+plots_temp
 temp_models
 
 # Rmd outputs
