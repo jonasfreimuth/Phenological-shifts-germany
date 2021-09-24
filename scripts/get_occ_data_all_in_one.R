@@ -225,12 +225,16 @@ if (run.occ.refine) {
 #  see Data.Rmd for her version
 
 
-if (exists("force.occ.prune")) {
+if (exists("force.occ.prune") && file.older.check(
+  "data/occurrences_full_refined.csv",
+  "data/occurrences_full_pruned_clim_elev.csv")) {
+  
   run.occ.prune <- force.occ.prune
-} else {
-  run.occ.prune <- !(file.older.check(
-    "data/occurrences_full_refined.csv",
-    "data/occurrences_full_pruned_clim_elev.csv"))
+
+  } else {
+    
+  run.occ.prune <- TRUE
+  
 }
 
 if (run.occ.prune) {
