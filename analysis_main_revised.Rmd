@@ -743,7 +743,7 @@ ggplot(slopes_year,
 cat("Differences in slope with temperature:\n\n")
 
 aov_temp <- aov(data = slopes_temp, slope ~ id.grp, 
-                weights = 1 / (slope_std_err ^ 2)
+                # weights = 1 / (slope_std_err ^ 2)
                 )
 summary(aov_temp)
 
@@ -757,7 +757,7 @@ cat("----------------------------------------------------------\n\n")
 cat("Differences in slope over time:\n\n")
 
 aov_year <- aov(data = slopes_year, slope ~ id.grp, 
-                weights = 1 / (slope_std_err ^ 2)
+                # weights = 1 / (slope_std_err ^ 2)
                 )
 summary(aov_year)
 
@@ -1175,7 +1175,8 @@ ggplot(int_slopes_asyn,
 cat("Differences in slope of asynchrony with temperature:\n\n")
 
 aov_asyn_temp <- aov(data = int_slopes_asyn, slope_temp_asyn ~ group,
-                     weights = 1 / (slope_temp_asyn_std_err ^ 2))
+                     # weights = 1 / (slope_temp_asyn_std_err ^ 2)
+                     )
 summary(aov_asyn_temp)
 
 cat("\n Significant pairwise differences: \n")
@@ -1188,7 +1189,8 @@ cat("----------------------------------------------------------\n\n")
 cat("Differences in slope of asynchrony over time:\n\n")
 
 aov_asyn_year <- aov(data = int_slopes_asyn, slope_year_asyn ~ group,
-                     weights = 1 / (slope_year_asyn_std_err ^ 2))
+                     # weights = 1 / (slope_year_asyn_std_err ^ 2)
+                     )
 summary(aov_asyn_year)
 
 cat("\n Significant pairwise differences: \n")
@@ -1799,7 +1801,8 @@ cat("Differences in slope with temperature between levels of pollinator ",
     "dependence:\n\n")
 
 aov_polldep_temp <- aov(data = slopes_temp_polldep, slope ~ PollDep,
-                    weights = 1 / (slope_std_err ^ 2))
+                    # weights = 1 / (slope_std_err ^ 2)
+                    )
 summary(aov_polldep_temp)
 
 cat("\n Significant pairwise differences: \n")
@@ -1813,7 +1816,8 @@ cat("Differences in in slope over time between levels of pollinator ",
     "dependence:\n\n")
 
 aov_polldep_year <- aov(data = slopes_year_polldep, slope ~ PollDep,
-                    weights = 1 / (slope_std_err ^ 2))
+                    # weights = 1 / (slope_std_err ^ 2)
+                    )
 summary(aov_polldep_year)
 
 cat("\n Significant pairwise differences: \n")
