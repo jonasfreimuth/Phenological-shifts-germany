@@ -343,7 +343,6 @@ dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>%
   mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
 
 
-
 # load slope data
 slopes_temp <- fread(dat_slope_temp_file)
 slopes_year <- fread(dat_slope_year_file)
