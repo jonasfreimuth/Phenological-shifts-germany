@@ -24,15 +24,6 @@ bioflor_traits <- fread("static_data/bioflor_traits.csv",
   mutate(species = as.character(species)) 
 
 
-# check whether climate data is available
-# if not, run the script for obtaining climate data
-
-if (!(file.exists("static_data/overall_mean_temperature.csv"))) {
-  
-  source("scripts/get_german_climate_data.R")
-  
-}
-
 # Download and refinement -------------------------------------------------
 
 
