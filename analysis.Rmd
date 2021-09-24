@@ -788,7 +788,7 @@ slopes_grp_temp_mean_plt <- ggplot() +
   
   # add labels
   labs(x = "Group",
-       y = "Slope [days / \u00B0C]\n(\u00B1 95% CI)") +
+       y = "Shift with temperature\n[days / \u00B0C]\n(\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -834,7 +834,7 @@ slopes_grp_year_mean_plt <- ggplot() +
   
   # add labels
   labs(x = "Group",
-       y = "Slope [days / decade]\n(\u00B1 95% CI)") +
+       y = "Shift over time\n[days / decade]\n(\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -2016,7 +2016,7 @@ if (save.plots) {
   
   slopes_grp_temp_mean_plt <- slopes_grp_temp_mean_plt +
     
-    theme(plot.margin  = unit(c(50, 10, 10, 10), "bigpts"),
+    theme(plot.margin  = unit(c(30, 10, 10, 10), "bigpts"),
           axis.text.x  = element_blank(),
           axis.title.x = element_blank())
   
