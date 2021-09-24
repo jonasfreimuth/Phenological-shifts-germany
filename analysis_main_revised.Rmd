@@ -1965,38 +1965,62 @@ if (save.plots) {
   # TODO: fix flags of ci whiskers
   
   # modify plot for saving
+  slopes_grp_year_mean_plt <- slopes_grp_year_mean_plt +
+    
+    theme(plot.margin  = unit(c(50, 10, 10, 10), "bigpts"),
+          axis.text.x  = element_blank(),
+          axis.title.x = element_blank())
+  
+  
+  slopes_grp_temp_mean_plt <- slopes_grp_temp_mean_plt +
+    
+    theme(plot.margin  = unit(c(50, 10, 10, 10), "bigpts"),
+          axis.text.x  = element_blank(),
+          axis.title.x = element_blank())
+  
+  
   slopes_grp_all_corr_plt <- slopes_grp_all_corr_plt +
     
     # ensure its only 1 row of data
-    facet_wrap( ~ id.grp, nrow = 1) +
-    
-    theme(plot.margin = unit(c(50, 10, 10, 10), "bigpts"))
+    facet_wrap( ~ id.grp, nrow = 1)
   
   
-  slopes_grp_all_corr_pic <- ggdraw() +
+  slopes_grp_year_mean_pic <- ggdraw() +
     
     # draw original plot
-    draw_plot(slopes_grp_all_corr_plt) +
+    draw_plot(slopes_grp_year_mean_plt) +
     
     # add pictograms for id.grps
     draw_image(image = "assets/Beetle.png",
-               x = 0.182, y = 0.90,
-               scale = 0.15, hjust = 0.5, vjust = 0.5) +
+               x = 0.225, y = 0.86,
+               scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Hoverfly.png",
-               x = 0.361, y = 0.90,
-               scale = 0.15, hjust = 0.5, vjust = 0.5) +
+               x = 0.388, y = 0.86,
+               scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Bee.png",
-               x = 0.539, y = 0.90,
-               scale = 0.15, hjust = 0.5, vjust = 0.5) +
+               x = 0.552, y = 0.86,
+               scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Butterfly.png",
-               x = 0.717, y = 0.90,
-               scale = 0.15, hjust = 0.5, vjust = 0.5) +
+               x = 0.716, y = 0.86,
+               scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Plant.png",
-               x = 0.894, y = 0.90,
-               scale = 0.15, hjust = 0.5, vjust = 0.5)
+               x = 0.879, y = 0.86,
+               scale = 0.25, hjust = 0.5, vjust = 0.5)
+  
+  
+  slopes_all_mean_pic <- plot_grid(slopes_grp_year_mean_pic,
+                                        slopes_grp_temp_mean_plt,
+                                        labels = c("A", "B"),
+                                        ncol = 1)
+  
+  slopes_all_mean_corr_pic <- plot_grid(slopes_all_mean_pic,
+                                        slopes_grp_all_corr_plt,
+                                        labels = c(NA, "C"),
+                                        ncol = 1)
   
   save_plot("plots/slopes_correlation.png",
-            plot = slopes_grp_all_corr_pic,
+            plot = slopes_all_mean_corr_pic,
+            nrow = 2,
             bg = "transparent")
   
   
@@ -2005,7 +2029,15 @@ if (save.plots) {
   
   # modify plots for saving
   asyn_int_year_mean_plt <- asyn_int_year_mean_plt +
-    theme(plot.margin = unit(c(50, 10, 10, 10), "bigpts"))
+    theme(plot.margin = unit(c(50, 10, 10, 10), "bigpts"),
+          axis.text.x  = element_blank(),
+          axis.title.x = element_blank())
+  
+  asyn_grp_year_scatter_plt <- asyn_grp_year_scatter_plt +
+    theme(strip.text = element_blank())
+  
+  # earlyfrac_grp_year_line_plt <- earlyfrac_grp_year_line_plt +
+  #   theme(strip.text = element_blank())
   
   
   # add lables to plots and combine plots
@@ -2032,6 +2064,10 @@ if (save.plots) {
   save_plot("plots/interactions_all.png", asyn_pic,
             nrow = 3,
             bg = "transparent")
+  
+  # additionally save ins early plot for temp as supp figure
+  save_plot("plots/ins_early_temp.png",  earlyfrac_grp_temp_line_plt,
+           bg = "transparent")
   
   
   # PollDep plots -----------------------------------------
