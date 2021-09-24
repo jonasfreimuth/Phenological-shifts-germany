@@ -775,13 +775,13 @@ ph_aov_year$id.grp[ph_aov_year$id.grp[, 4] < 0.05,]
 # for temp
 slopes_grp_temp_mean_plt <- ggplot() +
   
-  # raw data
-  geom_point     (data = slopes_temp,
-                  aes(x    = id.grp,
-                      y    = slope),
-                  col   = col.pt,
-                  alpha = alpha.pt,
-                  position = position_jitter()) +
+  # # raw data
+  # geom_point     (data = slopes_temp,
+  #                 aes(x    = id.grp,
+  #                     y    = slope),
+  #                 col   = col.pt,
+  #                 alpha = alpha.pt,
+  #                 position = position_jitter()) +
   
   # error bars
   geom_errorbar  (data = slopes_temp_sum,
@@ -821,13 +821,13 @@ slopes_grp_temp_mean_plt +
 # for year
 slopes_grp_year_mean_plt <- ggplot() +
   
-  # raw data
-  geom_point     (data = slopes_year,
-                  aes(x    = id.grp,
-                      y    = slope),
-                  col   = col.pt,
-                  alpha = alpha.pt,
-                  position = position_jitter()) +
+  # # raw data
+  # geom_point     (data = slopes_year,
+  #                 aes(x    = id.grp,
+  #                     y    = slope),
+  #                 col   = col.pt,
+  #                 alpha = alpha.pt,
+  #                 position = position_jitter()) +
   
   # error bars
   geom_errorbar  (data = slopes_year_sum,
