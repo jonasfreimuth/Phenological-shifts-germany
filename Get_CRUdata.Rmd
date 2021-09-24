@@ -7,12 +7,12 @@ https://www.benjaminbell.co.uk/2018/01/getting-climate-data.html
 
 ```{r}
 # Load packages
-library(raster)
-library(ncdf4)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(data.table)
+# library(raster)
+# library(ncdf4)
+# library(dplyr)
+# library(tidyr)
+# library(ggplot2)
+# library(data.table)
 ```
 # load Data
 ```{r}
@@ -373,9 +373,9 @@ range(DT$long)
 
 ## Load Germany shapefile
 ```{r}
-library(rworldmap)
-library(rgeos)
-library(sf)
+# library(rworldmap)
+# library(rgeos)
+# library(sf)
 
 # Get the world map
 worldMap <- getMap(resolution = "high")

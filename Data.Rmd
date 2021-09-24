@@ -6,12 +6,12 @@ author: "Franziska M. Willems"
 
 # load packages
 ```{r}
-library(dplyr)
-library(skimr)
-library(data.table)
-library(vtree)
-library(tidyverse)
-library(lme4)
+# library(dplyr)
+# library(skimr)
+# library(data.table)
+# library(vtree)
+# library(tidyverse)
+# library(lme4)
 
 ```
 
@@ -157,7 +157,7 @@ N_per_decade2_min$order <- as.factor(N_per_decade2_min$order)
 
 
 ```{r}
-library(vtree)
+# library(vtree)
 vtree(N_per_decade_min[N_per_decade_min$kingdom=="Animalia",], c("order")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
 vtree(N_per_decade_min5[N_per_decade_min5$kingdom=="Animalia",], c("order")) #, fillcolor = c( order = "#e7d4e8")) #, horiz = FALSE)
 
@@ -219,9 +219,9 @@ N_per_species <- df_sub %>% group_by(species) %>% count()
 
 ```{r}
 theme_set(theme_bw())
-library(rworldmap)
-library(rgeos)
-library(sf)
+# library(rworldmap)
+# library(rgeos)
+# library(sf)
 world <- getMap(resolution = "high")
 world <- st_as_sf(world)
 ```
