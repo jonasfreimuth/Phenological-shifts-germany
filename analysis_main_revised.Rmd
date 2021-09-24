@@ -646,7 +646,7 @@ slopes_spec_temp_for_plt <- slopes_temp %>%
   facet_wrap( ~ id.grp, scale = "free_y") +
   
   # add lables
-  labs(y = "Slope [days / decade] (\u00B1 95% CI) ",
+  labs(y = "Shift with temperature [days / \u00B0C] (\u00B1 95% CI) ",
        x = "Species") +
   
   # add coloring
@@ -693,7 +693,7 @@ slopes_spec_year_for_plt <- slopes_year %>%
   facet_wrap( ~ id.grp, scale = "free_y") +
   
   # add lables
-  labs(y = "Slope [days / \u00B0C] (\u00B1 95% CI)",
+  labs(y = "Shift over time [days / decade] (\u00B1 95% CI)",
        x = "Species") +
   
   # add coloring
@@ -802,7 +802,7 @@ slopes_grp_temp_mean_plt <- ggplot() +
   
   # add labels
   labs(x = "Group",
-       y = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
+       y = "Slope [days / \u00B0C]\n(\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -848,7 +848,7 @@ slopes_grp_year_mean_plt <- ggplot() +
   
   # add labels
   labs(x = "Group",
-       y = "Slope [days / decade] (\u00B1 95% CI)") +
+       y = "Slope [days / decade]\n(\u00B1 95% CI)") +
   
   # add coloring
   scale_color_manual(name   = "Group",
