@@ -176,8 +176,8 @@ recode.vec.int <- c("Hoverfly"  = "Hoverfly - Plant",
                     "Butterfly" = "Butterfly - Plant")
 
 # recode vec for PollDep
-recode.vec.PollDep <- c("Yes"          = "Insect dependent",
-                        "No"           = "Insect independent",
+recode.vec.PollDep <- c("Yes"          = "Pollinator dependent",
+                        "No"           = "Pollinator independent",
                         "Intermediate" = "Intermediate")
 
 ### set colour tables -------------------------------------------------------
@@ -195,9 +195,9 @@ col.grp <-
                         "Bee - Plant",
                         "Butterfly - Plant",
                         "Overall",
-                        "Insect dependent",
+                        "Pollinator dependent",
                         "Intermediate",
-                        "Insect independent"),
+                        "Pollinator independent"),
              
              colour = c("#9815db",
                         "#f41d0f",
