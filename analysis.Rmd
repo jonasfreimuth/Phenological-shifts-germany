@@ -1970,6 +1970,8 @@ polldep_grp_corr_plt +
 
 if (save.plots) {
   
+  library("svglite")
+  
   dir.check("plots")
   
   # Records by year ---------------------------------------
@@ -2060,7 +2062,7 @@ if (save.plots) {
                                         labels = c(NA, "C"),
                                         ncol = 1)
   
-  save_plot("plots/slopes_correlation.png",
+  save_plot("plots/slopes_correlation.svg",
             plot = slopes_all_mean_corr_pic,
             nrow = 2,
             bg = "transparent")
@@ -2103,7 +2105,7 @@ if (save.plots) {
                scale = 0.25, hjust = 0.5, vjust = 0.5)
   
   
-  save_plot("plots/interactions_all.png", asyn_pic,
+  save_plot("plots/interactions_all.svg", asyn_pic,
             nrow = 3,
             bg = "transparent")
   
