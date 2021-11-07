@@ -1,4 +1,6 @@
 
+# download previously compiled dataset from github, as this script tends to 
+#   fail and needs to be restarted which can be quite tedious
 download.file(paste0("https://raw.githubusercontent.com/jonasfreimuth/",
                      "Phenological-shifts-germany/first_submission_analysis",
                      "/static_data/bioflor_traits.csv"),
