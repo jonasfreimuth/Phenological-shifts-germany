@@ -1562,9 +1562,10 @@ asyn_grp_temp_scatter_plt <- ggplot() +
   theme_shifts(legend.position = "none")
 
 
-asyn_grp_temp_scatter_plt +
-  labs(title    = "Asynchrony in interactions",
-       subtitle = "with temperature")
+# disable plotting as this one takes too long
+# asyn_grp_temp_scatter_plt +
+#   labs(title    = "Asynchrony in interactions",
+#        subtitle = "with temperature")
 
 
 # for year
