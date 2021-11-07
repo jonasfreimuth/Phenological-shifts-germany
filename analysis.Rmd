@@ -164,6 +164,7 @@ theme_shifts <- function (...) {
 
 # set named vector for recoding group names to common names
 recode.vec <- c(
+  "Plants"      = "Plants",
   "Coleoptera"  = "Beetles",
   "Diptera"     = "Flies",
   "Hymenoptera" = "Bees",
@@ -328,6 +329,10 @@ dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>%
   # recode id.grp to use trivial names 
   # (recode only takes name/value pairs, so !!! expansion necessary)
   mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
+# %>% 
+#   
+#   # order factor levels so that plants come first
+  # mutate(id.grp = fct_relevel(id.grp, "Plants", !! recode.vec))
 
 
 # load slope data
@@ -2036,20 +2041,20 @@ if (save.plots) {
     draw_plot(slopes_grp_year_mean_plt) +
     
     # add pictograms for id.grps
+    draw_image(image = "assets/Plant.png",
+               x = 0.266, y = 0.86,
+               scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Beetle.png",
-               x = 0.225, y = 0.86,
+               x = 0.408, y = 0.86,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Hoverfly.png",
-               x = 0.388, y = 0.86,
+               x = 0.566, y = 0.86,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Bee.png",
-               x = 0.552, y = 0.86,
+               x = 0.727, y = 0.86,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Butterfly.png",
-               x = 0.716, y = 0.86,
-               scale = 0.25, hjust = 0.5, vjust = 0.5) +
-    draw_image(image = "assets/Plant.png",
-               x = 0.879, y = 0.86,
+               x = 0.882, y = 0.86,
                scale = 0.25, hjust = 0.5, vjust = 0.5)
   
   
