@@ -2068,7 +2068,13 @@ if (save.plots) {
                                         labels = c(NA, "C"),
                                         ncol = 1)
   
+  # save plot as svg and png
   save_plot("plots/slopes_correlation.svg",
+            plot = slopes_all_mean_corr_pic,
+            nrow = 2,
+            bg = "transparent")
+  
+  save_plot("plots/slopes_correlation.png",
             plot = slopes_all_mean_corr_pic,
             nrow = 2,
             bg = "transparent")
@@ -2111,9 +2117,15 @@ if (save.plots) {
                scale = 0.25, hjust = 0.5, vjust = 0.5)
   
   
+  # save plot as svg and png
   save_plot("plots/interactions_all.svg", asyn_pic,
             nrow = 3,
             bg = "transparent")
+  
+  save_plot("plots/interactions_all.png", asyn_pic,
+            nrow = 3,
+            bg = "transparent")
+  
   
   # additionally save ins early plot for temp as supp figure
   save_plot("plots/ins_early_temp.png",  earlyfrac_grp_temp_line_plt,
