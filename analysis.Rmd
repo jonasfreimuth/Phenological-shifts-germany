@@ -1419,8 +1419,7 @@ asyn_int_all_corr_plt +
 
 temp_vec <- unique(dat.occ$temp)
 
-# scale by 0.1 to match slopes being in days / decade
-year_vec <- unique(dat.occ$year * 0.1)
+year_vec <- unique(dat.occ$year)
 
 # for each interaction, derive the difference between the plant and the 
 #   pollinator in a given year or at a given temperature
@@ -1463,7 +1462,9 @@ sim_diff_year <- apply(
     intercept <- as.numeric(int_slopes_row[["intcp_year_asyn"]])
     slope     <- as.numeric(int_slopes_row[["slope_year_asyn"]])
     
-    diff_vec  <-  intercept + year_vec * slope
+    # extract yearly estimate of phenology difference
+    # scale year by 0.1 to match slopes being in days / decade
+    diff_vec  <-  intercept + (year_vec * 0.1) * slope
     
     return(data.frame(
       plant = rep(int_slopes_row[["plant"]], n),
@@ -1515,7 +1516,7 @@ sim_diff_year_sum <- sim_diff_year %>%
 # for temp
 asyn_grp_temp_scatter_plt <- ggplot() +
   
-  # # add per interaction data
+  # add per interaction data
   geom_line(data = sim_diff_temp,
             aes(temp, diff, group = id),
             col   = col.pt,
@@ -1566,17 +1567,17 @@ asyn_grp_year_scatter_plt <- ggplot() +
   
   # add per interaction data
   geom_line(data = sim_diff_year,
-            aes(year * 10, diff, group = id),
+            aes(year, diff, group = id),
             col   = col.pt,
             alpha = alpha.pt,) +
   
   # geom_density2d(data = sim_diff_year,
-  #                aes(year * 10, diff),
+  #                aes(year, diff),
   #                col = col.stc.line) +
   
   # add confint for group average data as ribbon
   geom_ribbon(data = sim_diff_year_sum,
-              aes(x    = year * 10,
+              aes(x    = year,
                   ymin = diff_ci_min,
                   ymax = diff_ci_max,
                   fill = group),
@@ -1584,7 +1585,7 @@ asyn_grp_year_scatter_plt <- ggplot() +
   
   # add group average data as a line
   geom_line(data = sim_diff_year_sum,
-            aes(year * 10, diff_mean, col = group)) +
+            aes(year, diff_mean, col = group)) +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
@@ -1653,9 +1654,9 @@ earlyfrac_grp_temp_line_plt +
        subtitle = "with temperature")
 
 
-# for year (rescale by 10 to convert back from decade to year)
+# for year
 earlyfrac_grp_year_line_plt <-  ggplot(data = sim_diff_year_sum,
-       aes(year * 10, perc_poll_earlier, col = group)) +
+       aes(year, perc_poll_earlier, col = group)) +
   
   # add group data as points
   geom_line (size = size.dat.line) +
