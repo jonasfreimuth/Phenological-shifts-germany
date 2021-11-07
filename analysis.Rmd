@@ -2042,7 +2042,7 @@ if (save.plots) {
     
     # add pictograms for id.grps
     draw_image(image = "assets/Plant.png",
-               x = 0.266, y = 0.86,
+               x = 0.249, y = 0.86,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Beetle.png",
                x = 0.408, y = 0.86,
