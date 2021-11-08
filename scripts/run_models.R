@@ -672,8 +672,8 @@ for (form in form_vec) {
       # plot resid against levels of rnd eff
       for (rnd_var in rnd_vars) {
         
-        n_rnd_var   <- uniqueN(dat.occ[[rnd_var]])
         rnd_var_lvl <- unique(dat.occ[[rnd_var]])
+        n_rnd_var   <- length(rnd_var_lvl)
         
         for (i in 1:(ceiling(n_rnd_var / batch_size))) {
           
