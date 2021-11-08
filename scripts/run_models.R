@@ -116,7 +116,8 @@ if (!run.models.ind) {
   # ensure we are only dealing with two formulas, one for temp and one for year
   if (!(length(form_vec) == 2 &&
         sum(str_detect(form_vec, "temp"), str_detect(form_vec, "year")) == 2)) {
-    stop("Fomulas not correctly specified.")
+    stop(paste("Fomulas not correctly specified.",
+               "Need two formulas, one including year, one including temp."))
   }
 }
 
