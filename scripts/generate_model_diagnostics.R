@@ -162,6 +162,10 @@ names(col.group.sci) <- c("Coleoptera",
                           "Lepidoptera",
                           "Plants")
 
+# set max number of facets for plots with many facets
+# batches of 49 each, in order to be optimally legible
+batch_size <- 49
+
 
 if (! test_run) {
   
@@ -324,8 +328,8 @@ for (mod_file in mod_vec) {
                str_replace(simple_form, "~", "_"), "_",
                time_stamp,
                ".png"),
-        width = 32,
-        height = 19.2,
+        width = 25,
+        height = 15,
         units = "cm",
         res = 300
     )
@@ -356,8 +360,8 @@ for (mod_file in mod_vec) {
                     time_stamp,
                     ".png"),
              lm_res_fit_plot,
-             width = 32,
-             height = 19.2,
+             width = 25,
+             height = 15,
              units = "cm")
       
     }
@@ -380,8 +384,8 @@ for (mod_file in mod_vec) {
                
                facet_wrap( ~ cols ),
              
-             width = 32,
-             height = 19.2,
+             width = 25,
+             height = 15,
              units = "cm")
       
     }
@@ -411,8 +415,8 @@ for (mod_file in mod_vec) {
              theme_minimal() +
              theme(panel.grid = element_blank()),
            
-           width = 32,
-           height = 19.2,
+           width = 25,
+           height = 15,
            units = "cm")
     
     # plot residuals vs each fixed effect
@@ -457,8 +461,8 @@ for (mod_file in mod_vec) {
                
                fix_var_plot,
                
-               width = 32,
-               height = 19.2,
+               width = 25,
+               height = 15,
                units = "cm")
         
       }
@@ -481,8 +485,8 @@ for (mod_file in mod_vec) {
                  
                  facet_wrap( ~id.grp ),
                
-               width = 32,
-               height = 19.2,
+               width = 25,
+               height = 15,
                units = "cm")
         
       }
@@ -495,11 +499,8 @@ for (mod_file in mod_vec) {
       # plot resid against levels of rnd eff
       for (rnd_var in rnd_vars) {
         
-        # make plots in batches of 49 each, in order to be optimally legible
-        batch_size <- 49
-        
-        n_rnd_var   <- uniqueN(dat.occ[[rnd_var]])
         rnd_var_lvl <- unique(dat.occ[[rnd_var]])
+        n_rnd_var   <- length(rnd_var_lvl)
         
         for (i in 1:(ceiling(n_rnd_var / batch_size))) {
           
@@ -546,8 +547,8 @@ for (mod_file in mod_vec) {
                    theme(panel.grid = element_blank(),
                          axis.text.x = element_blank()),
                  
-                 width  = 4 * ceiling(sqrt(n_rnd_var)),
-                 height = 4 * ceiling(sqrt(n_rnd_var)),
+                 width  = 25,
+                 height = 35,
                  units  = "cm")
         }
       }
