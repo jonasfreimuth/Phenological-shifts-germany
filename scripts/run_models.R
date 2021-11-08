@@ -599,7 +599,8 @@ for (form in form_vec) {
         scale_color_manual(name   = "Group",
                            values = col.group.sci) +
         theme_minimal() +
-        theme(panel.grid = element_blank())
+        theme(panel.grid = element_blank(),
+              legend.position = "bottom")
       
       # if we don't plot normal diagnostics but this plot would not be saved 
       # under faceting, save it anyways

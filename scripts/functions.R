@@ -120,7 +120,8 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
   
   plot <- plot +
     theme_minimal() +
-    theme(panel.grid = element_blank())
+    theme(panel.grid = element_blank(),
+          legend.position = "bottom")
   
   return(plot)
 }
