@@ -34,6 +34,10 @@ if (!test_run) {
   model_root <- "temp_models/"
 }
 
+# set max number of facets for plots with many facets
+# batches of 49 each, in order to be optimally legible
+batch_size <- 49
+
 #  ensure path exists
 dir.check(model_root)
 
@@ -667,9 +671,6 @@ for (form in form_vec) {
       
       # plot resid against levels of rnd eff
       for (rnd_var in rnd_vars) {
-        
-        # make plots in batches of 49 each, in order to be optimally legible
-        batch_size <- 49
         
         n_rnd_var   <- uniqueN(dat.occ[[rnd_var]])
         rnd_var_lvl <- unique(dat.occ[[rnd_var]])
