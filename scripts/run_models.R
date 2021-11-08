@@ -594,7 +594,7 @@ for (form in form_vec) {
         geom_hline(yintercept = 0) +
         labs(title = fix_var,
              subtitle = form,
-             x = toupper(fix_var),
+             x = fix_var,
              y = "Residuals") +
         scale_color_manual(name   = "Group",
                            values = col.group.sci) +
@@ -669,9 +669,9 @@ for (form in form_vec) {
               ypos = ypos(mod_resid)), 
               aes(rnd_var, ypos, label = lab)) +
             facet_wrap(~ rnd_var, scale = "free_x") +
-            labs(title = toupper(rnd_var),
+            labs(title = rnd_var,
                  subtitle = form,
-                 xlab = toupper(rnd_var),
+                 xlab = rnd_var,
                  ylab = "Residuals") +
             scale_color_manual(name   = "Group",
                                values = col.group.sci) +
