@@ -402,61 +402,85 @@ for (form in form_vec) {
         
         for (group in unique(dat.occ$id.grp)) {
           
+          # get df with only members of this group 
           dat.occ.plt <- dat.occ %>% 
             filter(id.grp == group)
           
-          rnd_eff_plt <- rnd_eff %>% 
-            filter(species %in% dat.occ.plt$species)
+          # get levels and number of them 
+          rnd_var_lvl <- unique(dat.occ.plt[[rnd_var]])
+          n_rnd_var <- length(rnd_var_lvl) 
           
-          n_rnd_var <- uniqueN(dat.occ.plt[[rnd_var]])
-          
-          png(paste0(plot_path,
-                     "lmm_rnd_var_slopes_", rnd_var, "_", group, "_",
-                     str_replace(simple_form, "~", "_"), "_",
-                     time_stamp,
-                     ".png"),
-              width  = 250 * ceiling(sqrt(n_rnd_var)),
-              height = 250 * ceiling(sqrt(n_rnd_var)))
-          
-          print(
-            ggplot(data = data.frame(dep_var  = dat.occ.plt[[dep_var ]],
-                                     main_var = dat.occ.plt[[main_var]],
-                                     
-                                     # TODO: change this in case col name
-                                     #    for rnd_eff is changed
-                                     species  = dat.occ.plt[[rnd_var ]],
-                                     
-                                     # TODO: make this variable
-                                     group    = dat.occ.plt[["id.grp"]]),
+          for (i in 1:(ceiling(n_rnd_var / batch_size))) {
+            
+            # get selection vector of current levels of the rnd var
+            ind_vec <- (((i - 1) * batch_size) + 1):(i * batch_size)
+            plot_rnd_val_lvl <- rnd_var_lvl[ind_vec]
+            sel_vec <- rnd_eff[[rnd_var]] %in% plot_rnd_val_lvl
+            
+            # select the right levels out of overall rnd_eff
+            rnd_eff_plt <- rnd_eff[sel_vec, ]
+            
+            # overwrite previous dat.occ.plt to save space
+            dat.occ.plt <- dat.occ %>% 
+              filter(species %in% rnd_eff_plt$species)
+            
+            
+            ggsave(paste0(plot_path,
+                          "lmm_rnd_var_slopes_", rnd_var,
+                          "_", group,
+                          "_", str_replace(simple_form, "~", "_"), 
+                          "_", str_pad(i,
+                                       ceiling(log10(n_rnd_var / batch_size)),
+                                       "left",
+                                       "0"),
+                          time_stamp,
+                          ".png"),
                    
-                   aes(main_var, dep_var, col = group)) +
-              
-              geom_point() +
-              
-              # add indication of high density of points
-              geom_density2d(col = col.stc.line) +
-              
-              # add gam curve to check if linear model is actually applicable
-              geom_smooth(method = "gam", col = "red") +
-              
-              # plot model regression lines
-              geom_abline(data = rnd_eff_plt,
-                          aes(intercept = intercept,
-                              slope = slope)) +
-              
-              labs(title = rnd_var, subtitle = form,
-                   x = main_var, y = dep_var) +
-              
-              # add coloring
-              scale_color_manual(name   = "Group",
-                                 values = col.group.sci) +
-              
-              facet_wrap( ~ species) +
-              
-              theme_minimal()
-          )
-          
-          dev.off()
+                   
+                   ggplot(data = data.frame(dep_var  = dat.occ.plt[[dep_var ]],
+                                            main_var = dat.occ.plt[[main_var]],
+                                            
+                                            # TODO: change this in case col name
+                                            #    for rnd_eff is changed
+                                            species  = dat.occ.plt[[rnd_var ]],
+                                            
+                                            # TODO: make this variable
+                                            group    = dat.occ.plt[["id.grp"]]),
+                          
+                          aes(main_var, dep_var, col = group)) +
+                     
+                     geom_point() +
+                     
+                     # add indication of high density of points
+                     geom_density2d(col = col.stc.line) +
+                     
+                     # add gam curve to check if linear model is actually 
+                     #  applicable
+                     geom_smooth(method = "gam", col = "red") +
+                     
+                     # plot model regression lines
+                     geom_abline(data = rnd_eff_plt,
+                                 aes(intercept = intercept,
+                                     slope = slope)) +
+                     
+                     labs(title = rnd_var, subtitle = form,
+                          x = main_var, y = dep_var) +
+                     
+                     # add coloring
+                     scale_color_manual(name   = "Group",
+                                        values = col.group.sci) +
+                     
+                     facet_wrap( ~ species) +
+                     
+                     theme_minimal() +
+                     
+                     theme(legend.position = "bottom"),
+                   
+                   
+                   width  = 25,
+                   height = 35,
+                   units  = "cm")
+          }
         }
       }
       
