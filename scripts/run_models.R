@@ -501,8 +501,8 @@ for (form in form_vec) {
                str_replace(simple_form, "~", "_"), "_",
                time_stamp,
                ".png"),
-        width = 32,
-        height = 19.2,
+        width = 25,
+        height = 15,
         units = "cm",
         res = 300
     )
@@ -533,8 +533,8 @@ for (form in form_vec) {
                     time_stamp,
                     ".png"),
              lm_res_fit_plot,
-             width = 32,
-             height = 19.2,
+             width = 25,
+             height = 15,
              units = "cm")
       
     }
@@ -557,8 +557,8 @@ for (form in form_vec) {
                
                facet_wrap( ~ cols ),
              
-             width = 32,
-             height = 19.2,
+             width = 25,
+             height = 15,
              units = "cm")
       
     }
@@ -588,8 +588,8 @@ for (form in form_vec) {
              theme_minimal() +
              theme(panel.grid = element_blank()),
            
-           width = 32,
-           height = 19.2,
+           width = 25,
+           height = 15,
            units = "cm")
     
     # plot residuals vs each fixed effect
@@ -634,8 +634,8 @@ for (form in form_vec) {
                
                fix_var_plot,
                
-               width = 32,
-               height = 19.2,
+               width = 25,
+               height = 15,
                units = "cm")
         
       }
@@ -658,8 +658,8 @@ for (form in form_vec) {
                  
                  facet_wrap( ~id.grp ),
                
-               width = 32,
-               height = 19.2,
+               width = 25,
+               height = 15,
                units = "cm")
         
       }
