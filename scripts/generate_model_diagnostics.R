@@ -18,7 +18,7 @@ library("tidyselect")
 source("scripts/functions.R")
 
 
-test_run <- FALSE
+test_run <- TRUE
 
 ## Modeling
 
@@ -48,7 +48,7 @@ n_restart               <- 4
 col.pt   <- "gray31"
 
 # set colour for static lines
-col.line <- "gray31"
+col.stc.line <- "gray31"
 
 # set colour for axis elements
 col.ax   <- "gray31"
@@ -167,7 +167,7 @@ if (! test_run) {
   
   
   mod_vec <- c(
-    # "models/20210912_1844_model_data/doy_vs_temp_lat_long_elev_temp-species_20210912_1844/lmm_model_doy_temp_20210912_1844.rds",
+    "models/20210912_1844_model_data/doy_vs_temp_lat_long_elev_temp-species_20210912_1844/lmm_model_doy_temp_20210912_1844.rds",
     "models/20210912_1844_model_data/doy_vs_year_lat_long_elev_year-species_20210912_2010/lmm_model_doy_year_20210912_2010.rds"
     )
   
@@ -301,7 +301,7 @@ for (mod_file in mod_vec) {
   if (plot_diagnostics) {
     
     # generate plotting dir
-    plot_path <- paste0(mod_path, "plots")
+    plot_path <- paste0(mod_path, "plots/")
     dir.check(plot_path)
     
     log_msg("Extracting plotting data...")
@@ -346,13 +346,16 @@ for (mod_file in mod_vec) {
       scale_color_manual(name   = "Group",
                          values = col.group.sci)
     
-    ggsave(paste0(plot_path,
-                  "lmm_resid_fit_",
-                  str_replace(simple_form, "~", "_"), "_",
-                  time_stamp,
-                  ".png"),
-           lm_res_fit_plot,
-           width = 20, height = 12)
+    if (plot_diagnostics){
+      
+      ggsave(paste0(plot_path,
+                    "lmm_resid_fit_",
+                    str_replace(simple_form, "~", "_"), "_",
+                    time_stamp,
+                    ".png"),
+             lm_res_fit_plot)
+      
+    }
     
     if (plot_diagnostics_facet) {
       
@@ -365,14 +368,12 @@ for (mod_file in mod_vec) {
              lm_res_fit_plot +
                
                # add indication of high density of points
-               geom_density2d(col = col.line) +
+               geom_density2d(col = col.stc.line) +
                
                # add red regression curve for better visibility
-               geom_smooth(col = "black") +
+               geom_smooth(col = "red") +
                
-               facet_wrap( ~ cols ),
-             
-             width = 20, height = 12)
+               facet_wrap( ~ cols ))
       
     }
     
@@ -398,8 +399,7 @@ for (mod_file in mod_vec) {
              scale_color_manual(name   = "Group",
                                 values = col.group.sci) +
              theme_minimal() +
-             theme(panel.grid = element_blank()),
-           width = 20, height = 12)
+             theme(panel.grid = element_blank()))
     
     # plot residuals vs each fixed effect
     for (fix_var in fix_vars) {
@@ -429,15 +429,19 @@ for (mod_file in mod_vec) {
         theme_minimal() +
         theme(panel.grid = element_blank())
       
-      # save plot
-      ggsave(paste0(plot_path,
-                    "lmm_resid_fix_eff_", fix_var, "_",
-                    str_replace(simple_form, "~", "_"), "_",
-                    time_stamp,
-                    ".png"),
-             fix_var_plot,
-             width = 20, height = 12)
-      
+      # if we don't plot normal diagnostics but this plot would not be saved 
+      # under faceting, save it anyways
+      if (plot_diagnostics || !(is.numeric(dat.occ[[fix_var]]))) {
+        
+        # save plot
+        ggsave(paste0(plot_path,
+                      "lmm_resid_fix_eff_", fix_var, "_",
+                      str_replace(simple_form, "~", "_"), "_",
+                      time_stamp,
+                      ".png"),
+               fix_var_plot)
+        
+      }
       
       if (plot_diagnostics_facet && is.numeric(dat.occ[[fix_var]])) {
         
@@ -450,14 +454,12 @@ for (mod_file in mod_vec) {
                fix_var_plot + 
                  
                  # add indication of high density of points
-                 geom_density2d(col = col.line) +
+                 geom_density2d(col = col.stc.line) +
                  
                  # add red regression curve for better visibility
-                 geom_smooth(col = "black") +
+                 geom_smooth(col = "red") +
                  
-                 facet_wrap( ~id.grp ),
-               
-               width = 20, height = 12)
+                 facet_wrap( ~id.grp ))
         
       }
       
@@ -526,6 +528,5 @@ for (mod_file in mod_vec) {
   }
   
   log_msg("Done with model ", form, "...")
-  
   
 }
