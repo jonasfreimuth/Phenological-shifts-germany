@@ -525,8 +525,7 @@ for (form in form_vec) {
                     str_replace(simple_form, "~", "_"), "_",
                     time_stamp,
                     ".png"),
-             lm_res_fit_plot,
-             width = 20, height = 12)
+             lm_res_fit_plot)
       
     }
     
@@ -546,9 +545,7 @@ for (form in form_vec) {
                # add red regression curve for better visibility
                geom_smooth(col = "red") +
                
-               facet_wrap( ~ cols ),
-             
-             width = 20, height = 12)
+               facet_wrap( ~ cols ))
       
     }
     
@@ -574,8 +571,7 @@ for (form in form_vec) {
              scale_color_manual(name   = "Group",
                                 values = col.group.sci) +
              theme_minimal() +
-             theme(panel.grid = element_blank()),
-           width = 20, height = 12)
+             theme(panel.grid = element_blank()))
     
     # plot residuals vs each fixed effect
     for (fix_var in fix_vars) {
@@ -615,8 +611,7 @@ for (form in form_vec) {
                       str_replace(simple_form, "~", "_"), "_",
                       time_stamp,
                       ".png"),
-               fix_var_plot,
-               width = 20, height = 12)
+               fix_var_plot)
         
       }
       
@@ -636,9 +631,7 @@ for (form in form_vec) {
                  # add red regression curve for better visibility
                  geom_smooth(col = "red") +
                  
-                 facet_wrap( ~id.grp ),
-               
-               width = 20, height = 12)
+                 facet_wrap( ~id.grp ))
         
       }
       
