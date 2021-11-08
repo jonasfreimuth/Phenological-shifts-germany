@@ -369,7 +369,7 @@ for (form in form_vec) {
                   ".csv"))
     
     # if models are supposed to be analysed, save their random effects
-    if (!run.models.ind){
+    if (!run.models.ind) {
       # quick and dirty way to save ran effs as slope data for the main script
       # assumption of only two models must hold for this to work properly
       if (main_var == "year") {
