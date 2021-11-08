@@ -720,8 +720,8 @@ for (form in form_vec) {
                    theme(panel.grid = element_blank(),
                          axis.text.x = element_blank()),
                  
-                 width  = 4 * ceiling(sqrt(n_rnd_var)),
-                 height = 4 * ceiling(sqrt(n_rnd_var)),
+                 width  = 25,
+                 height = 35,
                  units  = "cm")
         }
       }
