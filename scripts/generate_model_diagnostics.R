@@ -173,7 +173,7 @@ if (! test_run) {
   
 } else {
   
-  mod_vec <- "temp_models/20210912_2348_model_data/doy_vs_temp_lat_long_elev_temp-species_20210912_2348/lmm_model_doy_temp_20210912_2348.rds"
+  mod_vec <- "temp_models/20211108_1728_model_data/doy_vs_temp_lat_long_elev_temp-species_20211108_1728/lmm_model_doy_temp_20211108_1728.rds"
 
 }
 
@@ -324,8 +324,10 @@ for (mod_file in mod_vec) {
                str_replace(simple_form, "~", "_"), "_",
                time_stamp,
                ".png"),
-        width = 2000,
-        height = 1200
+        width = 32,
+        height = 19.2,
+        units = "cm",
+        res = 300
     )
     
     qqnorm(scale(mod_resid), ylab = "Scaled sample quantiles",
@@ -353,7 +355,10 @@ for (mod_file in mod_vec) {
                     str_replace(simple_form, "~", "_"), "_",
                     time_stamp,
                     ".png"),
-             lm_res_fit_plot)
+             lm_res_fit_plot,
+             width = 32,
+             height = 19.2,
+             units = "cm")
       
     }
     
@@ -373,7 +378,11 @@ for (mod_file in mod_vec) {
                # add red regression curve for better visibility
                geom_smooth(col = "red") +
                
-               facet_wrap( ~ cols ))
+               facet_wrap( ~ cols ),
+             
+             width = 32,
+             height = 19.2,
+             units = "cm")
       
     }
     
@@ -385,6 +394,7 @@ for (mod_file in mod_vec) {
                   str_replace(simple_form, "~", "_"), "_",
                   time_stamp,
                   ".png"),
+           
            ggplot(data = data.frame(resid = mod_resid),
                   aes(resid)) +
              geom_histogram(aes(y = ..density..)) + 
@@ -399,7 +409,11 @@ for (mod_file in mod_vec) {
              scale_color_manual(name   = "Group",
                                 values = col.group.sci) +
              theme_minimal() +
-             theme(panel.grid = element_blank()))
+             theme(panel.grid = element_blank()),
+           
+           width = 32,
+           height = 19.2,
+           units = "cm")
     
     # plot residuals vs each fixed effect
     for (fix_var in fix_vars) {
@@ -427,7 +441,8 @@ for (mod_file in mod_vec) {
         scale_color_manual(name   = "Group",
                            values = col.group.sci) +
         theme_minimal() +
-        theme(panel.grid = element_blank())
+        theme(panel.grid = element_blank(),
+              legend.position = "bottom")
       
       # if we don't plot normal diagnostics but this plot would not be saved 
       # under faceting, save it anyways
@@ -439,7 +454,12 @@ for (mod_file in mod_vec) {
                       str_replace(simple_form, "~", "_"), "_",
                       time_stamp,
                       ".png"),
-               fix_var_plot)
+               
+               fix_var_plot,
+               
+               width = 32,
+               height = 19.2,
+               units = "cm")
         
       }
       
@@ -459,7 +479,11 @@ for (mod_file in mod_vec) {
                  # add red regression curve for better visibility
                  geom_smooth(col = "red") +
                  
-                 facet_wrap( ~id.grp ))
+                 facet_wrap( ~id.grp ),
+               
+               width = 32,
+               height = 19.2,
+               units = "cm")
         
       }
       
@@ -471,45 +495,61 @@ for (mod_file in mod_vec) {
       # plot resid against levels of rnd eff
       for (rnd_var in rnd_vars) {
         
-        n_rnd_var <- uniqueN(dat.occ[[rnd_var]])
+        # make plots in batches of 49 each, in order to be optimally legible
+        batch_size <- 49
         
-        png(paste0(plot_path,
-                   "lmm_resid_rnd_eff_", rnd_var, "_",
-                   str_replace(simple_form, "~", "_"),
-                   "_", 
-                   time_stamp,
-                   ".png"),
-            width  = 250 * ceiling(sqrt(n_rnd_var)),
-            height = 250 * ceiling(sqrt(n_rnd_var)))
+        n_rnd_var   <- uniqueN(dat.occ[[rnd_var]])
+        rnd_var_lvl <- unique(dat.occ[[rnd_var]])
         
-        print(
-          ggplot(data = data.frame(
-            resid = mod_resid,
-            rnd_var = dat.occ[[rnd_var]]),
-            aes(rnd_var, resid)) +
-            geom_boxplot() +
-            labs(title = rnd_var,
-                 x = rnd_var) +
-            geom_hline(yintercept = 0) +
-            geom_text(data = data.frame(
-              rnd_var = sort(unique(dat.occ[[rnd_var]])),
-              lab = paste0("n = ", table(dat.occ[[rnd_var]])),
-              ypos = ypos(mod_resid)), 
-              aes(rnd_var, ypos, label = lab)) +
-            facet_wrap(~ rnd_var, scale = "free_x") +
-            labs(title = rnd_var,
-                 subtitle = form,
-                 xlab = rnd_var,
-                 ylab = "Residuals") +
-            scale_color_manual(name   = "Group",
-                               values = col.group.sci) +
-            theme_minimal() +
-            theme(panel.grid = element_blank(),
-                  axis.text.x = element_blank())
-        )
-        
-        dev.off()
-        
+        for (i in 1:(ceiling(n_rnd_var / batch_size))) {
+          
+          # get selection vector of current levels of the rnd var
+          ind_vec <- (((i - 1) * batch_size) + 1):(i * batch_size)
+          plot_rnd_val_lvl <- rnd_var_lvl[ind_vec]
+          sel_vec <- dat.occ[[rnd_var]] %in% plot_rnd_val_lvl
+          
+          # make df using these lvls and their residuals
+          mod_resid_plot <- mod_resid         [sel_vec]
+          rnd_var_vec    <- dat.occ[[rnd_var]][sel_vec]
+          plot_df <- data.frame(resid   = mod_resid_plot,
+                                rnd_var = rnd_var_vec)
+          
+          ggsave(paste0(plot_path,
+                        "lmm_resid_rnd_eff_", rnd_var, "_",
+                        str_replace(simple_form, "~", "_"),
+                        "_", time_stamp, 
+                        "_", str_pad(i,
+                                     ceiling(log10(n_rnd_var / batch_size)),
+                                     "left",
+                                     "0"),
+                        ".png"),
+                 
+                 ggplot(data = plot_df,
+                        aes(rnd_var, resid)) +
+                   geom_boxplot() +
+                   labs(title = rnd_var,
+                        x = rnd_var) +
+                   geom_hline(yintercept = 0) +
+                   geom_text(data = data.frame(
+                     rnd_var = sort(plot_rnd_val_lvl),
+                     lab = paste0("n = ", table(rnd_var_vec)),
+                     ypos = ypos(mod_resid_plot)), 
+                     aes(rnd_var, ypos, label = lab)) +
+                   facet_wrap(~ rnd_var, scale = "free_x") +
+                   labs(title = rnd_var,
+                        subtitle = form,
+                        xlab = rnd_var,
+                        ylab = "Residuals") +
+                   scale_color_manual(name   = "Group",
+                                      values = col.group.sci) +
+                   theme_minimal() +
+                   theme(panel.grid = element_blank(),
+                         axis.text.x = element_blank()),
+                 
+                 width  = 4 * ceiling(sqrt(n_rnd_var)),
+                 height = 4 * ceiling(sqrt(n_rnd_var)),
+                 units  = "cm")
+        }
       }
       
     }
