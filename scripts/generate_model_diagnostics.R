@@ -18,7 +18,7 @@ library("tidyselect")
 source("scripts/functions.R")
 
 
-test_run <- TRUE
+test_run <- FALSE
 
 ## Modeling
 
@@ -170,14 +170,14 @@ batch_size <- 49
 if (! test_run) {
   
   
-  mod_vec <- c(
-    "models/20210912_1844_model_data/doy_vs_temp_lat_long_elev_temp-species_20210912_1844/lmm_model_doy_temp_20210912_1844.rds",
-    "models/20210912_1844_model_data/doy_vs_year_lat_long_elev_year-species_20210912_2010/lmm_model_doy_year_20210912_2010.rds"
-    )
+  mod_vec <- c(  
+	"models/20210912_1844_model_data/doy_vs_year_lat_long_elev_year-species_20210912_2010/lmm_model_doy_year_20210912_2010.rds",
+    	"models/20210912_1844_model_data/doy_vs_temp_lat_long_elev_temp-species_20210912_1844/lmm_model_doy_temp_20210912_1844.rds"
+	)
   
 } else {
   
-  mod_vec <- "temp_models/20211108_1728_model_data/doy_vs_temp_lat_long_elev_temp-species_20211108_1728/lmm_model_doy_temp_20211108_1728.rds"
+  mod_vec <- "temp_models/20210921_1111_model_data/doy_vs_temp_lat_long_elev_temp-species_20210921_1111/lmm_model_doy_temp_20210921_1111.rds"
 
 }
 
@@ -312,8 +312,8 @@ for (mod_file in mod_vec) {
     
     # extraction of raw marginal residuals nicked from the redress package:
     # https://github.com/goodekat/redres/blob/714227ec6fb4821b6977743e38903dd83fb09e8d/R/resid_raw.R
-    mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
-    # mod_resid <- residuals(lm_mod)
+    # mod_resid <- lm_mod@resp$y - (lm_mod@pp$X %*% matrix(lm_mod@beta, ncol = 1))
+    mod_resid <- residuals(lm_mod)
     mod_fitvl <- fitted(lm_mod)
     
     rm(lm_mod)
@@ -499,7 +499,9 @@ for (mod_file in mod_vec) {
       # plot resid against levels of rnd eff
       for (rnd_var in rnd_vars) {
         
-        rnd_var_lvl <- unique(dat.occ[[rnd_var]])
+        # extract unique levels of random effect and their number
+        #   (sort them to ensure tidy plots)
+        rnd_var_lvl <- sort(unique(dat.occ[[rnd_var]]))
         n_rnd_var   <- length(rnd_var_lvl)
         
         for (i in 1:(ceiling(n_rnd_var / batch_size))) {
