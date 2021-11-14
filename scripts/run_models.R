@@ -407,7 +407,7 @@ for (form in form_vec) {
             filter(id.grp == group)
           
           # get levels and number of them 
-          rnd_var_lvl <- unique(dat.occ.plt[[rnd_var]])
+          rnd_var_lvl <- sort(unique(dat.occ.plt[[rnd_var]]))
           n_rnd_var <- length(rnd_var_lvl) 
           
           for (i in 1:(ceiling(n_rnd_var / batch_size))) {
@@ -696,7 +696,9 @@ for (form in form_vec) {
       # plot resid against levels of rnd eff
       for (rnd_var in rnd_vars) {
         
-        rnd_var_lvl <- unique(dat.occ[[rnd_var]])
+        # extract unique levels of random effect and their number
+        #   (sort them to ensure tidy plots)
+        rnd_var_lvl <- sort(unique(dat.occ[[rnd_var]]))
         n_rnd_var   <- length(rnd_var_lvl)
         
         for (i in 1:(ceiling(n_rnd_var / batch_size))) {
