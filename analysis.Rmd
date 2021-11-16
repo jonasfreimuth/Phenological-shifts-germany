@@ -292,9 +292,12 @@ if (run.traits.get | force.traits.get) {
 if (!all(file.exists(dat_occ_file)) || 
     force.occ.get                   ||
     force.occ.prune) {
-  source("scripts/get_occ_data_all_in_one.R")
   
-  if (test_run) {
+  
+  if (!test_run) {
+    source("scripts/get_occ_data_all_in_one.R")
+  } else {
+    # this script automatically ensures full data is present
     source("scripts/get_occ_test_data.R")
   }
 }

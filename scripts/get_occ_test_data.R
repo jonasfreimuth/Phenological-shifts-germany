@@ -1,4 +1,11 @@
-dat.occ <- fread("data/occurrences_full_pruned_clim_elev.csv",
+dat_occ_file_full <- "data/occurrences_full_pruned_clim_elev.csv"
+
+# ensure full dat.occ file is present
+if (!file.exists(dat_occ_file_full)) {
+  source("scripts/get_occ_data_all_in_one.R")
+}
+
+dat.occ <- fread(dat_occ_file_full,
                  showProgress = FALSE)  %>%
   
   # remove records w/o determined temp, shouldn't be necessary any more
