@@ -449,14 +449,14 @@ for (form in form_vec) {
                           
                           aes(main_var, dep_var, col = group)) +
                      
-                     geom_point() +
+                     geom_hex(col = NA) +
                      
                      # add indication of high density of points
-                     geom_density2d(col = col.stc.line) +
+                     # geom_density2d(col = col.stc.line) +
                      
                      # add gam curve to check if linear model is actually 
                      #  applicable
-                     geom_smooth(method = "gam", col = "red") +
+                     geom_smooth(method = "gam") +
                      
                      # plot model regression lines
                      geom_abline(data = rnd_eff_plt,
@@ -543,7 +543,7 @@ for (form in form_vec) {
     lm_res_fit_plot <- lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
                                     col_vec = dat.occ$id.grp,
                                     main = "Residuals vs Fitted",
-                                    sub = form) +
+                                    sub = form,
       
       # add coloring
       scale_color_manual(name   = "Group",
@@ -574,7 +574,7 @@ for (form in form_vec) {
              lm_res_fit_plot +
                
                # add indication of high density of points
-               geom_density2d(col = col.stc.line) +
+               # geom_density2d(col = col.stc.line) +
                
                # add red regression curve for better visibility
                geom_smooth(col = "red") +
@@ -626,7 +626,7 @@ for (form in form_vec) {
       
       if (is.numeric(dat.occ[[fix_var]])){
         fix_var_plot <- fix_var_plot +
-          geom_point() + 
+          geom_hex(col = NA) + 
           geom_smooth()
       } else {
         fix_var_plot <- fix_var_plot +
@@ -675,12 +675,12 @@ for (form in form_vec) {
                fix_var_plot + 
                  
                  # add indication of high density of points
-                 geom_density2d(col = col.stc.line) +
+                 # geom_density2d(col = col.stc.line) +
                  
                  # add red regression curve for better visibility
-                 geom_smooth(col = "red") +
+                 geom_smooth() +
                  
-                 facet_wrap( ~id.grp ),
+                 facet_wrap( ~ id.grp ),
                
                width = 25,
                height = 15,

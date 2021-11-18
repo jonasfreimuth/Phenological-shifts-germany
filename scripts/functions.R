@@ -190,7 +190,7 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
   }
   
   plot <- plot + 
-    geom_point() +
+    geom_hex(col = NA) +
     labs(title = main, subtitle = sub, xlab = xlab, ylab = ylab) +
     geom_hline(yintercept = 0)
   
@@ -199,14 +199,14 @@ lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL,
     # if we have a separated line for groups, also add an overall line
     plot <- plot +
       geom_smooth() +
-      geom_smooth(aes(fit, resid),
-                  group = "overall", col = "red")
+      geom_smooth(aes(fit, resid, col = cols),
+                  group = "overall")
   }
   
   if (facet && !is.null(col_vec)) {
     plot <- plot +
-      geom_density2d(col = "gray31") +
-      geom_smooth(col = "red") +
+      # geom_density2d(col = "gray31") +
+      geom_smooth() +
       facet_wrap( ~ cols)
   }
   
