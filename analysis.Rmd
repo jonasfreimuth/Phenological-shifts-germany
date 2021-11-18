@@ -986,14 +986,16 @@ slopes_grp_all_corr_plt <- ggplot() +
                       xmin = slope_ci_min_year,
                       xmax = slope_ci_max_year,
                       col  = id.grp
-                      )) +
+                      ),
+                  width = 0) +
   
   # add temp errorbar
   geom_errorbar  (data = slopes_all_sum,
                   aes(x    = slope_mean_year,
                       ymin = slope_ci_min_temp,
                       ymax = slope_ci_max_temp,
-                      col  = id.grp))  +
+                      col  = id.grp),
+                  width = 0)  +
   
   # add group means
   geom_point     (data = slopes_all_sum,
