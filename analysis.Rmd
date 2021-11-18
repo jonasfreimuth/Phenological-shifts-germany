@@ -178,8 +178,8 @@ recode.vec.int <- c("Hoverfly"  = "Hoverfly - Plant",
 
 # recode vec for PollDep
 recode.vec.PollDep <- c("Yes"          = "Pollinator dependent",
-                        "No"           = "Pollinator independent",
-                        "Intermediate" = "Intermediate")
+                        "Intermediate" = "Intermediate",
+                        "No"           = "Pollinator independent")
 
 ### set colour tables -------------------------------------------------------
 
@@ -295,10 +295,14 @@ if (!all(file.exists(dat_occ_file)) ||
   
   
   if (!test_run) {
+    
     source("scripts/get_occ_data_all_in_one.R")
+    
   } else {
+    
     # this script automatically ensures full data is present
     source("scripts/get_occ_test_data.R")
+    
   }
 }
 
@@ -331,11 +335,11 @@ dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>%
   
   # recode id.grp to use trivial names 
   # (recode only takes name/value pairs, so !!! expansion necessary)
-  mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
-# %>% 
-#   
-#   # order factor levels so that plants come first
-  # mutate(id.grp = fct_relevel(id.grp, "Plants", !! recode.vec))
+  mutate(id.grp = recode_factor(id.grp, !!! recode.vec)) %>% 
+
+  # order factor levels so that PollDep is in order
+  #  of increasing slope
+  mutate(PollDep = fct_relevel(PollDep, recode.vec.PollDep))
 
 
 # load slope data
@@ -433,8 +437,8 @@ slopes_all <- left_join(slopes_temp,
 dat_nrec <- fread("data/n_records_by_idgrp_pruned.csv",
       showProgress = FALSE) %>%
   
-  # recode id.grp to use trivial names 
-  # (recode only takes name/value pairs, so !!! expansion necessary)
+  # recode id.grp to use trivial names
+  #   (recode only takes name/value pairs, so !!! expansion necessary)
   mutate(id.grp = recode_factor(id.grp, !!! recode.vec)) %>% 
   
   rename(Group = id.grp, `n records` = n_rec, `n species` = n_species,
@@ -566,6 +570,61 @@ if (test_run) {
 
 ```
 
+## Analysis of differences between groups in shift
+
+```{r boxplot_between_group_diffs}
+
+ggplot(slopes_temp,
+       aes(id.grp, slope, fill = id.grp)) +
+  geom_hline(yintercept = 0) +
+  geom_boxplot() + 
+  labs(x = "Group",
+       y = "Slope [days / \u00B0C]") +
+  scale_fill_manual(values = col.grp.vec) +
+  theme_shifts(legend.position = "none")
+
+ggplot(slopes_year,
+       aes(id.grp, slope, fill = id.grp)) + 
+  geom_hline(yintercept = 0) +
+  geom_boxplot() + 
+  labs(x = "Group",
+       y = "Slope [days / decade]") +
+  scale_fill_manual(values = col.grp.vec) +
+  theme_shifts(legend.position = "none")
+
+```
+
+
+```{r analyse_between_group_diffs}
+
+cat("Differences in slope with temperature:\n\n")
+
+aov_temp <- aov(data = slopes_temp, slope ~ id.grp, 
+                # weights = 1 / (slope_std_err ^ 2)
+                )
+summary(aov_temp)
+
+cat("\n Significant pairwise differences: \n")
+
+ph_aov_temp <- TukeyHSD(aov_temp)
+ph_aov_temp$id.grp[ph_aov_temp$id.grp[, 4] < 0.05,]
+
+cat("\n\n")
+cat("----------------------------------------------------------\n\n")
+cat("Differences in slope over time:\n\n")
+
+aov_year <- aov(data = slopes_year, slope ~ id.grp, 
+                # weights = 1 / (slope_std_err ^ 2)
+                )
+summary(aov_year)
+
+cat("\n Significant pairwise differences: \n")
+
+ph_aov_year <- TukeyHSD(aov_year)
+ph_aov_year$id.grp[ph_aov_year$id.grp[, 4] < 0.05,]
+
+```
+
 
 ## Summary of Shifts  
 
@@ -581,7 +640,10 @@ slopes_temp_sum <- slopes_temp %>%
             slope_ci_min        = slope_mean - slope_sem * 1.96,
             slope_ci_max        = slope_mean + slope_sem * 1.96,
             slope_frac_negative = sum(slope < 0) / length(slope),
-            var                 = "Temperature")
+            var                 = "Temperature") %>% 
+  
+  # add significance letters
+  mutate(pairw_grp = sig_letters(ph_aov_temp$id.grp, order = recode.vec))
 
 slopes_year_sum <- slopes_year %>% 
   group_by (id.grp) %>% 
@@ -593,7 +655,10 @@ slopes_year_sum <- slopes_year %>%
             slope_ci_min        = slope_mean - slope_sem * 1.96,
             slope_ci_max        = slope_mean + slope_sem * 1.96,
             slope_frac_negative = sum(slope < 0) / length(slope),
-            var                 = "Year")
+            var                 = "Year") %>% 
+  
+  # add significance letters
+  mutate(pairw_grp = sig_letters(ph_aov_year$id.grp, order = recode.vec))
 
 #combine both summary data sets and display them
 slopes_all_sum <- left_join(slopes_temp_sum,
@@ -707,60 +772,6 @@ slopes_spec_year_for_plt +
 
 ```
 
-## Analysis of differences between groups
-
-```{r boxplot_between_group_diffs}
-
-ggplot(slopes_temp,
-       aes(id.grp, slope, fill = id.grp)) +
-  geom_hline(yintercept = 0) +
-  geom_boxplot() + 
-  labs(x = "Group",
-       y = "Slope [days / \u00B0C]") +
-  scale_fill_manual(values = col.grp.vec) +
-  theme_shifts(legend.position = "none")
-
-ggplot(slopes_year,
-       aes(id.grp, slope, fill = id.grp)) + 
-  geom_hline(yintercept = 0) +
-  geom_boxplot() + 
-  labs(x = "Group",
-       y = "Slope [days / decade]") +
-  scale_fill_manual(values = col.grp.vec) +
-  theme_shifts(legend.position = "none")
-
-```
-
-
-```{r analyse_between_group_diffs}
-
-cat("Differences in slope with temperature:\n\n")
-
-aov_temp <- aov(data = slopes_temp, slope ~ id.grp, 
-                # weights = 1 / (slope_std_err ^ 2)
-                )
-summary(aov_temp)
-
-cat("\n Significant pairwise differences: \n")
-
-ph_aov_temp <- TukeyHSD(aov_temp)
-ph_aov_temp$id.grp[ph_aov_temp$id.grp[, 4] < 0.05,]
-
-cat("\n\n")
-cat("----------------------------------------------------------\n\n")
-cat("Differences in slope over time:\n\n")
-
-aov_year <- aov(data = slopes_year, slope ~ id.grp, 
-                # weights = 1 / (slope_std_err ^ 2)
-                )
-summary(aov_year)
-
-cat("\n Significant pairwise differences: \n")
-
-ph_aov_year <- TukeyHSD(aov_year)
-ph_aov_year$id.grp[ph_aov_year$id.grp[, 4] < 0.05,]
-
-```
 
 
 
@@ -789,6 +800,13 @@ slopes_grp_temp_mean_plt <- ggplot() +
                   aes(x   = id.grp,
                       y   = slope_mean,
                       col = id.grp)) + 
+  
+  # pairwise differences
+  geom_text      (data = slopes_temp_sum, 
+                  aes(x     = id.grp,
+                      y     = ypos(slope_ci_max, frac = 0.5),
+                      label = pairw_grp),
+                  col = col.annot) +
   
   # line denoting 0
   geom_hline     (yintercept = 0,
@@ -835,6 +853,13 @@ slopes_grp_year_mean_plt <- ggplot() +
                   aes(x   = id.grp,
                       y   = slope_mean,
                       col = id.grp)) + 
+  
+  # pairwise differences
+  geom_text      (data = slopes_year_sum, 
+                  aes(x     = id.grp,
+                      y     = ypos(slope_ci_max, frac = 0.5),
+                      label = pairw_grp),
+                  col = col.annot) +
   
   # line denoting 0
   geom_hline     (yintercept = 0,
@@ -1246,7 +1271,11 @@ int_slopes_asyn_sum <- int_slopes_asyn %>%
             #   sum(intcp_year_asyn_std_err ^ 2)) / length(intcp_year_asyn)
             intcp_year_asyn_sem           = sd(intcp_year_asyn) / 
               sqrt(n_int)
-  )
+  ) %>% 
+  
+  # add pairwise difference lables
+  mutate(pairw_grp_temp_asyn = sig_letters(ph_aov_asyn_temp$group),
+         pairw_grp_year_asyn = sig_letters(ph_aov_asyn_year$group))
 
 
 int_slopes_asyn_sum
@@ -1280,6 +1309,13 @@ asyn_int_temp_mean_plt <- ggplot() +
                  aes(x   = group,
                      y   = slope_temp_asyn_mean,
                      col = group)) + 
+  
+  # pairwise differences
+  geom_text      (data = int_slopes_asyn_sum, 
+                  aes(x     = group,
+                      y     = ypos(int_slopes_asyn$slope_temp_asyn),
+                      label = pairw_grp_temp_asyn),
+                  col = col.annot) +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
@@ -1325,6 +1361,13 @@ asyn_int_year_mean_plt <- ggplot() +
                  aes(x   = group,
                      y   = slope_year_asyn_mean,
                      col = group)) + 
+  
+  # pairwise differences
+  geom_text      (data = int_slopes_asyn_sum, 
+                  aes(x     = group,
+                      y     = ypos(int_slopes_asyn$slope_year_asyn),
+                      label = pairw_grp_year_asyn),
+                  col = col.annot) +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
@@ -1704,17 +1747,14 @@ earlyfrac_grp_year_line_plt +
 
 ## Analysis of influence of plant traits
 
-```{r get_and_sum_plant_traits_slopes}
-
+```{r get_plant_traits_slope}
 # filter out species without determined PollDep
 #   (includes insects)
 slopes_temp_polldep <- slopes_temp %>% 
-  drop_na(PollDep) %>% 
-  mutate(PollDep = fct_reorder(PollDep, slope))
+  drop_na(PollDep) 
 
 slopes_year_polldep <- slopes_year %>% 
-  drop_na(PollDep) %>% 
-  mutate(PollDep = fct_reorder(PollDep, slope))
+  drop_na(PollDep)
 
 slopes_all_polldep <- left_join(slopes_temp_polldep,
                                 slopes_year_polldep,
@@ -1723,47 +1763,7 @@ slopes_all_polldep <- left_join(slopes_temp_polldep,
                                        names(plant_traits)[-1]),
                                 suffix = c("_temp", "_year")) %>% 
   select(- contains("main_var"))
-
-# summarise data sets
-slopes_temp_polldep_sum <- slopes_temp_polldep %>% 
-  group_by(PollDep) %>% 
-  summarise(n_spec              = length(slope),
-            slope_mean          = mean(slope),
-            slope_sd            = sd(slope),
-            # slope_sem           = sqrt(sum(slope_std_err ^ 2)) / length(slope),
-            slope_sem           = slope_sd / sqrt(n_spec),
-            slope_ci_min        = slope_mean - slope_sem * 1.96,
-            slope_ci_max        = slope_mean + slope_sem * 1.96,
-            slope_frac_negative = sum(slope < 0) / length(slope),
-            var                 = "Temperature")
-
-slopes_year_polldep_sum <- slopes_year_polldep %>% 
-  group_by(PollDep) %>% 
-  summarise(n_spec              = length(slope),
-            slope_mean          = mean(slope),
-            slope_sd            = sd(slope),
-            # slope_sem           = sqrt(sum(slope_std_err ^ 2)) / length(slope),
-            slope_sem           = slope_sd / sqrt(n_spec),
-            slope_ci_min        = slope_mean - slope_sem * 1.96,
-            slope_ci_max        = slope_mean + slope_sem * 1.96,
-            slope_frac_negative = sum(slope < 0) / length(slope),
-            var                 = "Year")
-
-#combine both summary data sets and display them
-slopes_all_polldep_sum <- left_join(slopes_temp_polldep_sum,
-                                    slopes_year_polldep_sum,
-                                    by = c("PollDep"),
-                                    suffix = c("_temp",
-                                               "_year")) %>% 
-  
-  # drop redundant columns
-  select(-starts_with("var_"))
-
-slopes_all_polldep_sum
-
-
 ```
-
 
 
 ```{r boxplots_plant_traits_slope}
@@ -1825,6 +1825,59 @@ ph_aov_polldep_year # $PollDep[ph_aov_polldep_year$PollDep[, 4] < 0.05, ]
 
 
 
+```{r sum_plant_traits_slopes}
+
+# summarise data sets
+slopes_temp_polldep_sum <- slopes_temp_polldep %>% 
+  group_by(PollDep) %>% 
+  summarise(n_spec              = length(slope),
+            slope_mean          = mean(slope),
+            slope_sd            = sd(slope),
+            # slope_sem           = sqrt(sum(slope_std_err ^ 2)) / length(slope),
+            slope_sem           = slope_sd / sqrt(n_spec),
+            slope_ci_min        = slope_mean - slope_sem * 1.96,
+            slope_ci_max        = slope_mean + slope_sem * 1.96,
+            slope_frac_negative = sum(slope < 0) / length(slope),
+            var                 = "Temperature") %>% 
+  
+  # add lables for pairwise diffs
+  mutate(pairw_grp_polldep = sig_letters(ph_aov_polldep_temp$PollDep,
+                                         recode.vec.PollDep))
+
+
+slopes_year_polldep_sum <- slopes_year_polldep %>% 
+  group_by(PollDep) %>% 
+  summarise(n_spec              = length(slope),
+            slope_mean          = mean(slope),
+            slope_sd            = sd(slope),
+            # slope_sem           = sqrt(sum(slope_std_err ^ 2)) / length(slope),
+            slope_sem           = slope_sd / sqrt(n_spec),
+            slope_ci_min        = slope_mean - slope_sem * 1.96,
+            slope_ci_max        = slope_mean + slope_sem * 1.96,
+            slope_frac_negative = sum(slope < 0) / length(slope),
+            var                 = "Year") %>% 
+  
+  # add lables for pairwise diffs, order, such that the lowest slope comes first
+  mutate(pairw_grp_polldep = sig_letters(ph_aov_polldep_year$PollDep,
+                                         recode.vec.PollDep))
+
+#combine both summary data sets and display them
+slopes_all_polldep_sum <- left_join(slopes_temp_polldep_sum,
+                                    slopes_year_polldep_sum,
+                                    by = c("PollDep"),
+                                    suffix = c("_temp",
+                                               "_year")) %>% 
+  
+  # drop redundant columns
+  select(-starts_with("var_"))
+
+slopes_all_polldep_sum
+
+
+```
+
+
+
 ```{r plot_plant_traits_slope}
 
 # for temp
@@ -1850,6 +1903,13 @@ polldep_grp_temp_mean_plt <- ggplot() +
                  aes(x   = PollDep,
                      y   = slope_mean,
                      col = PollDep)) + 
+  
+  # pairwise differences
+  geom_text      (data = slopes_temp_polldep_sum, 
+                  aes(x     = PollDep,
+                      y     = ypos(slopes_temp_polldep$slope),
+                      label = pairw_grp_polldep),
+                  col = col.annot) +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
@@ -1895,6 +1955,13 @@ polldep_grp_year_mean_plt <- ggplot() +
                  aes(x   = PollDep,
                      y   = slope_mean,
                      col = PollDep)) + 
+  
+  # pairwise differences
+  geom_text      (data = slopes_year_polldep_sum, 
+                  aes(x     = PollDep,
+                      y     = ypos(slopes_year_polldep$slope),
+                      label = pairw_grp_polldep),
+                  col = col.annot) +
   
   # line denoting 0
   geom_hline    (yintercept = 0,
@@ -2028,7 +2095,7 @@ if (save.plots) {
   
   slopes_grp_temp_mean_plt <- slopes_grp_temp_mean_plt +
     
-    theme(plot.margin  = unit(c(30, 10, 10, 10), "bigpts"),
+    theme(plot.margin  = unit(c(20, 10, 10, 10), "bigpts"),
           axis.text.x  = element_blank(),
           axis.title.x = element_blank())
   
@@ -2075,12 +2142,12 @@ if (save.plots) {
   # save plot as svg and png
   save_plot("plots/slopes_correlation.svg",
             plot = slopes_all_mean_corr_pic,
-            nrow = 2,
+            nrow = 2.5,
             bg = "transparent")
   
   save_plot("plots/slopes_correlation.png",
             plot = slopes_all_mean_corr_pic,
-            nrow = 2,
+            nrow = 2.5,
             bg = "transparent")
   
   
