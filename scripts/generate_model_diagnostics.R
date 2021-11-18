@@ -47,6 +47,9 @@ n_restart               <- 4
 # set colour for raw data points
 col.pt   <- "gray31"
 
+# set alpha for raw data points
+alpha.pt       <- 0.3
+
 # set colour for static lines
 col.stc.line <- "gray31"
 
@@ -166,6 +169,12 @@ names(col.group.sci) <- c("Coleoptera",
 # batches of 49 each, in order to be optimally legible
 batch_size <- 49
 
+# set up plotting theme
+old_theme <- theme_set(theme_minimal())
+theme_update(panel.grid = element_blank())
+
+on.exit(theme_set(old_theme), add = TRUE)
+
 
 if (! test_run) {
   
@@ -177,7 +186,7 @@ if (! test_run) {
   
 } else {
   
-  mod_vec <- "temp_models/20210921_1111_model_data/doy_vs_temp_lat_long_elev_temp-species_20210921_1111/lmm_model_doy_temp_20210921_1111.rds"
+  mod_vec <- "temp_models/20211118_1453_model_data/doy_vs_temp_lat_long_elev_temp-species_20211118_1453/lmm_model_doy_temp_20211118_1453.rds"
 
 }
 
@@ -305,7 +314,7 @@ for (mod_file in mod_vec) {
   if (plot_diagnostics) {
     
     # generate plotting dir
-    plot_path <- paste0(mod_path, "plots/")
+    plot_path <- paste0(mod_path, "plots/new/")
     dir.check(plot_path)
     
     log_msg("Extracting plotting data...")
@@ -346,7 +355,8 @@ for (mod_file in mod_vec) {
     lm_res_fit_plot <- lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
                                     col_vec = dat.occ$id.grp,
                                     main = "Residuals vs Fitted",
-                                    sub = form) +
+                                    sub = form,
+                                    alpha.pt = alpha.pt) +
       
       # add coloring
       scale_color_manual(name   = "Group",
@@ -377,10 +387,10 @@ for (mod_file in mod_vec) {
              lm_res_fit_plot +
                
                # add indication of high density of points
-               geom_density2d(col = col.stc.line) +
+               # geom_density2d(col = col.stc.line) +
                
-               # add red regression curve for better visibility
-               geom_smooth(col = "red") +
+               # add regression curve
+               geom_smooth() +
                
                facet_wrap( ~ cols ),
              
@@ -411,9 +421,7 @@ for (mod_file in mod_vec) {
                   xlab = "Residuals",
                   ylab = "Density") +
              scale_color_manual(name   = "Group",
-                                values = col.group.sci) +
-             theme_minimal() +
-             theme(panel.grid = element_blank()),
+                                values = col.group.sci),
            
            width = 25,
            height = 15,
@@ -427,9 +435,9 @@ for (mod_file in mod_vec) {
                                         id.grp = dat.occ$id.grp),
                              aes(fix_var, resid, col = id.grp)) 
       
-      if (is.numeric(dat.occ[[fix_var]])){
+      if (is.numeric(dat.occ[[fix_var]])) {
         fix_var_plot <- fix_var_plot +
-          geom_point() + 
+          geom_hex(col = NA) + 
           geom_smooth()
       } else {
         fix_var_plot <- fix_var_plot +
@@ -444,9 +452,7 @@ for (mod_file in mod_vec) {
              y = "Residuals") +
         scale_color_manual(name   = "Group",
                            values = col.group.sci) +
-        theme_minimal() +
-        theme(panel.grid = element_blank(),
-              legend.position = "bottom")
+        theme(legend.position = "bottom")
       
       # if we don't plot normal diagnostics but this plot would not be saved 
       # under faceting, save it anyways
@@ -478,12 +484,12 @@ for (mod_file in mod_vec) {
                fix_var_plot + 
                  
                  # add indication of high density of points
-                 geom_density2d(col = col.stc.line) +
+                 # geom_density2d(col = col.stc.line) +
                  
                  # add red regression curve for better visibility
-                 geom_smooth(col = "red") +
+                 geom_smooth() +
                  
-                 facet_wrap( ~id.grp ),
+                 facet_wrap( ~ id.grp ),
                
                width = 25,
                height = 15,
@@ -545,12 +551,10 @@ for (mod_file in mod_vec) {
                         ylab = "Residuals") +
                    scale_color_manual(name   = "Group",
                                       values = col.group.sci) +
-                   theme_minimal() +
-                   theme(panel.grid = element_blank(),
-                         axis.text.x = element_blank()),
+                   theme(axis.text.x = element_blank()),
                  
-                 width  = 25,
-                 height = 35,
+                 width  = 35,
+                 height = 25,
                  units  = "cm")
         }
       }
