@@ -477,8 +477,8 @@ for (form in form_vec) {
                      theme(legend.position = "bottom"),
                    
                    
-                   width  = 25,
-                   height = 35,
+                   width  = 35,
+                   height = 25,
                    units  = "cm")
           }
         }
@@ -746,8 +746,8 @@ for (form in form_vec) {
                    theme(panel.grid = element_blank(),
                          axis.text.x = element_blank()),
                  
-                 width  = 25,
-                 height = 35,
+                 width  = 35,
+                 height = 25,
                  units  = "cm")
         }
       }
