@@ -576,8 +576,8 @@ for (form in form_vec) {
                # add indication of high density of points
                # geom_density2d(col = col.stc.line) +
                
-               # add red regression curve for better visibility
-               geom_smooth(col = "red") +
+               # add regression curve
+               geom_smooth() +
                
                facet_wrap( ~ cols ),
              
