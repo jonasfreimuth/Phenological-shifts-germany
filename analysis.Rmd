@@ -131,7 +131,7 @@ if (!test_run && !run.models.ind) {
 col.pt         <- "black"
 
 # set alpha for raw data points
-alpha.pt       <- 0.5
+alpha.pt       <- 0.3
 
 # set size of data lines
 size.dat.line    <- 2
@@ -1573,7 +1573,7 @@ asyn_grp_temp_scatter_plt <- ggplot() +
   geom_line(data = sim_diff_temp,
             aes(temp, diff, group = id),
             col   = col.pt,
-            alpha = alpha.pt,) +
+            alpha = alpha.pt) +
   
   # geom_density2d(data = sim_diff_temp,
   #                aes(temp, diff),
@@ -1623,7 +1623,7 @@ asyn_grp_year_scatter_plt <- ggplot() +
   geom_line(data = sim_diff_year,
             aes(year, diff, group = id),
             col   = col.pt,
-            alpha = alpha.pt,) +
+            alpha = alpha.pt) +
   
   # geom_density2d(data = sim_diff_year,
   #                aes(year, diff),
