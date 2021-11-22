@@ -79,7 +79,7 @@ force.models           <- FALSE
 # * no checks will be performed whether the models are appropriate for the main
 #   analysis
 # * The results will not be integrated into the analysis
-run.models.ind         <- FALSE
+run.models.ind         <- test_run
 
 # how to treat predictor variables
 center_preds           <- FALSE
@@ -91,7 +91,7 @@ plot_rnd_slopes        <- TRUE
 
 # save diagnostics plots
 # will take a very long time on the full dataset
-plot_diagnostics       <- FALSE
+plot_diagnostics       <- TRUE
 
 #save faceted plots of diagnostic plots 
 plot_diagnostics_facet <- TRUE
