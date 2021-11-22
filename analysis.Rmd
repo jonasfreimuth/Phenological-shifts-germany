@@ -646,8 +646,12 @@ slopes_temp_sum <- slopes_temp %>%
             slope_sem           = slope_sd / sqrt(n_spec),
             slope_ci_min        = slope_mean - slope_sem * 1.96,
             slope_ci_max        = slope_mean + slope_sem * 1.96,
+            p_diff_zero         = t.test(slope)$p.value,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Temperature") %>% 
+  
+  # adjust diff zero pval for multiple testing
+  mutate(p_diff_zero_adj = p.adjust(p_diff_zero, method = "fdr")) %>% 
   
   # add significance letters
   mutate(pairw_grp = sig_letters(ph_aov_temp$id.grp, order = recode.vec))
@@ -661,8 +665,12 @@ slopes_year_sum <- slopes_year %>%
             slope_sem           = slope_sd / sqrt(n_spec),
             slope_ci_min        = slope_mean - slope_sem * 1.96,
             slope_ci_max        = slope_mean + slope_sem * 1.96,
+            p_diff_zero         = t.test(slope)$p.value,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Year") %>% 
+  
+  # adjust diff zero pval for multiple testing
+  mutate(p_diff_zero_adj = p.adjust(p_diff_zero, method = "fdr")) %>% 
   
   # add significance letters
   mutate(pairw_grp = sig_letters(ph_aov_year$id.grp, order = recode.vec))
@@ -2292,8 +2300,10 @@ slopes_sum <- slopes_all_sum %>%
   #  that would show up as nothing in word
   select("\u200B"                          = id.grp,
          "Days / decade"                   = slope_mean_year,
+         "p slope \u2260 0"                = p_diff_zero_adj_year,
          "% Advancing"                     = slope_frac_negative_year,
          "Days / 1 °C"                     = slope_mean_temp,
+         "p slope \u2260 0\u200B"          = p_diff_zero_adj_temp,
          "% Advancing\u200B"               = slope_frac_negative_temp)
 
 
@@ -2307,7 +2317,7 @@ slopes_n_rec_tab <- slopes_n_rec %>%
   add_header_row(values = c("Group", "# Species", "# Records", 
                             "# Records / Species", "Temporal shifts",
                             "Temperature sensitivity"),
-                 colwidths = c(1, 1, 1, 3, 2, 2)) %>%
+                 colwidths = c(1, 1, 1, 3, 3, 3)) %>%
   
   theme_booktabs(bold_header = TRUE)
 
