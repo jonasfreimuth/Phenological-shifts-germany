@@ -151,6 +151,10 @@ col.annot      <- "gray31"
 # size of annotations
 size.annot.txt <- 3
 
+# colors for density gradients
+col.grad.low   <- "gray"
+col.grad.high  <- "black"
+
 ## define custom plotting theme ---------------------------
 
 theme_shifts <- function (...) {

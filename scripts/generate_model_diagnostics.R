@@ -62,6 +62,10 @@ col.ax   <- "gray31"
 # set col for annotations
 col.note <- "gray31"
 
+# colors for density gradients
+col.grad.low   <- "gray"
+col.grad.high  <- "black"
+
 # ribbon alpha
 alpha.ribbon            <- 0.3
 
