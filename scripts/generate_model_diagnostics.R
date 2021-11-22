@@ -29,6 +29,9 @@ force.models           <- TRUE
 center_preds           <- FALSE
 scale_preds            <- FALSE
 
+# plot the random slopes of the model
+plot_rnd_slopes        <- TRUE
+
 # save diagnostics plots
 # will take a very long time on the full dataset
 plot_diagnostics       <- TRUE
@@ -185,7 +188,7 @@ if (! test_run) {
 }
 
 if (!test_run) {
-  dat_occ_file        <- "data/occurrences_full_pruned_clim_elev.csv"
+  dat_occ_file        <- "data/occurrences_full_pruned_clim_elev_1844.csv"
 } else {
   dat_occ_file        <- "data/occurrences_full_pruned_clim_elev_test.csv"
 }
@@ -302,6 +305,168 @@ for (mod_file in mod_vec) {
   # Model running ---------------------
   
   log_msg("Starting model ", form, "...")
+  
+  # Model results extraction ----------
+  
+  log_msg("Extracting coefficients...")
+  
+  mod_sum  <- summary(lm_mod)
+  mod_coef <- mod_sum$coefficients
+  
+  rm(mod_sum)
+  
+  log_msg("... Done.")
+  
+  # Random effect slope plotting ------
+  
+  # if a random effect is present, extract the coefficients for it
+  #  Currently, the script will not accept models without random effects anyway
+  if (has_ranef) {
+    
+    # TODO: make sure this check for presence of random variable works as 
+    #   intended
+    
+    log_msg("Extracting random effects for model ", form, "...")
+    
+    rnd_eff <- tidy(lm_mod, c("ran_vals")) %>% 
+      
+      pivot_wider(id_cols = c(level, group), names_from = term,
+                  values_from = c(estimate, std.error)) %>% 
+      mutate(main_var = main_var) 
+    
+    # hacky way to rename everything based on formulas
+    # needs to be coded custom to the way the order of names is
+    names(rnd_eff)[1] <- rnd_vars[1]
+    names(rnd_eff)[3] <- "intercept"
+    names(rnd_eff)[4] <- "slope"
+    names(rnd_eff)[5] <- "intercept_std_err"
+    names(rnd_eff)[6] <- "slope_std_err"
+    
+    # add overall slope and intercept to rnd slope and intercept
+    rnd_eff$intercept         <- rnd_eff$intercept              + mod_coef[1,1]
+    rnd_eff$slope             <- rnd_eff$slope                  + mod_coef[2,1]
+    
+    # add std.error of overall slope and intercept to rnd slope and intercept
+    #   uses error propagation formula found here:
+    # https://stats.stackexchange.com/questions/70164/error-propagation-sd-vs-se
+    rnd_eff$intercept_std_err <- sqrt(rnd_eff$intercept_std_err ^ 2 +
+                                        mod_coef[1,2] ^ 2)
+    rnd_eff$slope_std_err     <- sqrt(rnd_eff$slope_std_err     ^ 2 +
+                                        mod_coef[2,2] ^ 2)
+    
+    rm(mod_coef)
+    
+    # plot random effect slopes
+    if (plot_rnd_slopes) {
+      
+      # generate plotting dir
+      plot_path <- paste0(mod_path, "plots/new/")
+      dir.check(plot_path)
+      
+      log_msg("Plotting slopes for random variables...")
+      
+      for (rnd_var in rnd_vars) {
+        
+        log_msg("  ... for variable ", rnd_var, "...")
+        
+        for (group in unique(dat.occ$id.grp)) {
+          
+          # get df with only members of this group 
+          dat.occ.plt <- dat.occ %>% 
+            filter(id.grp == group)
+          
+          # get levels and number of them 
+          rnd_var_lvl <- sort(unique(dat.occ.plt[[rnd_var]]))
+          n_rnd_var <- length(rnd_var_lvl) 
+          
+          for (i in 1:(ceiling(n_rnd_var / batch_size))) {
+            
+            # get selection vector of current levels of the rnd var
+            ind_vec <- (((i - 1) * batch_size) + 1):(i * batch_size)
+            plot_rnd_val_lvl <- rnd_var_lvl[ind_vec]
+            sel_vec <- rnd_eff[[rnd_var]] %in% plot_rnd_val_lvl
+            
+            # select the right levels out of overall rnd_eff
+            rnd_eff_plt <- rnd_eff[sel_vec, ]
+            
+            # overwrite previous dat.occ.plt to save space
+            dat.occ.plt <- dat.occ %>% 
+              filter(species %in% rnd_eff_plt$species)
+            
+            
+            ggsave(paste0(plot_path,
+                          "lmm_rnd_var_slopes_", rnd_var,
+                          "_", group,
+                          "_", str_replace(simple_form, "~", "_"), 
+                          "_", str_pad(i,
+                                       ceiling(log10(n_rnd_var / batch_size)),
+                                       "left",
+                                       "0"),
+                          time_stamp,
+                          ".png"),
+                   
+                   
+                   ggplot(data = data.frame(dep_var  = dat.occ.plt[[dep_var ]],
+                                            main_var = dat.occ.plt[[main_var]],
+                                            
+                                            # TODO: change this in case col name
+                                            #    for rnd_eff is changed
+                                            species  = dat.occ.plt[[rnd_var ]],
+                                            
+                                            # TODO: make this variable
+                                            group    = dat.occ.plt[["id.grp"]]),
+                          
+                          aes(main_var, dep_var, col = group)) +
+                     
+                     # add density indication
+                     geom_bin2d(col = NA) +
+                     
+                     # scale fill color for density
+                     scale_fill_gradient(low   = col.grad.low,
+                                         high  = col.grad.high,
+                                         name  = "Records per bin",
+                                         guide =  guide_colorbar(
+                                           label.theme = element_text(
+                                             angle = 45,
+                                             hjust = 1))) +
+                     
+                     # add gam curve to check if linear model is actually 
+                     #  applicable
+                     geom_smooth(method = "gam") +
+                     
+                     # plot model regression lines
+                     geom_abline(data = rnd_eff_plt,
+                                 aes(intercept = intercept,
+                                     slope = slope)) +
+                     
+                     labs(title = rnd_var, subtitle = form,
+                          x = main_var, y = dep_var) +
+                     
+                     # add coloring
+                     scale_color_manual(name   = "Group",
+                                        values = col.group.sci) +
+                     
+                     facet_wrap( ~ species) +
+                     
+                     theme_minimal() +
+                     theme(panel.grid = element_blank(),
+                           legend.position = "bottom"),
+                   
+                   
+                   width  = 35,
+                   height = 25,
+                   units  = "cm")
+          }
+        }
+      }
+      
+      log_msg("  ... Done.")
+    }
+    
+    rm(rnd_eff)
+    
+    log_msg("... Done.")
+  }
   
   # Diagnostic plots ------------------
   
