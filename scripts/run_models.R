@@ -27,11 +27,13 @@
 #       - model data
 #       - plot folder
 
-# set up plotting theme
-old_theme <- theme_set(theme_minimal())
-theme_update(panel.grid = element_blank())
-
-on.exit(theme_set(old_theme), add = TRUE)
+# # set up plotting theme
+# old_theme <- theme_set(theme_minimal() %+replace%
+#                          theme(panel.grid = element_blank(),
+#                                legend.position = "bottom"))
+# # theme_update(panel.grid = element_blank())
+# 
+# on.exit(theme_set(old_theme), add = TRUE)
 
 # set saving paths
 if (!test_run) {
@@ -478,7 +480,9 @@ for (form in form_vec) {
                      
                      facet_wrap( ~ species) +
                      
-                     theme(legend.position = "bottom"),
+                     theme_minimal() +
+                     theme(panel.grid = element_blank(),
+                           legend.position = "bottom"),
                    
                    
                    width  = 35,
@@ -552,7 +556,12 @@ for (form in form_vec) {
       
       # add coloring
       scale_color_manual(name   = "Group",
-                         values = col.group.sci)
+                         values = col.group.sci) +
+      theme_minimal() +
+      theme(panel.grid = element_blank(),
+            legend.position = "bottom")
+    
+    
     
     if (plot_diagnostics){
       
@@ -613,7 +622,11 @@ for (form in form_vec) {
                   xlab = "Residuals",
                   ylab = "Density") +
              scale_color_manual(name   = "Group",
-                                values = col.group.sci),
+                                values = col.group.sci) +
+             
+             theme_minimal() +
+             theme(panel.grid = element_blank(),
+                   legend.position = "bottom"),
            
            width = 25,
            height = 15,
@@ -644,7 +657,11 @@ for (form in form_vec) {
              y = "Residuals") +
         scale_color_manual(name   = "Group",
                            values = col.group.sci) +
-        theme(legend.position = "bottom")
+        
+        theme_minimal() +
+        theme(panel.grid = element_blank(),
+              legend.position = "bottom")
+      
       
       # if we don't plot normal diagnostics but this plot would not be saved 
       # under faceting, save it anyways
@@ -743,7 +760,11 @@ for (form in form_vec) {
                         ylab = "Residuals") +
                    scale_color_manual(name   = "Group",
                                       values = col.group.sci) +
-                   theme(axis.text.x = element_blank()),
+                   
+                   theme_minimal() +
+                   theme(panel.grid = element_blank(),
+                         legend.position = "bottom",
+                         axis.text.x = element_blank()),
                  
                  width  = 35,
                  height = 25,
@@ -776,9 +797,6 @@ log_msg("All done.")
 
 # reset logging file
 options("log_file" = NULL)
-
-# reset theme
-theme_set(old_theme)
 
 # explicitly print warnings
 # necessary as warnings would not be displayed if there were too many
