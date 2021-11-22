@@ -169,51 +169,51 @@ get_traits <- function(text, traits, patterns) {
 }
 
 
-# Lmm functions -----------------------------------------------------------
-
-
-# function to plot precomputed residuals and fitted values of a lm against
-#   each other using ggplot. Formalized as a function mainly for consistency
-lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL, 
-                         main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
-                         facet = FALSE) {
-  
-  if (is.null(col_vec)) {
-    plot <- ggplot(data.frame(fit = mod_fit,
-                              resid = mod_resid),
-                   aes(fit, resid))
-  } else {
-    plot <- ggplot(data.frame(fit = mod_fit,
-                              resid = mod_resid,
-                              cols = col_vec),
-                   aes(fit, resid, col = cols))
-  }
-  
-  plot <- plot + 
-    geom_hex(col = NA) +
-    labs(title = main, subtitle = sub, xlab = xlab, ylab = ylab) +
-    geom_hline(yintercept = 0)
-  
-  
-  if (!is.null(col_vec)) {
-    # if we have a separated line for groups, also add an overall line
-    plot <- plot +
-      geom_smooth() +
-      geom_smooth(aes(fit, resid, col = cols),
-                  group = "overall")
-  }
-  
-  if (facet && !is.null(col_vec)) {
-    plot <- plot +
-      # geom_density2d(col = "gray31") +
-      geom_smooth() +
-      facet_wrap( ~ cols)
-  }
-  
-  plot <- plot +
-    theme_minimal() +
-    theme(panel.grid = element_blank(),
-          legend.position = "bottom")
-  
-  return(plot)
-}
+# # Lmm functions -----------------------------------------------------------
+# 
+# 
+# # function to plot precomputed residuals and fitted values of a lm against
+# #   each other using ggplot. Formalized as a function mainly for consistency
+# lmResFitPlot <- function(mod_resid, mod_fit, col_vec = NULL, 
+#                          main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
+#                          facet = FALSE, alpha.pt = 1) {
+#   
+#   if (is.null(col_vec)) {
+#     plot <- ggplot(data.frame(fit = mod_fit,
+#                               resid = mod_resid),
+#                    aes(fit, resid))
+#   } else {
+#     plot <- ggplot(data.frame(fit = mod_fit,
+#                               resid = mod_resid,
+#                               cols = col_vec),
+#                    aes(fit, resid, col = cols))
+#   }
+#   
+#   plot <- plot + 
+#     geom_hex(col = NA) +
+#     labs(title = main, subtitle = sub, xlab = xlab, ylab = ylab) +
+#     geom_hline(yintercept = 0)
+#   
+#   
+#   if (!is.null(col_vec)) {
+#     # if we have a separated line for groups, also add an overall line
+#     plot <- plot +
+#       geom_smooth() +
+#       geom_smooth(aes(fit, resid, col = cols),
+#                   group = "overall")
+#   }
+#   
+#   if (facet && !is.null(col_vec)) {
+#     plot <- plot +
+#       # geom_density2d(col = "gray31") +
+#       geom_smooth() +
+#       facet_wrap( ~ cols)
+#   }
+#   
+#   plot <- plot +
+#     theme_minimal() +
+#     theme(panel.grid = element_blank(),
+#           legend.position = "bottom")
+#   
+#   return(plot)
+# }

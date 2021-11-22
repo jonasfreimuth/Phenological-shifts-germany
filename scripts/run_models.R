@@ -457,14 +457,21 @@ for (form in form_vec) {
                           
                           aes(main_var, dep_var, col = group)) +
                      
-                     geom_hex(col = NA) +
+                     geom_bin2d(col = NA) +
                      
-                     # add indication of high density of points
-                     # geom_density2d(col = col.stc.line) +
+                     # scale fill color for density
+                     scale_fill_gradient(low   = col.grad.low,
+                                         high  = col.grad.high,
+                                         name  = "Records per bin",
+                                         guide =  guide_colorbar(
+                                           label.theme = element_text(
+                                             angle = 45,
+                                             hjust = 1)
+                                         )) +
                      
-                     # add gam curve to check if linear model is actually 
-                     #  applicable
-                     geom_smooth(method = "gam") +
+                   # add gam curve to check if linear model is actually 
+                   #  applicable
+                   geom_smooth(method = "gam") +
                      
                      # plot model regression lines
                      geom_abline(data = rnd_eff_plt,
@@ -527,6 +534,9 @@ for (form in form_vec) {
     
     log_msg("Generating and saving diagnostics plots...")
     
+    
+    # QQ-Plot -------------------------
+    
     # save qq plot
     png(paste0(plot_path,
                "lmm_resid_qq_",
@@ -547,12 +557,35 @@ for (form in form_vec) {
     
     # TODO: Proper axis labels and titles
     
+    
+    # Residuals vs Fitted Plot  -------
+    
     # save resid vs fitted
-    lm_res_fit_plot <- lmResFitPlot(mod_resid = mod_resid, mod_fit = mod_fitvl,
-                                    col_vec = dat.occ$id.grp,
-                                    main = "Residuals vs Fitted",
-                                    sub = form,
-                                    alpha.pt = alpha.pt) +
+    lm_res_fit_plot <- ggplot(data.frame(fit = mod_fitvl,
+                                         resid = mod_resid,
+                                         cols = dat.occ$id.grp),
+                              aes(fit, resid, col = cols))+ 
+      
+      
+      
+      geom_bin2d(col = NA) +
+      
+      # scale fill color for density
+      scale_fill_gradient(low   = col.grad.low,
+                          high  = col.grad.high,
+                          name  = "Records per bin",
+                          guide =  guide_colorbar(
+                            label.theme = element_text(
+                              angle = 45,
+                              hjust = 1)
+                          )) +
+      
+      labs(title    = "Residuals vs Fitted",
+           subtitle = form,
+           xlab     = "Fitted values",
+           ylab     = "Model residuals") +
+      
+      geom_hline(yintercept = 0) +
       
       # add coloring
       scale_color_manual(name   = "Group",
@@ -570,12 +603,18 @@ for (form in form_vec) {
                     str_replace(simple_form, "~", "_"), "_",
                     time_stamp,
                     ".png"),
-             lm_res_fit_plot,
+             
+             lm_res_fit_plot + 
+               
+               geom_smooth(col   = "darkred",
+                           group = "overall"),
+             
              width = 25,
              height = 15,
              units = "cm")
       
     }
+    
     
     if (plot_diagnostics_facet) {
       
@@ -586,9 +625,6 @@ for (form in form_vec) {
                     ".png"),
              
              lm_res_fit_plot +
-               
-               # add indication of high density of points
-               # geom_density2d(col = col.stc.line) +
                
                # add regression curve
                geom_smooth() +
@@ -601,7 +637,11 @@ for (form in form_vec) {
       
     }
     
+    
     rm(lm_res_fit_plot)
+    
+    
+    # Histogram of residual values ----
     
     # save resid histogram
     ggsave(paste0(plot_path,
@@ -632,6 +672,9 @@ for (form in form_vec) {
            height = 15,
            units = "cm")
     
+    
+    # Residuals vs fixed effects ------
+    
     # plot residuals vs each fixed effect
     for (fix_var in fix_vars) {
       
@@ -640,21 +683,41 @@ for (form in form_vec) {
                                         id.grp = dat.occ$id.grp),
                              aes(fix_var, resid, col = id.grp)) 
       
+      
+      # distinguish between numeric or discrete fixed effects
       if (is.numeric(dat.occ[[fix_var]])) {
+        
         fix_var_plot <- fix_var_plot +
-          geom_hex(col = NA) + 
-          geom_smooth()
+          
+          # add density indication
+          geom_bin2d(col = NA) +
+          
+          # scale fill color for density
+          scale_fill_gradient(low   = col.grad.low,
+                              high  = col.grad.high,
+                              name  = "Records per bin",
+                              guide =  guide_colorbar(
+                                label.theme = element_text(
+                                  angle = 45,
+                                  hjust = 1)))
+        
       } else {
+        
         fix_var_plot <- fix_var_plot +
           geom_boxplot()
+        
       }
       
+      
       fix_var_plot <- fix_var_plot + 
+        
         geom_hline(yintercept = 0) +
+        
         labs(title = fix_var,
              subtitle = form,
              x = fix_var,
              y = "Residuals") +
+        
         scale_color_manual(name   = "Group",
                            values = col.group.sci) +
         
@@ -666,6 +729,18 @@ for (form in form_vec) {
       # if we don't plot normal diagnostics but this plot would not be saved 
       # under faceting, save it anyways
       if (plot_diagnostics || !(is.numeric(dat.occ[[fix_var]]))) {
+        
+        
+        # handle case of numeric and explicit non-facetted diag plots requested
+        if (is.numeric(dat.occ[[fix_var]])) {
+          
+          fix_var_plot <- fix_var_plot +
+            
+            geom_smooth(group = "overall",
+                        col   = "darkred")
+          
+        }
+        
         
         # save plot
         ggsave(paste0(plot_path,
@@ -690,13 +765,9 @@ for (form in form_vec) {
                       time_stamp,
                       ".png"),
                
-               fix_var_plot + 
+               fix_var_plot +
                  
-                 # add indication of high density of points
-                 # geom_density2d(col = col.stc.line) +
-                 
-                 # add red regression curve for better visibility
-                 geom_smooth() +
+                 geom_smooth() + 
                  
                  facet_wrap( ~ id.grp ),
                
@@ -706,8 +777,11 @@ for (form in form_vec) {
         
       }
       
-      rm(fix_var_plot)
+      rm(list = ls(pattern = "fix_var_plot*"))
     }
+    
+    
+    # Residuals vs random effects ----
     
     if (has_ranef) {
       
@@ -744,20 +818,27 @@ for (form in form_vec) {
                  
                  ggplot(data = plot_df,
                         aes(rnd_var, resid)) +
+                   
                    geom_boxplot() +
+                   
                    labs(title = rnd_var,
                         x = rnd_var) +
+                   
                    geom_hline(yintercept = 0) +
+                   
                    geom_text(data = data.frame(
                      rnd_var = sort(plot_rnd_val_lvl),
                      lab = paste0("n = ", table(rnd_var_vec)),
                      ypos = ypos(mod_resid_plot)), 
                      aes(rnd_var, ypos, label = lab)) +
+                   
                    facet_wrap(~ rnd_var, scale = "free_x") +
+                   
                    labs(title = rnd_var,
                         subtitle = form,
                         xlab = rnd_var,
                         ylab = "Residuals") +
+                   
                    scale_color_manual(name   = "Group",
                                       values = col.group.sci) +
                    
