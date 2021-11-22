@@ -1165,7 +1165,10 @@ int_slopes_asyn <- int_data %>%
     
   }) %>%
 
-  bind_rows()
+  bind_rows() %>% 
+  
+  # ensure factor ordering is still there
+  mutate(group = fct_relevel(group, recode.vec.int))
 
 ```
 
@@ -1280,8 +1283,10 @@ int_slopes_asyn_sum <- int_slopes_asyn %>%
   ) %>% 
   
   # add pairwise difference lables
-  mutate(pairw_grp_temp_asyn = sig_letters(ph_aov_asyn_temp$group),
-         pairw_grp_year_asyn = sig_letters(ph_aov_asyn_year$group))
+  mutate(pairw_grp_temp_asyn = sig_letters(ph_aov_asyn_temp$group,
+                                           recode.vec.int),
+         pairw_grp_year_asyn = sig_letters(ph_aov_asyn_year$group,
+                                           recode.vec.int))
 
 
 int_slopes_asyn_sum
@@ -1505,7 +1510,11 @@ sim_diff_temp <- apply(
     
   }) %>% 
   
-  bind_rows()
+  bind_rows() %>% 
+  
+  # ensure factor ordering is still there
+  mutate(group = fct_relevel(group, recode.vec.int))
+
 
 
 sim_diff_year <- apply(
@@ -1535,7 +1544,11 @@ sim_diff_year <- apply(
     
   }) %>% 
   
-  bind_rows()
+  bind_rows() %>% 
+  
+  # ensure factor ordering is still there
+  mutate(group = fct_relevel(group, recode.vec.int))
+
 
 
 # summarize per temp differences over groups
