@@ -395,6 +395,14 @@ col_vec <- c("kingdom",
 tax_df <- dat.occ %>%  
   select(all_of(col_vec)) %>% 
   distinct()
+
+
+# load data on species sample sizes
+species_n <- fread("data/n_species_pruned_sum.csv") %>%
+  
+  # recode id.grp to use trivial names 
+  # (recode only takes name/value pairs, so !!! expansion necessary)
+  mutate(id.grp = recode_factor(id.grp, !!! recode.vec))
   
 
 slopes_temp <- slopes_temp %>% 
@@ -403,7 +411,10 @@ slopes_temp <- slopes_temp %>%
   left_join(tax_df, by = "species") %>% 
   
   # add trait data
-  left_join(plant_traits, by = "species")
+  left_join(plant_traits, by = "species") %>%
+  
+  # add species sample sizes
+  left_join(species_n, by = c("id.grp", "species"))
 
 
 slopes_year <- slopes_year %>%  
@@ -416,7 +427,10 @@ slopes_year <- slopes_year %>%
          slope_std_err = slope_std_err * 10) %>% 
   
   # add trait data
-  left_join(plant_traits, by = "species")
+  left_join(plant_traits, by = "species") %>%
+  
+  # add species sample sizes
+  left_join(species_n, by = c("id.grp", "species"))
 
 
 # generate df giving slopes for both vars
@@ -428,6 +442,7 @@ slopes_all <- left_join(slopes_temp,
                                "order",
                                "family",
                                "genus",
+                               "n",
                                names(plant_traits)),
                         suffix = c("_temp", "_year")) %>% 
   
@@ -647,6 +662,8 @@ slopes_temp_sum <- slopes_temp %>%
             slope_ci_min        = slope_mean - slope_sem * 1.96,
             slope_ci_max        = slope_mean + slope_sem * 1.96,
             p_diff_zero         = t.test(slope)$p.value,
+            slope_n_corr        = cor(slope, log10(n)),
+            slope_n_corr_p      = cor.test(slope, log10(n))$p.value,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Temperature") %>% 
   
@@ -666,6 +683,8 @@ slopes_year_sum <- slopes_year %>%
             slope_ci_min        = slope_mean - slope_sem * 1.96,
             slope_ci_max        = slope_mean + slope_sem * 1.96,
             p_diff_zero         = t.test(slope)$p.value,
+            slope_n_corr        = cor(slope, log10(n)),
+            slope_n_corr_p      = cor.test(slope, log10(n))$p.value,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Year") %>% 
   
@@ -689,6 +708,81 @@ slopes_all_sum
 
 ```
 
+
+
+```{r correlate_species_n_with_slope}
+
+# do corr tests on log 10 transformed data
+slope_n_temp_corr <- cor.test(log10(slopes_all$n), slopes_all$slope_temp)
+slope_n_year_corr <- cor.test(log10(slopes_all$n), slopes_all$slope_year)
+  
+# generate summary strings for plotting
+n_temp_corr_str <- paste("r =", round(slope_n_temp_corr$estimate, 2),
+                         ", ",
+                         "p =", round(slope_n_temp_corr$p.value,  2))
+
+n_year_corr_str <- paste("r =", round(slope_n_year_corr$estimate, 2),
+                         ", ",
+                         "p =", round(slope_n_year_corr$p.value,  2))
+
+ggplot(slopes_all,
+       aes(n, slope_temp, col = id.grp)) +
+  
+  geom_point() + 
+  
+  geom_text(data = slopes_all_sum,
+            aes(x     = mean(c(max(slopes_all$n), min(slopes_all$n))),
+                y     = ypos(slopes_all$slope_temp),
+                label = paste0("r = ", round(slope_n_corr_temp,    2), ", ",
+                               "p = ", round(slope_n_corr_p_temp,  2))),
+            col = col.annot,
+            hjust = 1) +
+  
+  facet_wrap(~ id.grp) +
+  
+  scale_x_log10() +
+  
+  scale_color_manual(name = "Group",
+                     aesthetics = c("color", "fill"),
+                     values = col.grp.vec) +
+  
+  labs(x = "Species n", 
+       y = "Shift with temperature [days / \u00B0C]",
+       title = "Shift vs sample size",
+       subtitle = paste("Overall:", n_temp_corr_str)) +
+  
+  theme_shifts()
+
+
+ggplot(slopes_all,
+       aes(n, slope_year, col = id.grp)) + 
+  
+  geom_point() + 
+  
+  geom_text(data = slopes_all_sum,
+            aes(x     = mean(c(max(slopes_all$n), min(slopes_all$n))),
+                y     = ypos(slopes_all$slope_year),
+                label = paste0("r = ", round(slope_n_corr_year,    2), ", ",
+                               "p = ", round(slope_n_corr_p_year,  2))),
+            col   = col.annot,
+            hjust = 1) +
+  
+  facet_wrap(~ id.grp) +
+  
+  scale_x_log10() +
+  
+  scale_color_manual(name = "Group",
+                     aesthetics = c("color", "fill"),
+                     values = col.grp.vec) +
+  
+  labs(x = "Species n", 
+       y = "Shift over time [days / decade]",
+       title = "Shift vs sample size",
+       subtitle = paste("Overall:", n_year_corr_str)) +
+  
+  theme_shifts()
+
+```
 
 
 ```{r plot_slopes_vs_species_forest}
