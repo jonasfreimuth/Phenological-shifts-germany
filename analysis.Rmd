@@ -872,7 +872,7 @@ slopes_grp_year_mean_plt <- ggplot() +
   # pairwise differences
   geom_text      (data = slopes_year_sum, 
                   aes(x     = id.grp,
-                      y     = ypos(slope_ci_max, frac = 0.5),
+                      y     = ypos(slope_ci_max, frac = 0.7),
                       label = pairw_grp),
                   col = col.annot) +
   
@@ -2118,14 +2118,14 @@ if (save.plots) {
   # modify plot for saving
   slopes_grp_year_mean_plt <- slopes_grp_year_mean_plt +
     
-    theme(plot.margin  = unit(c(50, 10, 10, 10), "bigpts"),
+    theme(plot.margin  = unit(c(70, 10, 10, 10), "bigpts"),
           axis.text.x  = element_blank(),
           axis.title.x = element_blank())
   
   
   slopes_grp_temp_mean_plt <- slopes_grp_temp_mean_plt +
     
-    theme(plot.margin  = unit(c(20, 10, 10, 10), "bigpts"),
+    theme(plot.margin  = unit(c(10, 10, 10, 10), "bigpts"),
           axis.text.x  = element_blank(),
           axis.title.x = element_blank())
   
@@ -2172,12 +2172,12 @@ if (save.plots) {
   # save plot as svg and png
   save_plot("plots/slopes_correlation.svg",
             plot = slopes_all_mean_corr_pic,
-            nrow = 2.5,
+            nrow = 3,
             bg = "transparent")
   
   save_plot("plots/slopes_correlation.png",
             plot = slopes_all_mean_corr_pic,
-            nrow = 2.5,
+            nrow = 3,
             bg = "transparent")
   
   
@@ -2207,13 +2207,13 @@ if (save.plots) {
   # add pictograms
   asyn_pic <- ggdraw() +
     draw_plot(asyn_pic) +
-    draw_image(image = "assets/Bee_and_Plant.png",
+    draw_image(image = "assets/Hoverfly_and_Plant.png",
                x = 0.265, y = 0.97,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
-    draw_image(image = "assets/Butterfly_and_Plant.png",
+    draw_image(image = "assets/Bee_and_Plant.png",
                x = 0.542, y = 0.97,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
-    draw_image(image = "assets/Hoverfly_and_Plant.png",
+    draw_image(image = "assets/Butterfly_and_Plant.png",
                x = 0.820, y = 0.97,
                scale = 0.25, hjust = 0.5, vjust = 0.5)
   
