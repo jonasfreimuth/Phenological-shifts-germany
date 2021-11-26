@@ -2300,43 +2300,39 @@ if (save.plots) {
   asyn_grp_year_scatter_plt <- asyn_grp_year_scatter_plt +
     theme(strip.text = element_blank())
   
-  # earlyfrac_grp_year_line_plt <- earlyfrac_grp_year_line_plt +
-  #   theme(strip.text = element_blank())
-  
   
   # add lables to plots and combine plots
   asyn_pic  <- plot_grid(asyn_int_year_mean_plt,
                          asyn_grp_year_scatter_plt,
-                         earlyfrac_grp_year_line_plt,
-                         labels = c("A", "B", "C"),
+                         labels = c("A", "B"),
                          ncol = 1)
   
   # add pictograms
   asyn_pic <- ggdraw() +
     draw_plot(asyn_pic) +
     draw_image(image = "assets/Hoverfly_and_Plant.png",
-               x = 0.265, y = 0.97,
+               x = 0.265, y = 0.95,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Bee_and_Plant.png",
-               x = 0.542, y = 0.97,
+               x = 0.542, y = 0.95,
                scale = 0.25, hjust = 0.5, vjust = 0.5) +
     draw_image(image = "assets/Butterfly_and_Plant.png",
-               x = 0.820, y = 0.97,
+               x = 0.820, y = 0.95,
                scale = 0.25, hjust = 0.5, vjust = 0.5)
   
   
   # save plot as svg and png
   save_plot("plots/interactions_all.svg", asyn_pic,
-            nrow = 3,
+            nrow = 2,
             bg = "transparent")
   
   save_plot("plots/interactions_all.png", asyn_pic,
-            nrow = 3,
+            nrow = 2,
             bg = "transparent")
   
   
   # additionally save ins early plot for temp as supp figure
-  save_plot("plots/ins_early_temp.png",  earlyfrac_grp_temp_line_plt,
+  save_plot("plots/asyn_grp_temp_scatter_plt.png",  asyn_grp_temp_scatter_plt,
            bg = "transparent")
   
   
