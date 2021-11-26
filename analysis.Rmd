@@ -6,7 +6,6 @@ output: html_notebook
 
 
 ```{r setup, include=FALSE}
-
 knitr::opts_chunk$set(fig.align = "center", echo = FALSE)
 
 # disable dplyr::summarise() grouping message
@@ -333,6 +332,7 @@ plant_traits <- fread("static_data/bioflor_traits.csv") %>%
   
   # recode PollDep to use clearer names 
   mutate(PollDep = recode_factor(PollDep, !!! recode.vec.PollDep))
+
 
 # load occurrence data
 dat.occ <- fread(dat_occ_file, showProgress = FALSE) %>% 
