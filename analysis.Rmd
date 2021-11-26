@@ -1598,7 +1598,7 @@ asyn_int_all_corr_plt +
 
 # TODO: give error for estimated points
 
-temp_vec <- unique(dat.occ$temp)
+temp_vec <- unique(round(dat.occ$temp, 1))
 
 year_vec <- unique(dat.occ$year)
 
@@ -1746,10 +1746,9 @@ asyn_grp_temp_scatter_plt <- ggplot() +
   theme_shifts(legend.position = "none")
 
 
-# disable plotting as this one takes too long
-# asyn_grp_temp_scatter_plt +
-#   labs(title    = "Asynchrony in interactions",
-#        subtitle = "with temperature")
+asyn_grp_temp_scatter_plt +
+  labs(title    = "Asynchrony in interactions",
+       subtitle = "with temperature")
 
 
 # for year
@@ -1759,7 +1758,7 @@ asyn_grp_year_scatter_plt <- ggplot() +
   geom_line(data = sim_diff_year,
             aes(year, diff, group = id),
             col   = col.pt,
-            alpha = alpha.pt) +
+            alpha = alpha.ln) +
   
   # geom_density2d(data = sim_diff_year,
   #                aes(year, diff),
