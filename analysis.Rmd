@@ -738,6 +738,8 @@ ggplot(slopes_all,
             col = col.annot,
             hjust = 1) +
   
+  geom_hline(yintercept = 0) +
+  
   facet_wrap(~ id.grp) +
   
   scale_x_log10() +
@@ -766,6 +768,8 @@ ggplot(slopes_all,
                                "p = ", round(slope_n_corr_p_year,  2))),
             col   = col.annot,
             hjust = 1) +
+  
+  geom_hline(yintercept = 0) +
   
   facet_wrap(~ id.grp) +
   
