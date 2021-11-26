@@ -1361,6 +1361,9 @@ int_slopes_asyn_sum <- int_slopes_asyn %>%
             slope_temp_asyn_frac_negative = sum(slope_temp_asyn < 0) /
               length(slope_temp_asyn),
             
+            # test if the average temp slope differs from 0
+            p_diff_zero_temp              = t.test(slope_temp_asyn)$p.value,
+            
             # summarize intercept
             intcp_temp_asyn_mean          = mean(intcp_temp_asyn),
             # intcp_temp_asyn_sem           = sqrt(
@@ -1383,6 +1386,9 @@ int_slopes_asyn_sum <- int_slopes_asyn %>%
             slope_year_asyn_frac_negative = sum(slope_year_asyn < 0) /
               length(slope_year_asyn),
             
+            # test if the average year slope differs from 0
+            p_diff_zero_year              = t.test(slope_year_asyn)$p.value,
+            
             # summarize intercept
             intcp_year_asyn_mean          = mean(intcp_year_asyn),
             # intcp_year_asyn_sem           = sqrt(
@@ -1395,7 +1401,11 @@ int_slopes_asyn_sum <- int_slopes_asyn %>%
   mutate(pairw_grp_temp_asyn = sig_letters(ph_aov_asyn_temp$group,
                                            recode.vec.int),
          pairw_grp_year_asyn = sig_letters(ph_aov_asyn_year$group,
-                                           recode.vec.int))
+                                           recode.vec.int)) %>% 
+  
+  # adjust pvals that mean differs from 0 for multiple testing
+  mutate(across(starts_with("p_diff_zero"), p.adjust, method = "fdr", 
+                .names ="{.col}_adj"))
 
 
 int_slopes_asyn_sum
@@ -2482,14 +2492,23 @@ asyn_tab <- int_slopes_asyn_sum %>%
                                       sep = " \u00B1 ")) %>% 
   
   select(
-    "Interaction Group"                       = group,
-    "# Pairwise interactions"                 = n_int,
-    "# Plant species"                         = n_plant,
-    "# Pollinator species"                    = n_poll,
-    "Temporal shifts [days / decade]"         = slope_year_asyn_mean,
-    "Temperature sensitivities [days / 1 °C]" = slope_temp_asyn_mean) %>% 
+    "\u200B"                 = group,
+    "\u200B\u200B"           = n_int,
+    "Plant"                  = n_plant,
+    "Pollinator"             = n_poll,
+    "Days / decade"          = slope_year_asyn_mean,
+    "p slope \u2260 0"       = p_diff_zero_temp,
+    "Days / 1 °C"            = slope_temp_asyn_mean,
+    "p slope \u2260 0\u200B" = p_diff_zero_year) %>% 
   
   flextable() %>% 
+  
+  add_header_row(values = c("Interaction Group",
+                            "# Pairwise interactions",
+                            "# Species",
+                            "Temporal shifts",
+                            "Temperature sensitivity"),
+                 colwidths = c(1, 1, 2, 2, 2)) %>%
   
   theme_booktabs(bold_header = TRUE)
 
