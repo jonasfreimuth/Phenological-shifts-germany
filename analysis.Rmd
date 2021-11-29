@@ -1,6 +1,8 @@
 ---
 title: "Revised Analysis of phenological shifts in Germany"
-output: html_notebook
+output:
+  html_notebook: default
+  pdf_document: default
 ---
 
 
@@ -96,7 +98,7 @@ plot_diagnostics       <- TRUE
 plot_diagnostics_facet <- TRUE
 
 # set number of times a model with failed convergence will attempt to restart
-n_restart               <- 4
+n_restart               <- 2
 
 
 ## Plot saving
