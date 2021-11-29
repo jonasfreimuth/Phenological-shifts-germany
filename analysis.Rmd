@@ -2057,7 +2057,7 @@ polldep_grp_temp_mean_plt <- ggplot() +
        y        = "Slope [days / \u00B0C] (\u00B1 95% CI)") +
   
   # add coloring
-  scale_color_manual(name   = "Pollinator Dependency",
+  scale_color_manual(name   = "Pollinator Dependence",
                      values = col.grp.vec) +
   
   # suppress legend
@@ -2109,7 +2109,7 @@ polldep_grp_year_mean_plt <- ggplot() +
        y        = "Slope [days / decade] (\u00B1 95% CI)") +
   
   # add coloring
-  scale_color_manual(name   = "Pollinator Dependency",
+  scale_color_manual(name   = "Pollinator Dependence",
                      values = col.grp.vec) +
   
   # suppress legend
