@@ -265,6 +265,9 @@ if (run.occ.prune) {
     # add extra decade column, which includes 2020 in the 2010s decade
     mutate(decade2 = str_replace_all(decade, "2020", "2010")) %>% 
     
+    # rename synonymous names
+    mutate(species = recode(species, "Inachis io" = "Aglais io")) %>% 
+    
     # sort data by year for later addition of climate data
     arrange(year)
   

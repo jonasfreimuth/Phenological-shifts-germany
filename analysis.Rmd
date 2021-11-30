@@ -1169,6 +1169,9 @@ int_data <- read.csv(paste0("static_data/",
   # make names less unwieldy
   rename(poll = POLLINATOR_NAME, plant = PLANT_NAME, group = Group) %>%
   
+  # correct use of synonymous names
+  mutate(poll = recode(poll, "Inachis io" = "Aglais io")) %>% 
+  
   # filter out species which have no occurrence data
   filter(
     plant %in% unique(dat.occ$species) &
