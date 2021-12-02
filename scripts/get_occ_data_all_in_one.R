@@ -212,6 +212,9 @@ if (run.occ.refine) {
   fwrite(dat.occ, paste(sep = "/", "data", "occurrences_full_refined.csv"),
          showProgress = FALSE)
   
+  # delete full dataset without colnames
+  invisible(file.remove("data/occurrences_full.csv"))
+  
   #remove dat.occ for memory reasons
   rm(dat.occ)
   
