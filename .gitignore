@@ -12,6 +12,7 @@ logs
 models
 plots
 temp_models
+comp_analyses
 
 # Rmd outputs
 *.nb.html
