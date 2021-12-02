@@ -1,20 +1,23 @@
 
 
 # define datasets used
-anls_1 <- "data/lfu_bfl_analysis_data/"
-anls_2 <- "data/nagu_inat_analysis_data/"
+anls_1 <- "data/only_lfu_bfl_nagu_inat_analysis_data/"
+anls_2 <- "data/no_lfu_bfl_nagu_inat_analysis_data/"
+comp_name <- "onlyCitsciVegmap_noCitsciVegmap"
+
+# either "inset" or "plant" !NOT "Plants"!
+group <- "plant"
 
 base_dir  <- "comp_analyses/"
-comp_name <- "vegmap_citsci"
 
 d_name_1 <- str_split(comp_name, "_")[[1]][1]
 d_name_2 <- str_split(comp_name, "_")[[1]][2]
 
-dir_name <- paste0(base_dir, comp_name, "/")
+dir_name <- paste0(base_dir, comp_name, "_", group, "/")
 dir.check(dir_name)
 
 writeLines(paste("Analysis of differences between rnd eff",
-                 "of plants",
+                 "of insects",
                  "\n between datasets in",
                  anls_1, "and", anls_2),
            paste0(dir_name, "info.txt"))
@@ -27,24 +30,43 @@ tax_info <- fread("data/full_analysis_data/occurrences_full_pruned_clim_elev.csv
                   select = c("id.grp", "family", "species")) %>% 
   distinct(id.grp, family, species)
 
+# read in first dataset
 slopes_year <- fread(paste0(anls_1, "rnd_eff_year.csv"))
 slopes_temp <- fread(paste0(anls_1, "rnd_eff_year.csv"))
 slopes_all <- left_join(slopes_temp, slopes_year, by = "species",
                         suffix = c("_temp", "_year")) %>%
   select(-starts_with(c("main_var", "group_"))) %>% 
-  left_join(tax_info, by = "species") %>% 
+  left_join(tax_info, by = "species") 
+
+if (group == "plant") {
+  slopes_all <- slopes_all %>% 
   filter(id.grp == "Plants")
+} else {
+  slopes_all <- slopes_all %>% 
+    filter(id.grp != "Plants")
+}
+
 slopes_all_1 <- slopes_all
 
+# read in second dataset
 slopes_year <- fread(paste0(anls_2, "rnd_eff_year.csv"))
 slopes_temp <- fread(paste0(anls_2, "rnd_eff_year.csv"))
 slopes_all <- left_join(slopes_temp, slopes_year, by = "species",
                         suffix = c("_temp", "_year")) %>%
   select(-starts_with(c("main_var", "group_"))) %>% 
-  left_join(tax_info, by = "species") %>% 
-  filter(id.grp == "Plants")
+  left_join(tax_info, by = "species")
+
+if (group == "plant") {
+  slopes_all <- slopes_all %>% 
+    filter(id.grp == "Plants")
+} else {
+  slopes_all <- slopes_all %>% 
+    filter(id.grp != "Plants")
+}
+
 slopes_all_2 <- slopes_all
 
+# combine datasets
 slopes_all_both <- inner_join(slopes_all_1, slopes_all_2,
                               by = c("id.grp", "family", "species"),
                               suffix = c("_1", "_2"))
@@ -66,7 +88,7 @@ ds_contrasts_sum <- ds_contrasts %>%
 
 # save plant species (unique *shouldnt* be necessary)
 writeLines(unique(slopes_all_both$species),
-           paste0(dir_name, "plant_species.txt"))
+           str_glue(dir_name, "{group}_species.txt"))
 
 
 # Plot and analyse differences --------------------------------------------
@@ -98,13 +120,13 @@ if (plot_comp) {
       cor_plot <- plot_data %>%
         ggplot(aes(par_var_1, par_var_2,
                    # col = family
-                   )) +
+                   ),
+               col = col.pt) +
         geom_point() +
         geom_hline(yintercept = 0, col = col.stc.line) + 
         geom_vline(xintercept = 0, col = col.stc.line) +
-        labs(title = paste("Correlation of plant slopes",
-                           comp_name,
-                           sep = "\n"),
+        labs(title = str_glue("Correlation of {group} {var}-{par}s\n",
+                           comp_name),
              subtitle = paste0("r = ",
                                round(cor(plot_data$par_var_1,
                                          plot_data$par_var_2),
@@ -113,9 +135,9 @@ if (plot_comp) {
                                round(cor.test(plot_data$par_var_1,
                                               plot_data$par_var_2)$p.val,
                                      3)),
-             x = str_glue("Plant {par} in {d_name_1}",
+             x = str_glue("{group} {par} in {d_name_1}",
                        "[days / {var}]", sep = "\n"),
-             y = str_glue("Plant {par} in {d_name_2}",
+             y = str_glue("{group} {par} in {d_name_2}",
                        "[days / {var}]", sep = "\n")) +
         theme_shifts()
       
@@ -164,19 +186,24 @@ if (plot_comp) {
         geom_pointrange(aes(ds, par_var,
                             ymax = par_var + 1.96 * par_std_err_var,
                             ymin = par_var - 1.96 * par_std_err_var,
-                            col = species),
+                            # col = species
+                            ),
                         plot_contrasts, 
                         position = "jitter",
-                        alpha = 0.3) +
+                        alpha = 0.3,
+                        col = col.pt) +
         geom_point(aes(ds, par_var_mean),
-                   plot_contrasts_sum) +
+                   plot_contrasts_sum,
+                   col = "deepskyblue") +
         geom_errorbar(aes(ds, ymin = par_var_ci_min, ymax = par_var_ci_max),
-                      plot_contrasts_sum) +
+                      plot_contrasts_sum,
+                      col = "deepskyblue") +
+        geom_hline(yintercept = 0, col = col.stc.line) +
         geom_text(aes(ds, ypos(par_var_max),
                       label = n_spec),
-                  plot_contrasts_sum) +
+                  plot_contrasts_sum,) +
         labs(title = str_glue("Comparison between {var}-{par}s of common ",
-                              "plants\nin datasets {d_name_2} and {d_name_1}"),
+                              "{group}s\nin datasets {d_name_2} and {d_name_1}"),
              subtitle = str_glue("p = {pval}"),
              x = "Datasets",
              y = str_glue("{var}-{par} [days / {var}]")) +
