@@ -37,9 +37,9 @@
 
 # set saving paths
 if (!test_run) {
-  model_root <- "models/"
+  model_root <- paste0("models/", analysis_dname)
 } else {
-  model_root <- "temp_models/"
+  model_root <- paste0("temp_models/", analysis_dname)
 }
 
 # set max number of facets for plots with many facets
@@ -381,9 +381,9 @@ for (form in form_vec) {
       # quick and dirty way to save ran effs as slope data for the main script
       # assumption of only two models must hold for this to work properly
       if (main_var == "year") {
-        data_path <- "data/rnd_eff_year"
+        data_path <- paste0(data_dir, "rnd_eff_year")
       } else if (main_var == "temp") {
-        data_path <- "data/rnd_eff_temp"
+        data_path <- paste0(data_dir, "rnd_eff_temp")
       }
       
       if (test_run) {

@@ -104,19 +104,26 @@ n_restart               <- 2
 ## Plot saving
 
 # save plots to disk?
-save.plots <- TRUE
+save_plots  <- TRUE
+
+# save tables (as .docx)?
+save_tables <- TRUE
 
 
 ## Path names ---------------------------------------------
 
+analysis_dname <- "full_analysis_data/"
+
+data_dir <- paste0("data/", analysis_dname)
+
 if (!test_run) {
-  dat_occ_file        <- "data/occurrences_full_pruned_clim_elev.csv"
-  dat_slope_temp_file <- "data/rnd_eff_temp.csv"
-  dat_slope_year_file <- "data/rnd_eff_year.csv"
+  dat_occ_file        <- paste0(data_dir, "occurrences_full_pruned_clim_elev.csv")
+  dat_slope_temp_file <- paste0(data_dir, "rnd_eff_temp.csv")
+  dat_slope_year_file <- paste0(data_dir, "rnd_eff_year.csv")
 } else {
-  dat_occ_file        <- "data/occurrences_full_pruned_clim_elev_test.csv"
-  dat_slope_temp_file <- "data/rnd_eff_temp_test.csv"
-  dat_slope_year_file <- "data/rnd_eff_year_test.csv"
+  dat_occ_file        <- paste0(data_dir, "occurrences_full_pruned_clim_elev_test.csv")
+  dat_slope_temp_file <- paste0(data_dir, "rnd_eff_temp_test.csv")
+  dat_slope_year_file <- paste0(data_dir, "rnd_eff_year_test.csv")
 }
 
 # set model formula paths
@@ -400,7 +407,7 @@ tax_df <- dat.occ %>%
 
 
 # load data on species sample sizes
-species_n <- fread("data/n_species_pruned_sum.csv") %>%
+species_n <- fread(paste0(data_dir, "n_species_pruned_sum.csv")) %>%
   
   # recode id.grp to use trivial names 
   # (recode only takes name/value pairs, so !!! expansion necessary)
@@ -458,7 +465,7 @@ slopes_all <- left_join(slopes_temp,
 
 ```{r show_record_sizes_by_group}
 
-dat_nrec <- fread("data/n_records_by_idgrp_pruned.csv",
+dat_nrec <- fread(paste0(data_dir, "n_records_by_idgrp_pruned.csv"),
       showProgress = FALSE) %>%
   
   # recode id.grp to use trivial names
@@ -2187,20 +2194,22 @@ polldep_grp_corr_plt +
 
 ```{r save_plots_to_disk}
 
-if (save.plots) {
+if (save_plots) {
   
   library("svglite")
   
-  dir.check("plots")
+  plot_dir <- paste0("plots/", analysis_dname)
+  
+  dir.check(plot_dir)
   
   # Records by year ---------------------------------------
   
-  save_plot("plots/record_numbers_time.png", record_dist_plot,
+  save_plot(paste0(plot_dir, "record_numbers_time.png"), record_dist_plot,
             bg = "transparent")
   
   # Temperature by year -----------------------------------
   
-  save_plot("plots/temp_over_time.png", time_temp_plt,
+  save_plot(paste0(plot_dir, "temp_over_time.png"), time_temp_plt,
             bg = "transparent")
   
   
@@ -2219,7 +2228,7 @@ if (save.plots) {
                                        labels = c("A", "B"),
                                        nrow   = 2)
   
-  save_plot("plots/forest_plot_slopes_all.png", slopes_spec_all_for_pic,
+  save_plot(paste0(plot_dir, "forest_plot_slopes_all.png"), slopes_spec_all_for_pic,
             nrow = 2,
             bg = "transparent")
   
@@ -2282,12 +2291,12 @@ if (save.plots) {
                                         ncol = 1)
   
   # save plot as svg and png
-  save_plot("plots/slopes_correlation.svg",
+  save_plot(paste0(plot_dir, "slopes_correlation.svg"),
             plot = slopes_all_mean_corr_pic,
             nrow = 3,
             bg = "transparent")
   
-  save_plot("plots/slopes_correlation.png",
+  save_plot(paste0(plot_dir, "slopes_correlation.png"),
             plot = slopes_all_mean_corr_pic,
             nrow = 3,
             bg = "transparent")
@@ -2327,17 +2336,18 @@ if (save.plots) {
   
   
   # save plot as svg and png
-  save_plot("plots/interactions_all.svg", asyn_pic,
+  save_plot(paste0(plot_dir, "interactions_all.svg"), asyn_pic,
             nrow = 2,
             bg = "transparent")
   
-  save_plot("plots/interactions_all.png", asyn_pic,
+  save_plot(paste0(plot_dir, "interactions_all.png"), asyn_pic,
             nrow = 2,
             bg = "transparent")
   
   
   # additionally save ins early plot for temp as supp figure
-  save_plot("plots/asyn_grp_temp_scatter_plt.png",  asyn_grp_temp_scatter_plt,
+  save_plot(paste0(plot_dir, "asyn_grp_temp_scatter_plt.png"),
+            asyn_grp_temp_scatter_plt,
            bg = "transparent")
   
   
@@ -2349,7 +2359,7 @@ if (save.plots) {
                            labels = c("A", "B"),
                            ncol = 1)
   
-  save_plot("plots/polldep_diffs.png", polldep_pic,
+  save_plot(paste0(plot_dir, "polldep_diffs.png"), polldep_pic,
             nrow = 2,
             bg = "transparent")
   
@@ -2360,161 +2370,166 @@ if (save.plots) {
 
 ```{r save_tables}
 
-library("flextable")
-library("officer")
-
-dir.check("plots")
-
-# set default section params
-def_sect_props <- prop_section(page_size = page_size(orient = "landscape"))
-
-# Record numbers and slopes ------------------------------------------
-
-# set up export docx file
-doc_file <- read_docx() %>% 
-  body_set_default_section(def_sect_props)
-
-# get data and adapt for table
-n_rec <- fread("data/n_records_by_idgrp_pruned.csv",
-                   showProgress = FALSE) %>%
+if (save_tables) {
   
-  # recode id.grp to use trivial names 
-  # (recode only takes name/value pairs, so !!! expansion necessary)
-  mutate(id.grp = recode_factor(id.grp, !!! recode.vec)) %>% 
+  library("flextable")
+  library("officer")
   
-  select(
-    "\u200B"             = id.grp,
-    "\u200B\u200B"       = n_species,
-    "\u200B\u200B\u200B" = n_rec,
-    "Min"                = min_species_rec,
-    "Median"             = median_species_rec,
-    "Max"                = max_species_rec)
-
-
-
-slopes_sum <- slopes_all_sum %>% 
+  tab_dir <- paste0("tables/", analysis_dname)
   
-  mutate(across(where(is.numeric), round, 2)) %>% 
-  mutate(across(matches("frac_negative"), ~ paste0(.x * 100, "%"))) %>% 
+  dir.check(tab_dir)
   
-  mutate(slope_mean_year          = paste(slope_mean_year,
-                                          slope_sem_year,
-                                          sep = " \u00B1 "),
-         slope_mean_temp          = paste(slope_mean_temp,
-                                          slope_sem_temp,
-                                          sep = " \u00B1 ")) %>% 
+  # set default section params
+  def_sect_props <- prop_section(page_size = page_size(orient = "landscape"))
   
-  # colnames are just 0 width spaces in order to have something unique there
-  #  that would show up as nothing in word
-  select("\u200B"                          = id.grp,
-         "Days / decade"                   = slope_mean_year,
-         "p slope \u2260 0"                = p_diff_zero_adj_year,
-         "% Advancing"                     = slope_frac_negative_year,
-         "Days / 1 °C"                     = slope_mean_temp,
-         "p slope \u2260 0\u200B"          = p_diff_zero_adj_temp,
-         "% Advancing\u200B"               = slope_frac_negative_temp)
-
-
-slopes_n_rec <- left_join(n_rec, slopes_sum, by = "\u200B")
-
-
-slopes_n_rec_tab <- slopes_n_rec %>% 
+  # Record numbers and slopes ------------------------------------------
   
-  flextable() %>% 
+  # set up export docx file
+  doc_file <- read_docx() %>% 
+    body_set_default_section(def_sect_props)
   
-  add_header_row(values = c("Group", "# Species", "# Records", 
-                            "# Records / Species", "Temporal shifts",
-                            "Temperature sensitivity"),
-                 colwidths = c(1, 1, 1, 3, 3, 3)) %>%
+  # get data and adapt for table
+  n_rec <- fread(paste0(data_dir, "n_records_by_idgrp_pruned.csv"),
+                 showProgress = FALSE) %>%
+    
+    # recode id.grp to use trivial names 
+    # (recode only takes name/value pairs, so !!! expansion necessary)
+    mutate(id.grp = recode_factor(id.grp, !!! recode.vec)) %>% 
+    
+    select(
+      "\u200B"             = id.grp,
+      "\u200B\u200B"       = n_species,
+      "\u200B\u200B\u200B" = n_rec,
+      "Min"                = min_species_rec,
+      "Median"             = median_species_rec,
+      "Max"                = max_species_rec)
   
-  theme_booktabs(bold_header = TRUE)
-
-# add table to the docx file and save it
-body_add_flextable(doc_file, slopes_n_rec_tab) %>% 
-  print("plots/slopes_nrec_tab.docx")
-
-
-# PollDep table -------------------------------------------
-
-# set up export docx file
-doc_file <- read_docx() %>% 
-  body_set_default_section(def_sect_props)
-
-polldep_tab <- slopes_all_polldep_sum %>% 
   
-  mutate(across(where(is.numeric), round, 2)) %>% 
-  mutate(across(matches("frac_negative"), ~ paste0(.x * 100, "%"))) %>% 
   
-  mutate(slope_mean_year = paste(slope_mean_year,
-                                 slope_sem_year,
-                                 sep = " \u00B1 ")) %>% 
-  mutate(slope_mean_temp = paste(slope_mean_temp,
-                                 slope_sem_temp,
-                                 sep = " \u00B1 ")) %>% 
+  slopes_sum <- slopes_all_sum %>% 
+    
+    mutate(across(where(is.numeric), round, 2)) %>% 
+    mutate(across(matches("frac_negative"), ~ paste0(.x * 100, "%"))) %>% 
+    
+    mutate(slope_mean_year          = paste(slope_mean_year,
+                                            slope_sem_year,
+                                            sep = " \u00B1 "),
+           slope_mean_temp          = paste(slope_mean_temp,
+                                            slope_sem_temp,
+                                            sep = " \u00B1 ")) %>% 
+    
+    # colnames are just 0 width spaces in order to have something unique there
+    #  that would show up as nothing in word
+    select("\u200B"                          = id.grp,
+           "Days / decade"                   = slope_mean_year,
+           "p slope \u2260 0"                = p_diff_zero_adj_year,
+           "% Advancing"                     = slope_frac_negative_year,
+           "Days / 1 °C"                     = slope_mean_temp,
+           "p slope \u2260 0\u200B"          = p_diff_zero_adj_temp,
+           "% Advancing\u200B"               = slope_frac_negative_temp)
   
-  select(
-    "\u200B"            = PollDep,
-    "\u200B\u200B"      = n_spec_year,
-    "Days / decade"     = slope_mean_year,
-    "% Advancing"       = slope_frac_negative_year,
-    "Days / 1 °C"       = slope_mean_temp,
-    "% Advancing\u200B" = slope_frac_negative_temp) %>%
   
-  flextable() %>% 
+  slopes_n_rec <- left_join(n_rec, slopes_sum, by = "\u200B")
   
-  add_header_row(values = c("Insect dependence", "# Species", "Temporal shifts",
-                            "Temperature sensitivity"),
-                 colwidths = c(1, 1, 2, 2)) %>%
   
-  theme_booktabs(bold_header = TRUE)
-
-
-# add table to the docx file
-body_add_flextable(doc_file, polldep_tab) %>% 
-  print("plots/polldep_tab.docx")
-
-
-# Asyn table ----------------------------------------------
-
-# set up export docx file
-doc_file <- read_docx() %>% 
-  body_set_default_section(def_sect_props)
-
-asyn_tab <- int_slopes_asyn_sum %>% 
+  slopes_n_rec_tab <- slopes_n_rec %>% 
+    
+    flextable() %>% 
+    
+    add_header_row(values = c("Group", "# Species", "# Records", 
+                              "# Records / Species", "Temporal shifts",
+                              "Temperature sensitivity"),
+                   colwidths = c(1, 1, 1, 3, 3, 3)) %>%
+    
+    theme_booktabs(bold_header = TRUE)
   
-  mutate(across(where(is.numeric), round, 2)) %>% 
+  # add table to the docx file and save it
+  body_add_flextable(doc_file, slopes_n_rec_tab) %>% 
+    print(paste0(tab_dir, "slopes_nrec_tab.docx"))
   
-  mutate(slope_year_asyn_mean = paste(slope_year_asyn_mean,
-                                      slope_year_asyn_sem,
-                                      sep = " \u00B1 ")) %>% 
-  mutate(slope_temp_asyn_mean = paste(slope_temp_asyn_mean,
-                                      slope_temp_asyn_sem,
-                                      sep = " \u00B1 ")) %>% 
   
-  select(
-    "\u200B"                 = group,
-    "\u200B\u200B"           = n_int,
-    "Plant"                  = n_plant,
-    "Pollinator"             = n_poll,
-    "Days / decade"          = slope_year_asyn_mean,
-    "p slope \u2260 0"       = p_diff_zero_temp,
-    "Days / 1 °C"            = slope_temp_asyn_mean,
-    "p slope \u2260 0\u200B" = p_diff_zero_year) %>% 
+  # PollDep table -------------------------------------------
   
-  flextable() %>% 
+  # set up export docx file
+  doc_file <- read_docx() %>% 
+    body_set_default_section(def_sect_props)
   
-  add_header_row(values = c("Interaction Group",
-                            "# Pairwise interactions",
-                            "# Species",
-                            "Temporal shifts",
-                            "Temperature sensitivity"),
-                 colwidths = c(1, 1, 2, 2, 2)) %>%
+  polldep_tab <- slopes_all_polldep_sum %>% 
+    
+    mutate(across(where(is.numeric), round, 2)) %>% 
+    mutate(across(matches("frac_negative"), ~ paste0(.x * 100, "%"))) %>% 
+    
+    mutate(slope_mean_year = paste(slope_mean_year,
+                                   slope_sem_year,
+                                   sep = " \u00B1 ")) %>% 
+    mutate(slope_mean_temp = paste(slope_mean_temp,
+                                   slope_sem_temp,
+                                   sep = " \u00B1 ")) %>% 
+    
+    select(
+      "\u200B"            = PollDep,
+      "\u200B\u200B"      = n_spec_year,
+      "Days / decade"     = slope_mean_year,
+      "% Advancing"       = slope_frac_negative_year,
+      "Days / 1 °C"       = slope_mean_temp,
+      "% Advancing\u200B" = slope_frac_negative_temp) %>%
+    
+    flextable() %>% 
+    
+    add_header_row(values = c("Insect dependence", "# Species", "Temporal shifts",
+                              "Temperature sensitivity"),
+                   colwidths = c(1, 1, 2, 2)) %>%
+    
+    theme_booktabs(bold_header = TRUE)
   
-  theme_booktabs(bold_header = TRUE)
-
-# add table to the docx file
-doc_file <- body_add_flextable(doc_file, asyn_tab) %>% 
-  print("plots/asyn_tab.docx")
-
+  
+  # add table to the docx file
+  body_add_flextable(doc_file, polldep_tab) %>% 
+    print(paste0(tab_dir, "polldep_tab.docx"))
+  
+  
+  # Asyn table ----------------------------------------------
+  
+  # set up export docx file
+  doc_file <- read_docx() %>% 
+    body_set_default_section(def_sect_props)
+  
+  asyn_tab <- int_slopes_asyn_sum %>% 
+    
+    mutate(across(where(is.numeric), round, 2)) %>% 
+    
+    mutate(slope_year_asyn_mean = paste(slope_year_asyn_mean,
+                                        slope_year_asyn_sem,
+                                        sep = " \u00B1 ")) %>% 
+    mutate(slope_temp_asyn_mean = paste(slope_temp_asyn_mean,
+                                        slope_temp_asyn_sem,
+                                        sep = " \u00B1 ")) %>% 
+    
+    select(
+      "\u200B"                 = group,
+      "\u200B\u200B"           = n_int,
+      "Plant"                  = n_plant,
+      "Pollinator"             = n_poll,
+      "Days / decade"          = slope_year_asyn_mean,
+      "p slope \u2260 0"       = p_diff_zero_temp,
+      "Days / 1 °C"            = slope_temp_asyn_mean,
+      "p slope \u2260 0\u200B" = p_diff_zero_year) %>% 
+    
+    flextable() %>% 
+    
+    add_header_row(values = c("Interaction Group",
+                              "# Pairwise interactions",
+                              "# Species",
+                              "Temporal shifts",
+                              "Temperature sensitivity"),
+                   colwidths = c(1, 1, 2, 2, 2)) %>%
+    
+    theme_booktabs(bold_header = TRUE)
+  
+  # add table to the docx file
+  doc_file <- body_add_flextable(doc_file, asyn_tab) %>% 
+    print(paste0(tab_dir, "asyn_tab.docx"))
+  
+}
 ```
 
