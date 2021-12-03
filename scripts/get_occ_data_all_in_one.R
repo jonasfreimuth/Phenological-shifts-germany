@@ -6,7 +6,14 @@
 #################################################
 
 # make sure data folder exists
-dir.check("data")
+dir.check(data_dir)
+
+# set names of columns retrieved by fread from raw data
+data_cols <- c("kingdom", "phylum", "order", "family", "genus",
+               "species", "institutionCode", "collectionCode",
+               "datasetName","decimalLatitude", "decimalLongitude",
+               "year", "month", "day", "eventDate",
+               "hasGeospatialIssues", "issue")
 
 # Setup: Additional Data ---------------------------------------------------
 
@@ -18,7 +25,7 @@ if ( !(file.exists("static_data/bioflor_traits.csv"))) {
   
 }
 
-#load bioflor traits
+# load bioflor traits
 bioflor_traits <- fread("static_data/bioflor_traits.csv",
                         showProgress = FALSE) %>%
   mutate(species = as.character(species)) 
@@ -28,12 +35,12 @@ bioflor_traits <- fread("static_data/bioflor_traits.csv",
 
 
 # check if download has already run with current gbif dataset
-if(file.exists(paste(sep = "/", "data", "occurrences_full.csv")) &&
-   file.exists(paste(sep = "/", "data", "occurrences_full_refined.csv"))) {
+if(file.exists(paste0(data_dir, "occurrences_full.csv")) &&
+   file.exists(paste0(data_dir, "occurrences_full_refined.csv"))) {
   
   # now check if the file is older than the record for the gbif requests
-  if (file.mtime(paste(sep = "/", "static_data", "last_keys.txt")) < 
-      file.mtime(paste(sep = "/", "data", "occurrences_full.csv"))) {
+  if (file.mtime(paste0(data_dir, "static_data", "last_keys.txt")) < 
+      file.mtime(paste0(data_dir, "data", "occurrences_full.csv"))) {
     
     # since the file for gbif requests is older, we're up to date with the 
     # occurrences and we already have our occurrence dataset
@@ -64,20 +71,20 @@ if(file.exists(paste(sep = "/", "data", "occurrences_full.csv")) &&
 if (run.occ.refine) {
   
   # make sure directory exists
-  dir.check(paste(sep = "/", "download"))
+  dir.check("download")
   
   #set keys (uids of my datasets used, order is pollinators, plants)
   # keys <- occ_download_list(limit = 13)[["results"]][["key"]]
-  keys <- readLines(paste(sep = "/", "static_data", "last_keys.txt"))
+  keys <- readLines("static_data/last_keys.txt")
   
   # create file for storing occurrences in (overwrites previous file)
-  file.create(paste(sep = "/", "data", "occurrences_full.csv"))
+  file.create(paste0(data_dir, "occurrences_full.csv"))
   
   # create file for keeping track which occurrence finished processing when
-  sink(paste(sep = "/", "data", "download_ran.txt"))
+  sink("download/download_ran.txt")
   
   cat("# Do not delete this file.\n")
-  cat("# Re-executing the occurrence getting script will take")
+  cat("# Re-executing the occurrence getting script will take ")
   cat("needlessly long...\n")
   cat("key\tfinish_time\n")
   
@@ -91,7 +98,7 @@ if (run.occ.refine) {
     keys <- keys[k_ind:length(keys)]
   }
   
-  #start for loop for each key
+  # start for loop for each key
   for (k in keys) {
     
     # check if we already have an extracted occurrence file
@@ -102,7 +109,7 @@ if (run.occ.refine) {
       # if the corresponding raw zip file is not already present
       if (! file.exists(paste0("download/", k, ".zip"))){
         # retrieve compiled dataset
-        occ_download_get(k, paste(sep = "/", "download"),
+        occ_download_get(k, "download",
                          overwrite = TRUE)
       }
       
@@ -114,7 +121,7 @@ if (run.occ.refine) {
             unzip = "unzip")
       
       # give the extracted file the name of its key
-      file.rename(from = paste(sep = "/", "download", "occurrence.txt"),
+      file.rename(from = "download/occurrence.txt",
                   to = paste(sep = "/", "download",  paste0("occurrence_",
                                                             k, ".txt")))
       
@@ -125,7 +132,7 @@ if (run.occ.refine) {
       }
       
       # create/overwrite the file for download status
-      sink(paste(sep = "/", "data", "download_ran.txt"), append = TRUE)
+      sink("download/download_ran.txt", append = TRUE)
       
       cat(format(Sys.time(), "%Y%m%d_%H%M%S"), "\t", k, "\n")
       
@@ -133,60 +140,32 @@ if (run.occ.refine) {
       
     }
     
-    #read extracted occurence.txt
-    exp <- fread(paste(sep = "/", "download", paste0("occurrence_", k, ".txt")),
-                 quote = "", showProgress = FALSE,
-                 select = c("kingdom", "phylum", "order", "family", "genus",
-                            "species", "institutionCode", "collectionCode",
-                            "datasetName","decimalLatitude", "decimalLongitude",
-                            "year", "month", "day", "eventDate",
-                            "hasGeospatialIssues", "issue")
-    ) 
-    
-    
-    #exclude records without days
-    exp <- filter(exp, day != "")
-    
-    #reformat the date to POSIXct and calculate DOY
-    exp <- mutate(exp, date = as.Date(substr(eventDate, 1, 10))) %>%
+    # read extracted occurence.txt, do stuff with it and save it
+    fread(paste(sep = "/", "download", paste0("occurrence_", k, ".txt")),
+          quote = "", showProgress = FALSE,
+          select = data_cols) %>% 
+      
+      
+      # exclude records without days
+      filter(day != "") %>% 
+      
+      # reformat the date to POSIXct and calculate DOY
+      mutate(date = as.Date(substr(eventDate, 1, 10))) %>%
       select(-eventDate) %>%
       mutate(doy = as.integer(strftime(date, "%j"))) %>%
-      mutate(decade = floor(year / 10) * 10)
-    
-    
-    #add group label
-    if (exp$kingdom[1] == "Plantae") {
+      mutate(decade = floor(year / 10) * 10) %>% 
       
-      exp$id.grp <- as.character("Plants")
+      # add group label
+      mutate(id.grp = if_else(kingdom == "Plantae",
+                              "Plants",
+                              order)) %>% 
       
-      #also make sure only plants with traits are used
-      exp <- filter(exp, species %in% bioflor_traits$species)
+      # filter out plants without trait data
+      filter(!(id.grp == "Plants" & !(species %in% bioflor_traits$species))) %>% 
       
-    } else {
-      
-      exp$id.grp <- exp$order
-      
-    }
-    
-    
-    #Save data as csv
-    if (exp$kingdom[1] == "Plantae") {
-      
-      #save to csv
-      fwrite(exp, paste(sep = "/", "data", "occurrences_full.csv"),
+      # save data as csv
+      fwrite(paste0(data_dir, "occurrences_full.csv"),
              append = TRUE)
-      
-      
-    } else  if (exp$kingdom[1] == "Animalia") {
-      
-      #save to csv
-      fwrite(exp, paste(sep = "/", "data", "occurrences_full.csv"),
-             append = TRUE)
-      
-    }
-    
-    # save the col names to add again later
-    occ.names <- names(exp)
     
     # if not disabled, also remove occurrence txt file again
     if (any(c("all", "txt") %in% delete.occ.download)) {
@@ -198,25 +177,23 @@ if (run.occ.refine) {
     
   }
   
-  # remove unneeded objects
-  rm("exp")
+  # define renaming vec
+  rename_vec <- c(data_cols[data_cols != "eventDate"],
+                  'date', 'doy', 'decade', 'id.grp')
   
-  #load  full data 
-  dat.occ <- fread(paste(sep = "/", "data", "occurrences_full.csv"),
-                   showProgress = FALSE)
-  
-  #add row names
-  names(dat.occ) <- occ.names
-  
-  #save dataset to add names
-  fwrite(dat.occ, paste(sep = "/", "data", "occurrences_full_refined.csv"),
-         showProgress = FALSE)
+  # load  full data 
+  dat.occ <- fread(paste0(data_dir, "occurrences_full.csv"),
+                   showProgress = FALSE) %>% 
+    
+    # rename cols 
+    set_names(rename_vec) %>% 
+    
+    # save dataset to add names
+    fwrite(paste0(data_dir, "occurrences_full_refined.csv"),
+           showProgress = FALSE)
   
   # delete full dataset without colnames
-  invisible(file.remove("data/occurrences_full.csv"))
-  
-  #remove dat.occ for memory reasons
-  rm(dat.occ)
+  invisible(file.remove(paste0(data_dir, "occurrences_full.csv")))
   
 }
 
@@ -229,13 +206,13 @@ if (run.occ.refine) {
 
 
 if (exists("force.occ.prune") && file.older.check(
-  "data/occurrences_full_refined.csv",
-  "data/occurrences_full_pruned_clim_elev.csv")) {
+  paste0(data_dir, "occurrences_full_refined.csv"),
+  paste0(data_dir, "occurrences_full_pruned_clim_elev.csv"))) {
   
   run.occ.prune <- force.occ.prune
-
-  } else {
-    
+  
+} else {
+  
   run.occ.prune <- TRUE
   
 }
@@ -243,7 +220,7 @@ if (exists("force.occ.prune") && file.older.check(
 if (run.occ.prune) {
   
   
-  dat.occ.prepruned <- fread("data/occurrences_full_refined.csv",
+  dat.occ.prepruned <- fread(paste0(data_dir, "occurrences_full_refined.csv"),
                              showProgress = FALSE) %>% 
     
     # filter out records without determined species
@@ -395,7 +372,7 @@ if (run.occ.prune) {
   dat.occ.prepruned %>% 
     group_by(id.grp, species) %>% 
     count() %>%
-    fwrite("data/n_species_pruned_sum.csv",
+    fwrite(paste0(data_dir, "n_species_pruned_sum.csv"),
            showProgress = FALSE)
   
   # save number of species per id.grp
@@ -422,11 +399,12 @@ if (run.occ.prune) {
     rename(n_rec = n) %>% 
     left_join(n_spec_id_grp, by = "id.grp") %>% 
     left_join(range_spec_id_grp, by = "id.grp") %>% 
-    fwrite("data/n_records_by_idgrp_pruned.csv",
+    fwrite(paste0(data_dir, "n_records_by_idgrp_pruned.csv"),
            showProgress = FALSE)
   
   # save data
-  fwrite(dat.occ.prepruned, "data/occurrences_full_pruned_clim_elev.csv",
+  fwrite(dat.occ.prepruned, paste0(data_dir,
+                                   "occurrences_full_pruned_clim_elev.csv"),
          showProgress = FALSE)
   
   rm(dat.occ.prepruned, temp_vec, elev_vec)
