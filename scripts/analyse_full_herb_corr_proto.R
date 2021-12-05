@@ -70,16 +70,58 @@ slopes_all_2 <- slopes_all
 slopes_all_both <- inner_join(slopes_all_1, slopes_all_2,
                               by = c("id.grp", "family", "species"),
                               suffix = c("_1", "_2")) 
-# %>% 
-#   
-#   # calculate cis for everything
-#   mutate(across(matches("(slope|intercept)_(year|temp)"),
-#                 list(ci_min = ~ cur_column() - 1.96 * ))))
 
+# get names for each par var comb and each dataset
+nam_vec <- names(slopes_all_both)
+col_vec <- nam_vec[grepl(x = nam_vec,
+                         pattern = "(slope|intercept)_(year|temp)")]
 
+# calculate CIs
+for (col in col_vec) {
+  se_nam <- str_replace(col, "_", "_std_err_")
+  
+  par_var_vec <- slopes_all_both[[col]]
+  pava_se_vec <- slopes_all_both[[se_nam]] 
+  
+  ci_min_vec <- par_var_vec - 1.96 * pava_se_vec
+  ci_max_vec <- par_var_vec + 1.96 * pava_se_vec
+  
+  ci_min_nam <- str_replace(col, "_", "_ci_min_")
+  ci_max_nam <- str_replace(col, "_", "_ci_max_")
+  
+  slopes_all_both[[ci_min_nam]] <- ci_min_vec
+  slopes_all_both[[ci_max_nam]] <- ci_max_vec
+}
+
+# check whether ds1 and ds2 differ in obs
+for (var in c("temp", "year")) {
+  for (par in c("slope", "intercept")) {
+    comp_nm_vec <- nam_vec[grepl(x = nam_vec, paste0(par, "_", var))]
+    
+    ci_min_nam_vec <- str_replace(comp_nm_vec, "_", "_ci_min_")
+    ci_max_nam_vec <- str_replace(comp_nm_vec, "_", "_ci_max_")
+    
+    ds_1_ci_min <- slopes_all_both[[ci_min_nam_vec[1]]]
+    ds_2_ci_min <- slopes_all_both[[ci_min_nam_vec[2]]]
+    
+    ds_1_ci_max <- slopes_all_both[[ci_max_nam_vec[1]]]
+    ds_2_ci_max <- slopes_all_both[[ci_max_nam_vec[2]]]
+    
+    ds_1_grt <- ds_1_ci_min > ds_2_ci_max
+    ds_2_grt <- ds_1_ci_max < ds_2_ci_min
+    
+    diff_vec <- xor(ds_1_grt, ds_2_grt)
+    
+    comp_col_nm <- paste0(par, "_", var, "_diff")
+    
+    slopes_all_both[[comp_col_nm]] <- diff_vec
+  }
+}
 
 ds_contrasts <- bind_rows(slopes_all_1 %>% mutate(ds = d_name_1),
                           slopes_all_2 %>% mutate(ds = d_name_2)) %>% 
+  
+  # again ensure we use only species in both data sets
   filter(species %in% unique(slopes_all_both$species))
 
 ds_contrasts_sum <- ds_contrasts %>% 
@@ -93,7 +135,7 @@ ds_contrasts_sum <- ds_contrasts %>%
             n_spec = n())
 
 
-# save plant species (unique *shouldnt* be necessary)
+# save species (unique *shouldnt* be necessary)
 writeLines(unique(slopes_all_both$species),
            str_glue(dir_name, "{group}_species.txt"))
 
@@ -124,12 +166,29 @@ if (plot_comp) {
                     .fn = str_replace_all, pattern = var, "var")
       
       
+      # compute percentage of non significantly different species
+      perc_nodiff <- (1 - (sum(plot_data$par_var_diff) / nrow(plot_data))) %>% 
+        multiply_by(100) %>% 
+        round(1)
+      
+    
       cor_plot <- plot_data %>%
         ggplot(aes(par_var_1, par_var_2,
                    # col = family
-        ),
-        col = col.pt) +
-        geom_point() +
+        )) +
+        geom_point(aes(col = par_var_diff)) +
+        geom_errorbar(aes(x = par_var_1,
+                          ymin = par_ci_min_var_2,
+                          ymax = par_ci_max_var_2,
+                          col = par_var_diff),
+                      width = 0,
+                      alpha = alpha.ln) +
+        geom_errorbarh(aes(y = par_var_2,
+                           xmin = par_ci_min_var_1,
+                           xmax = par_ci_max_var_1,
+                           col = par_var_diff),
+                       height = 0,
+                       alpha = alpha.ln) +
         geom_hline(yintercept = 0, col = col.stc.line) + 
         geom_vline(xintercept = 0, col = col.stc.line) +
         labs(title = str_glue("Correlation of {group} {var}-{par}s\n",
@@ -141,7 +200,9 @@ if (plot_comp) {
                                ", p = ",
                                round(cor.test(plot_data$par_var_1,
                                               plot_data$par_var_2)$p.val,
-                                     3)),
+                                     3),
+                               ", Overlap: ",
+                               perc_nodiff),
              x = str_glue("{group} {par} in {d_name_1}",
                           "[days / {var}]", sep = "\n"),
              y = str_glue("{group} {par} in {d_name_2}",
@@ -166,7 +227,10 @@ if (plot_comp) {
         rename_with(.cols = matches(str_glue("{par}.+{var}")),
                     .fn = str_replace_all, pattern = par, "par") %>% 
         rename_with(.cols = matches(str_glue("par.+{var}")),
-                    .fn = str_replace_all, pattern = var, "var")
+                    .fn = str_replace_all, pattern = var, "var") %>% 
+        
+        # add information about species difference from dataset above
+        mutate(par_var_diff = rep(plot_data$par_var_diff, 2))
       
       ds_lvls <- unique(plot_contrasts$ds)
       
@@ -206,25 +270,27 @@ if (plot_comp) {
         geom_pointrange(aes(ds, par_var,
                             ymax = par_var + 1.96 * par_std_err_var,
                             ymin = par_var - 1.96 * par_std_err_var,
-                            # col = species
+                            col = par_var_diff
                             ),
                         plot_contrasts, 
                         position = "jitter",
-                        alpha = alpha.pt,
-                        col = col.pt) +
+                        alpha = 0.5,
+                        # col = col.pt
+                        ) +
         geom_point(aes(ds, par_var_mean),
                    plot_contrasts_sum,
-                   col = "deepskyblue") +
+                   col = col.pt) +
         geom_errorbar(aes(ds, ymin = par_var_ci_min, ymax = par_var_ci_max),
                       plot_contrasts_sum,
-                      col = "deepskyblue") +
+                      col = col.pt) +
         geom_hline(yintercept = 0, col = col.stc.line) +
         geom_text(aes(ds, ypos(par_var_max),
                       label = n_spec),
                   plot_contrasts_sum,) +
         labs(title = str_glue("Comparison between {var}-{par}s of common ",
                               "{group}s\nin datasets {d_name_2} and {d_name_1}"),
-             subtitle = str_glue("p = {pval} (Paired t-test)"),
+             subtitle = str_glue("p = {pval} (Paired t-test)",
+                                 ", Overlap: {perc_nodiff}"),
              x = "Datasets",
              y = str_glue("{var}-{par} [days / {var}]")) +
         theme_shifts(legend.position = "none")
