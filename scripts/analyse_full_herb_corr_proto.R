@@ -32,7 +32,7 @@ tax_info <- fread("data/full_analysis_data/occurrences_full_pruned_clim_elev.csv
 
 # read in first dataset
 slopes_year <- fread(paste0(anls_1, "rnd_eff_year.csv"))
-slopes_temp <- fread(paste0(anls_1, "rnd_eff_year.csv"))
+slopes_temp <- fread(paste0(anls_1, "rnd_eff_temp.csv"))
 slopes_all <- left_join(slopes_temp, slopes_year, by = "species",
                         suffix = c("_temp", "_year")) %>%
   select(-starts_with(c("main_var", "group_"))) %>% 
@@ -50,7 +50,7 @@ slopes_all_1 <- slopes_all
 
 # read in second dataset
 slopes_year <- fread(paste0(anls_2, "rnd_eff_year.csv"))
-slopes_temp <- fread(paste0(anls_2, "rnd_eff_year.csv"))
+slopes_temp <- fread(paste0(anls_2, "rnd_eff_temp.csv"))
 slopes_all <- left_join(slopes_temp, slopes_year, by = "species",
                         suffix = c("_temp", "_year")) %>%
   select(-starts_with(c("main_var", "group_"))) %>% 
