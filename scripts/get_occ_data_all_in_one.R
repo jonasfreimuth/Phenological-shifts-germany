@@ -182,7 +182,7 @@ if (run.occ.refine) {
                   'date', 'doy', 'decade', 'id.grp')
   
   # load  full data 
-  dat.occ <- fread(paste0(data_dir, "occurrences_full.csv"),
+  fread(paste0(data_dir, "occurrences_full.csv"),
                    showProgress = FALSE) %>% 
     
     # rename cols 
