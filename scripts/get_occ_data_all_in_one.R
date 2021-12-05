@@ -13,7 +13,7 @@ data_cols <- c("kingdom", "phylum", "order", "family", "genus",
                "species", "institutionCode", "collectionCode",
                "datasetName","decimalLatitude", "decimalLongitude",
                "year", "month", "day", "eventDate",
-               "hasGeospatialIssues", "issue")
+               "hasGeospatialIssues", "issue", "basisOfRecord")
 
 # Setup: Additional Data ---------------------------------------------------
 
