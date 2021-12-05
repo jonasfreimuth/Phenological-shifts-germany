@@ -2,8 +2,8 @@
 
 # define datasets used
 anls_1 <- "data/only_lfu_bfl_nagu_inat_analysis_data/"
-anls_2 <- "data/no_lfu_bfl_nagu_inat_analysis_data/"
-comp_name <- "onlyCitsciVegmap_noCitsciVegmap"
+anls_2 <- "data/preserved_specimen_only/"
+comp_name <- "onlyVegmapCitsci_onlyPresspec"
 
 # either "inset" or "plant" !NOT "Plants"!
 group <- "plant"
@@ -69,7 +69,14 @@ slopes_all_2 <- slopes_all
 # combine datasets
 slopes_all_both <- inner_join(slopes_all_1, slopes_all_2,
                               by = c("id.grp", "family", "species"),
-                              suffix = c("_1", "_2"))
+                              suffix = c("_1", "_2")) 
+# %>% 
+#   
+#   # calculate cis for everything
+#   mutate(across(matches("(slope|intercept)_(year|temp)"),
+#                 list(ci_min = ~ cur_column() - 1.96 * ))))
+
+
 
 ds_contrasts <- bind_rows(slopes_all_1 %>% mutate(ds = d_name_1),
                           slopes_all_2 %>% mutate(ds = d_name_2)) %>% 
@@ -77,7 +84,7 @@ ds_contrasts <- bind_rows(slopes_all_1 %>% mutate(ds = d_name_1),
 
 ds_contrasts_sum <- ds_contrasts %>% 
   group_by(ds) %>% 
-  summarise(across(matches("(slope_(year|temp)|intercept_(year|temp))"),
+  summarise(across(matches("(slope|intercept)_(year|temp)"),
                    list(mean    = mean,
                         std_err = ~ sd(.x) / sqrt(n()),
                         ci_min  = ~ mean(.x) - 1.96 * (sd(.x) / sqrt(n())),
@@ -161,8 +168,17 @@ if (plot_comp) {
         rename_with(.cols = matches(str_glue("par.+{var}")),
                     .fn = str_replace_all, pattern = var, "var")
       
-      diff_test <- t.test(as.formula(str_glue("par_var ~ ds")),
-                          plot_contrasts)
+      ds_lvls <- unique(plot_contrasts$ds)
+      
+      if (length(ds_lvls) == 2) {
+        par_var_ds1 <- plot_contrasts$par_var[plot_contrasts$ds == ds_lvls[1]]
+        par_var_ds2 <- plot_contrasts$par_var[plot_contrasts$ds == ds_lvls[2]]
+      } else  {
+        stop("Can only compare exactly two datasets")
+      }
+      
+      diff_test <- t.test(par_var_ds1, par_var_ds2,
+                          paired = TRUE)
       
       pval <- diff_test$p.value %>% round(3)
       
@@ -183,15 +199,19 @@ if (plot_comp) {
         geom_boxplot(aes(ds, par_var), plot_contrasts, 
                      alpha = 0.5,
                      col = "gray80") +
+        geom_line(aes(ds, par_var, group = species),
+                  plot_contrasts,
+                  col = col.pt,
+                  alpha = alpha.ln) +
         geom_pointrange(aes(ds, par_var,
                             ymax = par_var + 1.96 * par_std_err_var,
                             ymin = par_var - 1.96 * par_std_err_var,
                             # col = species
-        ),
-        plot_contrasts, 
-        position = "jitter",
-        alpha = 0.3,
-        col = col.pt) +
+                            ),
+                        plot_contrasts, 
+                        position = "jitter",
+                        alpha = alpha.pt,
+                        col = col.pt) +
         geom_point(aes(ds, par_var_mean),
                    plot_contrasts_sum,
                    col = "deepskyblue") +
@@ -204,7 +224,7 @@ if (plot_comp) {
                   plot_contrasts_sum,) +
         labs(title = str_glue("Comparison between {var}-{par}s of common ",
                               "{group}s\nin datasets {d_name_2} and {d_name_1}"),
-             subtitle = str_glue("p = {pval}"),
+             subtitle = str_glue("p = {pval} (Paired t-test)"),
              x = "Datasets",
              y = str_glue("{var}-{par} [days / {var}]")) +
         theme_shifts(legend.position = "none")
