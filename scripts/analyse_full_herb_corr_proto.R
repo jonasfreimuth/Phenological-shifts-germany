@@ -40,7 +40,7 @@ slopes_all <- left_join(slopes_temp, slopes_year, by = "species",
 
 if (group == "plant") {
   slopes_all <- slopes_all %>% 
-  filter(id.grp == "Plants")
+    filter(id.grp == "Plants")
 } else {
   slopes_all <- slopes_all %>% 
     filter(id.grp != "Plants")
@@ -112,7 +112,7 @@ if (plot_comp) {
         #  smth else. Note the "unquoted" par on the second go, thats necessary
         #  as there will be a literal "par" there on the 2nd go
         rename_with(.cols = matches(str_glue("{par}.+{var}")),
-               .fn = str_replace_all, pattern = par, "par") %>% 
+                    .fn = str_replace_all, pattern = par, "par") %>% 
         rename_with(.cols = matches(str_glue("par.+{var}")),
                     .fn = str_replace_all, pattern = var, "var")
       
@@ -120,13 +120,13 @@ if (plot_comp) {
       cor_plot <- plot_data %>%
         ggplot(aes(par_var_1, par_var_2,
                    # col = family
-                   ),
-               col = col.pt) +
+        ),
+        col = col.pt) +
         geom_point() +
         geom_hline(yintercept = 0, col = col.stc.line) + 
         geom_vline(xintercept = 0, col = col.stc.line) +
         labs(title = str_glue("Correlation of {group} {var}-{par}s\n",
-                           comp_name),
+                              comp_name),
              subtitle = paste0("r = ",
                                round(cor(plot_data$par_var_1,
                                          plot_data$par_var_2),
@@ -136,9 +136,9 @@ if (plot_comp) {
                                               plot_data$par_var_2)$p.val,
                                      3)),
              x = str_glue("{group} {par} in {d_name_1}",
-                       "[days / {var}]", sep = "\n"),
+                          "[days / {var}]", sep = "\n"),
              y = str_glue("{group} {par} in {d_name_2}",
-                       "[days / {var}]", sep = "\n")) +
+                          "[days / {var}]", sep = "\n")) +
         theme_shifts()
       
       # cor_plot
@@ -187,11 +187,11 @@ if (plot_comp) {
                             ymax = par_var + 1.96 * par_std_err_var,
                             ymin = par_var - 1.96 * par_std_err_var,
                             # col = species
-                            ),
-                        plot_contrasts, 
-                        position = "jitter",
-                        alpha = 0.3,
-                        col = col.pt) +
+        ),
+        plot_contrasts, 
+        position = "jitter",
+        alpha = 0.3,
+        col = col.pt) +
         geom_point(aes(ds, par_var_mean),
                    plot_contrasts_sum,
                    col = "deepskyblue") +
