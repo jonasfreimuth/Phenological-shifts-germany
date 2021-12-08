@@ -144,6 +144,8 @@ sig_letters <- function(ph_table, ordering = NULL, alpha = 0.05) {
   return(out_vec)
 }
 
+# function to remove NAs from vector
+na_rm_str <- function(x) {x[!str_detect(x, "NA")]}
 
 # bioflor trait functions -------------------------------------------------
 
@@ -160,7 +162,17 @@ get_traits <- function(text, traits, patterns) {
   #start for loop to extract each trait value
   for (i in seq(1, length(traits), 1)) {
     
-    traits_out[1, i] <- paste(unlist(stringr::str_extract_all(text, patterns[i])), collapse = ", ")
+    traits_out[1, i] <- stringr::str_extract_all(text, patterns[i],
+                                                 simplify = TRUE) %>% 
+      as.vector() %>% 
+      
+      # ensure levels are unique
+      unique() %>% 
+      
+      # ensure all combinations of levels have the same structure
+      sort() %>% 
+      
+      paste(collapse = ", ")
     
   }
   

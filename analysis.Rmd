@@ -352,10 +352,8 @@ if (!all(file.exists(dat_slope_temp_file, dat_slope_year_file)) ||
 ```{r load_occurrence_slope_data}
 
 # load plant trait data
-plant_traits <- fread("static_data/bioflor_traits.csv") %>% 
-  
-  # prune out some unecessary data
-  select(-all_of(c("AccName", "GbifKey", "OrigName", "bioflor_id"))) %>%
+plant_traits <- fread("static_data/bioflor_traits.csv",
+                      na.strings = c("", "NA")) %>% 
   
   # recode PollDep to use clearer names 
   mutate(PollDep = recode_factor(PollDep, !!! recode.vec.PollDep))
