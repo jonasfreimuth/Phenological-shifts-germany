@@ -26,9 +26,20 @@ plot_comp <- TRUE
 
 # load data and merge -----------------------------------------------------
 
-tax_info <- fread("data/full_analysis_data/occurrences_full_pruned_clim_elev.csv", 
-                  select = c("id.grp", "family", "species")) %>% 
-  distinct(id.grp, family, species)
+tax_col_vec <- c("kingdom",
+                 "phylum",
+                 "id.grp",
+                 "order",
+                 "family",
+                 "genus",
+                 "species")
+
+if (!exists("tax_df")) {
+  tax_df <- fread(
+    "data/full_analysis_data/occurrences_full_pruned_clim_elev.csv", 
+    select = tax_col_vec) %>%
+    distinct()
+}
 
 # read in first dataset
 slopes_year <- fread(paste0(anls_1, "rnd_eff_year.csv"))
@@ -36,7 +47,7 @@ slopes_temp <- fread(paste0(anls_1, "rnd_eff_temp.csv"))
 slopes_all <- left_join(slopes_temp, slopes_year, by = "species",
                         suffix = c("_temp", "_year")) %>%
   select(-starts_with(c("main_var", "group_"))) %>% 
-  left_join(tax_info, by = "species") 
+  left_join(tax_df, by = "species") 
 
 if (group == "plant") {
   slopes_all <- slopes_all %>% 
@@ -54,7 +65,7 @@ slopes_temp <- fread(paste0(anls_2, "rnd_eff_temp.csv"))
 slopes_all <- left_join(slopes_temp, slopes_year, by = "species",
                         suffix = c("_temp", "_year")) %>%
   select(-starts_with(c("main_var", "group_"))) %>% 
-  left_join(tax_info, by = "species")
+  left_join(tax_df, by = "species")
 
 if (group == "plant") {
   slopes_all <- slopes_all %>% 
@@ -68,7 +79,7 @@ slopes_all_2 <- slopes_all
 
 # combine datasets
 slopes_all_both <- inner_join(slopes_all_1, slopes_all_2,
-                              by = c("id.grp", "family", "species"),
+                              by = tax_col_vec,
                               suffix = c("_1", "_2")) 
 
 # get names for each par var comb and each dataset
@@ -131,13 +142,13 @@ ds_contrasts_sum <- ds_contrasts %>%
                         std_err = ~ sd(.x) / sqrt(n()),
                         ci_min  = ~ mean(.x) - 1.96 * (sd(.x) / sqrt(n())),
                         ci_max  = ~ mean(.x) + 1.96 * (sd(.x) / sqrt(n())),
-                        max     = max)),
+                        max     = ~ max(.x))),
             n_spec = n())
 
 
 # save species (unique *shouldnt* be necessary)
-writeLines(unique(slopes_all_both$species),
-           str_glue(dir_name, "{group}_species.txt"))
+fwrite(slopes_all_both,
+       str_glue(dir_name, "{group}_species.txt"))
 
 
 # Plot and analyse differences --------------------------------------------
@@ -171,12 +182,11 @@ if (plot_comp) {
         multiply_by(100) %>% 
         round(1)
       
-    
+      
       cor_plot <- plot_data %>%
         ggplot(aes(par_var_1, par_var_2,
                    # col = family
         )) +
-        geom_point(aes(col = par_var_diff)) +
         geom_errorbar(aes(x = par_var_1,
                           ymin = par_ci_min_var_2,
                           ymax = par_ci_max_var_2,
@@ -189,6 +199,7 @@ if (plot_comp) {
                            col = par_var_diff),
                        height = 0,
                        alpha = alpha.ln) +
+        geom_point(aes(col = par_var_diff)) +
         geom_hline(yintercept = 0, col = col.stc.line) + 
         geom_vline(xintercept = 0, col = col.stc.line) +
         labs(title = str_glue("Correlation of {group} {var}-{par}s\n",
@@ -206,7 +217,8 @@ if (plot_comp) {
              x = str_glue("{group} {par} in {d_name_1}",
                           "[days / {var}]", sep = "\n"),
              y = str_glue("{group} {par} in {d_name_2}",
-                          "[days / {var}]", sep = "\n")) +
+                          "[days / {var}]", sep = "\n"),
+             color = "Difference\nsignificant") +
         theme_shifts()
       
       # cor_plot
@@ -271,12 +283,12 @@ if (plot_comp) {
                             ymax = par_var + 1.96 * par_std_err_var,
                             ymin = par_var - 1.96 * par_std_err_var,
                             col = par_var_diff
-                            ),
-                        plot_contrasts, 
-                        position = "jitter",
-                        alpha = 0.5,
-                        # col = col.pt
-                        ) +
+        ),
+        plot_contrasts, 
+        position = "jitter",
+        # alpha = 0.5,
+        # col = col.pt
+        ) +
         geom_point(aes(ds, par_var_mean),
                    plot_contrasts_sum,
                    col = col.pt) +
@@ -290,10 +302,11 @@ if (plot_comp) {
         labs(title = str_glue("Comparison between {var}-{par}s of common ",
                               "{group}s\nin datasets {d_name_2} and {d_name_1}"),
              subtitle = str_glue("p = {pval} (Paired t-test)",
-                                 ", Overlap: {perc_nodiff}"),
+                                 ", Overlap: {perc_nodiff}",),
              x = "Datasets",
-             y = str_glue("{var}-{par} [days / {var}]")) +
-        theme_shifts(legend.position = "none")
+             y = str_glue("{var}-{par} [days / {var}]"),
+             color = "Difference\nsignificant") +
+        theme_shifts()
       
       save_plot(str_glue(plot_dir, "{par}_{var}_contr_plot.png"), contr_plot)
     }
