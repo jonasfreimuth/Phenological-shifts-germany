@@ -1,19 +1,31 @@
 
-#################################################
-#
-#   TO BE RUN FROM WITHIN THE MAIN NOTEBOOK
-#
-#################################################
+
+# Setup: Dir stuff --------------------------------------------------------
 
 # make sure data folder exists
 dir.check(data_dir)
 
-# set names of columns retrieved by fread from raw data
-data_cols <- c("kingdom", "phylum", "order", "family", "genus",
-               "species", "institutionCode", "collectionCode",
-               "datasetName","decimalLatitude", "decimalLongitude",
-               "year", "month", "day", "eventDate",
-               "hasGeospatialIssues", "issue", "basisOfRecord")
+
+## check if analysis specific scripts exist, else use default scripts, 
+##  checks this for each step
+
+# get vector of analysis step script names
+# ORDER MATTERS
+script_name_vec <- c("run_occ_refine.R",
+                     "run_occ_preprune.R",
+                     "run_occ_prune.R")
+
+# get vectors of default and analysis specific script paths
+default_vec <- paste0("scripts/full_analysis_data/", script_name_vec)
+dname_vec   <- paste0("scripts/", analysis_dname, script_name_vec)
+
+# check which analysis specific files exist
+sel_vec <- file.exists(dname_vec)
+
+# get vector of scripts that should run
+run_vec <- default_vec
+run_vec[sel_vec] <- dname_vec[sel_vec]
+
 
 # Setup: Additional Data ---------------------------------------------------
 
@@ -29,6 +41,13 @@ if ( !(file.exists("static_data/bioflor_traits.csv"))) {
 bioflor_traits <- fread("static_data/bioflor_traits.csv",
                         showProgress = FALSE) %>%
   mutate(species = as.character(species)) 
+
+# set names of columns retrieved by fread from raw data
+data_cols <- c("kingdom", "phylum", "order", "family", "genus",
+               "species", "institutionCode", "collectionCode",
+               "datasetName","decimalLatitude", "decimalLongitude",
+               "year", "month", "day", "eventDate",
+               "hasGeospatialIssues", "issue", "basisOfRecord")
 
 
 # Download and refinement -------------------------------------------------
@@ -142,7 +161,8 @@ if (run.occ.refine) {
     
     # run refinement scripts
     # has to use this environment
-    source(paste0(script_dir, "run_occ_refine.R"))
+    # check if analysis specific script exists, if not use default
+    source(run_vec[1])
     
     # if not disabled, also remove occurrence txt file again
     if (any(c("all", "txt") %in% delete.occ.download)) {
@@ -199,13 +219,13 @@ if (run.occ.prune) {
   
   # do prepruning according to analysis
   # has to use this environment
-  source(paste0(script_dir, "run_occ_preprune.R"))
+  source(run_vec[2])
   
   # do data addition and pruning according to analysis
   # has to use this environment
-  source(paste0(script_dir, "run_occ_prune.R"))
+  source(run_vec[3])
   
-  # remove prepruned file again for disk space reasosns
+  # remove prepruned file again for disk space reasons
   file.remove(paste0(data_dir, "occurrences_full_prepruned.csv"))
   
 }

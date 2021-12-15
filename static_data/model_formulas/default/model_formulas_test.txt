@@ -1,0 +1,2 @@
+doy ~ temp + lat + long + elev + (temp | species)
+doy ~ year + lat + long + elev + (year | species)

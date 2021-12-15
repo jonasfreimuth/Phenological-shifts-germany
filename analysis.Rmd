@@ -144,11 +144,23 @@ if (!test_run) {
   dat_slope_year_file <- paste0(data_dir, "rnd_eff_year_test.csv")
 }
 
+
+### Model formula stuff 
+
 # set model formula paths
+mod_form_base <- "static_data/model_formulas/"
+mod_form_dir  <- paste0(mod_form_base, analysis_dname)
+
+# check if analysis specific formulas exist
+if (!dir.exists(mod_form_dir)) {
+  mod_form_dir <- paste0(paste0(mod_form_base, "default/"))
+}
+
+# set appropriate path
 if (!test_run && !run.models.ind) {
-  mod_form_file <- "static_data/model_formulas.txt"
+  mod_form_file <- paste0(mod_form_dir, "model_formulas.txt")
 } else {
-  mod_form_file <- "static_data/model_formulas_test.txt"
+  mod_form_file <- paste0(mod_form_dir, "model_formulas_test.txt")
 }
 
 ## Set graphics parameters --------------------------------
