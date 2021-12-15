@@ -1,6 +1,6 @@
 # get species which are pollinator independent for later exclusion
-pollind_spec <- bioflor_traits %>% 
-  filter(PollDep == "No") %>% 
+polldep_spec <- bioflor_traits %>% 
+  filter(PollDep != "No") %>% 
   distinct(species)
 
 
@@ -17,10 +17,10 @@ fread(paste0(data_dir, "occurrences_full_refined.csv"),
   drop_na(decimalLatitude, decimalLongitude) %>%  
   
   # filter out non-pollinator dependent plants
-  filter(!(species %in% pollind_spec$species)) %>% 
+  filter(!(id.grp == "Plants" & !(species %in% polldep_spec$species))) %>% 
   
   # filter out plants recs not PRESERVED_SPECIMEN
-  filter(!(id.grp == "Plants" & basisOfRecord != "PRESERVED_SPECIMEN")) %>%
+  filter(!(id.grp == "Plants"),  basisOfRecord != "PRESERVED_SPECIMEN") %>%
   
   # filter out all years before 1980 and after 2020
   filter(year >= 1980, year <= 2020) %>% 
