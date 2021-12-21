@@ -2252,8 +2252,6 @@ polldep_grp_corr_plt +
 
 if (save_plots) {
   
-  library("svglite")
-  
   plot_dir <- paste0("plots/", analysis_dname)
   
   dir.check(plot_dir)
@@ -2346,8 +2344,8 @@ if (save_plots) {
                                         labels = c(NA, "C"),
                                         ncol = 1)
   
-  # save plot as svg and png
-  save_plot(paste0(plot_dir, "slopes_correlation.svg"),
+  # save plot as pdf and png
+  save_plot(paste0(plot_dir, "slopes_correlation.pdf"),
             plot = slopes_all_mean_corr_pic,
             nrow = 3,
             bg = "transparent")
@@ -2391,8 +2389,8 @@ if (save_plots) {
                scale = 0.25, hjust = 0.5, vjust = 0.5)
   
   
-  # save plot as svg and png
-  save_plot(paste0(plot_dir, "interactions_all.svg"), asyn_pic,
+  # save plot as pdf and png
+  save_plot(paste0(plot_dir, "interactions_all.pdf"), asyn_pic,
             nrow = 2,
             bg = "transparent")
   
