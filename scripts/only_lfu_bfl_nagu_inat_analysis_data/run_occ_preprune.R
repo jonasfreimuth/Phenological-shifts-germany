@@ -14,7 +14,7 @@ fread(paste0(data_dir, "occurrences_full_refined.csv"),
   # filter out plant species not from specific institutions
   filter(!(id.grp == "Plants" & !(institutionCode %in% c("naturgucker",
                                                          "iNaturalist",
-                                                         "Lfu",
+                                                         "LfU",
                                                          "BFL")))) %>% 
   
   # filter out all years before 1980 and after 2020

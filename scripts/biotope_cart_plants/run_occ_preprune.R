@@ -12,7 +12,7 @@ fread(paste0(data_dir, "occurrences_full_refined.csv"),
   drop_na(decimalLatitude, decimalLongitude) %>% 
   
   # filter out plant species not from specific institutions
-  filter(!(id.grp == "Plants" & !(institutionCode %in% c("Lfu", "BFL")))) %>% 
+  filter(!(id.grp == "Plants" & !(institutionCode %in% c("LfU", "BFL")))) %>% 
   
   # filter out all years before 1980 and after 2020
   filter(year >= 1980, year <= 2020) %>% 
