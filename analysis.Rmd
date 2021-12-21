@@ -700,12 +700,14 @@ slopes_temp_sum <- slopes_temp %>%
             slope_ci_max        = slope_mean + slope_sem * 1.96,
             p_diff_zero         = t.test(slope)$p.value,
             slope_n_corr        = cor(slope, log10(n)),
-            slope_n_corr_p      = cor.test(slope, log10(n))$p.value,
+            slope_n_corr_p      = cor.test(slope, log10(n),
+                                           method = "pearson")$p.value,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Temperature") %>% 
   
-  # adjust diff zero pval for multiple testing
-  mutate(p_diff_zero_adj = p.adjust(p_diff_zero, method = "fdr")) %>% 
+  # adjust diff zero & slope_n_corr pval for multiple testing
+  mutate(p_diff_zero_adj    = p.adjust(p_diff_zero,    method = "fdr"),
+         slope_n_corr_p_adj = p.adjust(slope_n_corr_p, method = "fdr")) %>% 
   
   # add significance letters
   mutate(pairw_grp = sig_letters(ph_aov_temp$id.grp, order = recode.vec))
@@ -720,13 +722,15 @@ slopes_year_sum <- slopes_year %>%
             slope_ci_min        = slope_mean - slope_sem * 1.96,
             slope_ci_max        = slope_mean + slope_sem * 1.96,
             p_diff_zero         = t.test(slope)$p.value,
-            slope_n_corr        = cor(slope, log10(n)),
+            slope_n_corr        = cor(slope, log10(n),
+                                           method = "pearson"),
             slope_n_corr_p      = cor.test(slope, log10(n))$p.value,
             slope_frac_negative = sum(slope < 0) / length(slope),
             var                 = "Year") %>% 
   
-  # adjust diff zero pval for multiple testing
-  mutate(p_diff_zero_adj = p.adjust(p_diff_zero, method = "fdr")) %>% 
+  # adjust diff zero & slope_n_corr pval for multiple testing
+  mutate(p_diff_zero_adj    = p.adjust(p_diff_zero,    method = "fdr"),
+         slope_n_corr_p_adj = p.adjust(slope_n_corr_p, method = "fdr")) %>% 
   
   # add significance letters
   mutate(pairw_grp = sig_letters(ph_aov_year$id.grp, order = recode.vec))
@@ -750,9 +754,11 @@ slopes_all_sum
 ```{r correlate_species_n_with_slope}
 
 # do corr tests on log 10 transformed data
-slope_n_temp_corr <- cor.test(log10(slopes_all$n), slopes_all$slope_temp)
-slope_n_year_corr <- cor.test(log10(slopes_all$n), slopes_all$slope_year)
-  
+slope_n_temp_corr <- cor.test(log10(slopes_all$n), slopes_all$slope_temp, 
+                              method = "pearson")
+slope_n_year_corr <- cor.test(log10(slopes_all$n), slopes_all$slope_year, 
+                              method = "pearson")
+
 # generate summary strings for plotting
 n_temp_corr_str <- paste("r =", round(slope_n_temp_corr$estimate, 2),
                          ", ",
@@ -762,22 +768,29 @@ n_year_corr_str <- paste("r =", round(slope_n_year_corr$estimate, 2),
                          ", ",
                          "p =", round(slope_n_year_corr$p.value,  2))
 
-ggplot(slopes_all,
-       aes(n, slope_temp, col = id.grp)) +
+slope_n_corr_temp_plt <- ggplot(slopes_all,
+                                aes(n, slope_temp, col = id.grp)) +
   
-  geom_point() + 
+  geom_point(alpha = alpha.pt) + 
+  
+  # geom_smooth(method = "lm",
+  #             col = "black") +
   
   geom_text(data = slopes_all_sum,
-            aes(x     = mean(c(max(slopes_all$n), min(slopes_all$n))),
+            aes(x     = 10 ^ mean(c(log10(max(slopes_all$n)),
+                                    log10(min(slopes_all$n)))),
                 y     = ypos(slopes_all$slope_temp),
-                label = paste0("r = ", round(slope_n_corr_temp,    2), ", ",
-                               "p = ", round(slope_n_corr_p_temp,  2))),
-            col = col.annot,
-            hjust = 1) +
+                label = paste0("r = ", round(slope_n_corr_temp,        2),
+                               ",\n",
+                               "p = ", round(slope_n_corr_p_adj_temp,  2))),
+            col   = col.annot,
+            hjust = 0.5,
+            vjust = 0.5,
+            size  = 2.5) +
   
   geom_hline(yintercept = 0) +
   
-  facet_wrap(~ id.grp) +
+  facet_wrap(~ id.grp, nrow = 1) +
   
   scale_x_log10() +
   
@@ -788,27 +801,38 @@ ggplot(slopes_all,
   labs(x = "Species n", 
        y = "Shift with temperature [days / \u00B0C]",
        title = "Shift vs sample size",
-       subtitle = paste("Overall:", n_temp_corr_str)) +
+       subtitle = paste0("Overall:", n_temp_corr_str)) +
   
-  theme_shifts()
+  theme_shifts(axis.text.x = element_text(angle = 45,
+                                          hjust = 0.5),
+               legend.position = "none")
+
+slope_n_corr_temp_plt
 
 
-ggplot(slopes_all,
-       aes(n, slope_year, col = id.grp)) + 
+slope_n_corr_year_plt <- ggplot(slopes_all,
+                                aes(n, slope_year, col = id.grp)) + 
   
-  geom_point() + 
+  geom_point(alpha = alpha.pt) + 
+  
+  # geom_smooth(method = "lm",
+  #             col = "black") +
   
   geom_text(data = slopes_all_sum,
-            aes(x     = mean(c(max(slopes_all$n), min(slopes_all$n))),
+            aes(x     = 10 ^ mean(c(log10(max(slopes_all$n)),
+                                    log10(min(slopes_all$n)))),
                 y     = ypos(slopes_all$slope_year),
-                label = paste0("r = ", round(slope_n_corr_year,    2), ", ",
-                               "p = ", round(slope_n_corr_p_year,  2))),
+                label = paste0("r = ", round(slope_n_corr_year,        2),
+                               ",\n",
+                               "p = ", round(slope_n_corr_p_adj_year,  2))),
             col   = col.annot,
-            hjust = 1) +
+            hjust = 0.5,
+            vjust = 0.5,
+            size  = 2.5) +
   
   geom_hline(yintercept = 0) +
   
-  facet_wrap(~ id.grp) +
+  facet_wrap(~ id.grp, nrow = 1) +
   
   scale_x_log10() +
   
@@ -819,9 +843,13 @@ ggplot(slopes_all,
   labs(x = "Species n", 
        y = "Shift over time [days / decade]",
        title = "Shift vs sample size",
-       subtitle = paste("Overall:", n_year_corr_str)) +
+       subtitle = paste0("Overall:", n_year_corr_str)) +
   
-  theme_shifts()
+  theme_shifts(axis.text.x = element_text(angle = 45,
+                                          hjust = 0.5),
+               legend.position = "none")
+
+slope_n_corr_year_plt
 
 ```
 
@@ -2390,6 +2418,21 @@ if (save_plots) {
   save_plot(paste0(plot_dir, "polldep_diffs.png"), polldep_pic,
             nrow = 2,
             bg = "transparent")
+  
+  
+  # Slope - sample size correlation plots -----------------
+  
+  save_plot(paste0(plot_dir, "slope_n_corr_temp.png"), 
+            slope_n_corr_temp_plt,
+            bg = "transparent",
+            base_asp = 2)
+  
+  save_plot(paste0(plot_dir, "slope_n_corr_year.png"), 
+            slope_n_corr_year_plt +
+              facet_wrap(~ id.grp, nrow = 1),
+            bg = "transparent",
+            base_asp = 2)
+  
   
 }
 
