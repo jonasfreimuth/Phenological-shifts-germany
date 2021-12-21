@@ -1,125 +1,116 @@
-stop("This script was used to compile the gbif data sets used in the analysis.
-      Running it requires setting your GBIF credentials in some way (usually in .Renviron).
-      See help('Startup') or the rgbif documentation, especially rgbif::occ_download.
-      Running this script again will generate different downloads as there would have been changes in the 
-      data on GBIF since its been last run.")
+# stop(paste("This script was used to compile the gbif data sets used in the",
+#            "analysis. Running it requires setting your GBIF credentials in",
+#            "some way (usually in .Renviron). See help('Startup') or the rgbif",
+#            "documentation, especially rgbif::occ_download.Running this script",
+#            "again will generate different downloads as there would have been",
+#            "changes in the data on GBIF since its been last run."))
 
 
 # Setup -------------------------------------------------------------------
 
-#load libraries
-library("here")
-library("beepr")
+# load libraries
 library("rgbif")
 library("taxize")
 library("dplyr")
 library("tidyr")
 library("stringr")
+library("magrittr")
 
+# load pollinator taxa
+polltax <- readLines("static_data/pollinator_taxa_all.txt")
 
-
-#load pollinator taxa
-polltax <- read.delim(here("static_data", "pollinator_taxa_all.txt"), header = FALSE) %>%
-  transmute(taxon = as.character(V1))
-
-#get taxon keys from species list
-keys.poll <- taxize::get_gbifid(polltax$taxon, ask = FALSE,  messages = FALSE, phylum = "Arthropoda",
+# get taxon keys from species list
+keys.poll <- taxize::get_gbifid(polltax, ask = FALSE,  messages = FALSE,
+                                phylum = "Arthropoda",
                                 rows = 1) %>%
   as.data.frame() %>%
   drop_na() %>%
   select(ids) %>%
-  unlist() %>%
-  paste(collapse = ",")
+  unlist() 
 
-#count number of keys returned
-n.keys.poll <- str_count(keys.poll, ",") + 1
+# count number of keys returned
+n.keys.poll <- length(keys.poll)
+
+# convert poll keys to string
+keys.poll <- paste(keys.poll, collapse = ",")
  
 # Select plant species ---------------------------------
 
-#load plant traits data set
-plant_traits <- read.csv(here("data", "bioflor_traits.csv")) %>%
-  mutate(species = as.character(species),
-         SciName = as.character(AccName)) 
+# load plant traits data set
+plant_traits <- read.csv("static_data/bioflor_traits.csv")
 
-#get taxon keys from species list
+# get taxon keys from species list
 keys.plant <- plant_traits %>%
-  select(GbifKey) %>%
-  drop_na(GbifKey)
+  extract2("GbifKey")
 
-#count number of keys returned
-n.keys.plant <- nrow(keys.plant)
+# count number of keys returned
+n.keys.plant <- length(keys.plant)
+
 
 # break up occurrence requests, as requests have a character limit --------
 
-#max characters in one substring
-str.max <- 2500
+# max characters in one substring
+str.max <- 8000
 
-#median length of keys
-key.length <- median(str_length(keys.plant$GbifKey))
+# median length of keys + 1 for separating commas later on
+key.length <- median(str_length(keys.plant) + 1) 
 
-#number of keys in one substring
+# number of keys in one substring
 key.n <- floor(str.max/key.length)
 
-#final length of substrings
+# final length of substrings
 str.length <- key.n * key.length
 
-#break up plant keys
-for (i in seq(0, ceiling(n.keys.plant/key.n)-1)) {
+# initialize list for storing keys
+key.list <- list()
+
+# break up plant keys
+for (i in seq(1, ceiling(n.keys.plant / key.n))) {
   
-  #take only current segment of all keys
-  keys.i <- paste0(unlist(keys.plant$GbifKey[((i*key.n)+1):((i+1)*key.n)]), collapse = ",") %>%
-    str_extract("[[:blank:][:punct:][:digit:]]+") %>%
-    gsub(x = ., pattern = "\\, $", replacement = "")
+  # make selection vec for keys.plant
+  sel_vec <- seq(from = ((i - 1) * key.n) + 1,
+                 
+                 # prevent taking more keys than we have
+                 to   = min(i * key.n, length(keys.plant)))
   
   
-  #write keys into an object
-  assign(paste("keys",
-               #pad leading zeroes
-               formatC(
-                 i + 1,
-                 #determine the number of digits will be necessary
-                 width = str_length(ceiling(n.keys.plant / key.n)),
-                 flag = 0
-               ), sep = ""), keys.i)
+  # take only current segment of all keys
+  key.list[[i]] <- keys.plant[sel_vec]
   
 }
 
-#write poll keys into an object
-assign(paste("keys", i+2, sep = ""), keys.poll)
+# write poll keys into key list
+key.list[[i + 1]] <- keys.poll
 
-#specify basis of record:
-record.base <- ("HUMAN_OBSERVATION, PRESERVED_SPECIMEN, LIVING_SPECIMEN, OBSERVATION")
 
-#initialize counting var
-j <- 1 
+# generate download requests ----------------------------------------------
 
-#construct calls for occ dl queue
-for (i in ls(pattern = "keys[[:alnum:]]+")) {
+# initialize list for storing prepped download requests
+dl.list <- list()
+
+# specify predicates for the occ search in GBIF
+basisOfRecord <- c("HUMAN_OBSERVATION", "PRESERVED_SPECIMEN", "LIVING_SPECIMEN",
+                   "OBSERVATION")
+
+country       <- "DE"
+
+hasCoordinate <- TRUE
+
+# construct calls for occ dl queue
+for (i in seq_along(key.list)) {
   
-  assign(
-    #use same number as in keys
-    paste("dprep", str_extract(i, "[:digit:]+"), sep = ""),
-    call(
-      "occ_download",
-      paste("basisOfRecord = ", record.base),
-      "country = DE",
-      paste("taxonKey = ", eval(as.name(
-        ls(pattern = "keys[[:alnum:]]+")[j]
-      )))
-    )
+  dl.list[[i]] <- occ_download_prep(
+    pred(   "country",       country),
+    pred(   "hasCoordinate", hasCoordinate),
+    pred_in("basisOfRecord", basisOfRecord),
+    pred_in("taxonKey",      key.list[[i]])
   )
   
-  j <- j + 1
-  
 }
 
-#construct queue call
-dpreps <- lapply(lapply(ls(pattern = "dprep[[:digit:]]+"), as.name), eval)
-do.call(occ_download_queue, dpreps)
+# run download requests
+occ_download_queue(.list = dl.list)
 
-#write last keys into file
-write.csv(occ_download_list(limit = ceiling(n.keys.plant / key.n) + 1)[["results"]]$key,
-          here("data", "last_keys.txt"), row.names = FALSE)
-
-#beep for being done
-beep()
+# write last keys into file
+writeLines(occ_download_list(limit = length(key.list))[["results"]]$key,
+          "static_data/last_keys_2.txt")
