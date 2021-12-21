@@ -224,7 +224,8 @@ recode.vec.int <- c("Hoverfly"  = "Hoverfly - Plant",
 # recode vec for PollDep
 recode.vec.PollDep <- c("Yes"          = "Pollinator dependent",
                         "Intermediate" = "Intermediate",
-                        "No"           = "Pollinator independent")
+                        "No"           = "Pollinator independent"
+                        )
 
 ### set colour tables -------------------------------------------------------
 
@@ -1220,7 +1221,12 @@ slopes_grp_all_corr_plt +
 
 ## Analysis of interaction asynchrony
   
-Here asynchrony is defined as the difference between the peak doy of flowering and the peak doy of flight in a given year or at a given temperature. Here, the peak doys are approximated by the predicted values given by the linear models for the corresponding plant and pollinator. The shift in asynchrony is then given by the change in the difference between the predicted values over time and with temperature.
+Here, asynchrony is defined as the difference between the peak doy of flowering
+and the peak doy of flight in a given year or at a given temperature. Here,
+the peak doys are approximated by the predicted values given by the linear
+models for the corresponding plant and pollinator. The shift in asynchrony
+is then given by the change in the difference between the predicted values
+over time and with temperature.
 
 ```{r summarize_interactions}
 
