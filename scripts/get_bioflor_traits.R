@@ -257,7 +257,7 @@ plant_traits <- plant_traits %>%
   select(- bioflor_id) %>% 
   mutate(across(c(FlStart, FlEnd, FlDur),
                 ~ as.numeric(.x))) %>% 
-  group_by(species) %>% 
+  group_by(species, GbifKey) %>% 
   summarise(across(c(LifeForm, LifeSpan, ReprType:Habitat),
                    ~ paste(.x, collapse = ", ") %>% 
                      str_split(", ") %>% 
