@@ -993,7 +993,7 @@ slopes_grp_temp_mean_plt <- ggplot() +
   
   # add labels
   labs(x = "Group",
-       y = "Shift with temperature\n[days / \u00B0C]\n(\u00B1 95% CI)") +
+       y = "Temperature sensitivity\n[days / \u00B0C]") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -1046,7 +1046,7 @@ slopes_grp_year_mean_plt <- ggplot() +
   
   # add labels
   labs(x = "Group",
-       y = "Shift over time\n[days / decade]\n(\u00B1 95% CI)") +
+       y = "Temporal shift\n[days / decade]") +
   
   # add coloring
   scale_color_manual(name   = "Group",
@@ -1203,8 +1203,8 @@ slopes_grp_all_corr_plt <- ggplot() +
   facet_wrap( ~ id.grp) + 
   
   # improve axis lables 
-  labs(x = "Shift over time [days / decade] (\u00B1 95% CI)",
-       y = "Shift with temperature\n[days / \u00B0C]\n(\u00B1 95% CI)") +
+  labs(x = "Temporal shift [days / decade]",
+       y = "Temperature sensitivity \n[days / \u00B0C]") +
   
   # add coloring
   scale_color_manual(name   = "Group",
