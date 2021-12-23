@@ -30,9 +30,6 @@ keys.poll <- taxize::get_gbifid(polltax, ask = FALSE,  messages = FALSE,
 
 # count number of keys returned
 n.keys.poll <- length(keys.poll)
-
-# convert poll keys to string
-keys.poll <- paste(keys.poll, collapse = ",")
  
 # Select plant species ---------------------------------
 
@@ -41,7 +38,9 @@ plant_traits <- read.csv("static_data/bioflor_traits.csv")
 
 # get taxon keys from species list
 keys.plant <- plant_traits %>%
-  extract2("GbifKey")
+  extract2("GbifKey") %>% 
+  as.integer() %>% 
+  as.character()
 
 # count number of keys returned
 n.keys.plant <- length(keys.plant)
@@ -50,7 +49,7 @@ n.keys.plant <- length(keys.plant)
 # break up occurrence requests, as requests have a character limit --------
 
 # max characters in one substring
-str.max <- 8000
+str.max <- 10000
 
 # median length of keys + 1 for separating commas later on
 key.length <- median(str_length(keys.plant) + 1) 
@@ -92,18 +91,19 @@ dl.list <- list()
 basisOfRecord <- c("HUMAN_OBSERVATION", "PRESERVED_SPECIMEN", "LIVING_SPECIMEN",
                    "OBSERVATION")
 
-country       <- "DE"
-
-hasCoordinate <- TRUE
+country          <- "DE"
+hasCoordinate    <- TRUE
+occurrenceStatus <- "PRESENT"
 
 # construct calls for occ dl queue
 for (i in seq_along(key.list)) {
   
   dl.list[[i]] <- occ_download_prep(
-    pred(   "country",       country),
-    pred(   "hasCoordinate", hasCoordinate),
-    pred_in("basisOfRecord", basisOfRecord),
-    pred_in("taxonKey",      key.list[[i]])
+    pred(   "country",          country),
+    pred(   "hasCoordinate",    hasCoordinate),
+    pred(   "occurrenceStatus", occurrenceStatus),
+    pred_in("basisOfRecord",    basisOfRecord),
+    pred_in("taxonKey",         key.list[[i]])
   )
   
 }
