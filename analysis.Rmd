@@ -328,6 +328,13 @@ if (run.traits.get | force.traits.get) {
   source('scripts/get_bioflor_traits.R')
 }
 
+if (!file.exists(paste0("static_data/plant_pollinator_interactions_for_",
+                        "potential_networks_2018.csv"))) {
+  stop(paste0("Interaction data not found, please download and place the",
+              "file in the static_data directory.\nDownload from ",
+              "'https://doi.org/10.5285/6d8d5cb5-bd54-4da7-903a-15bd4bbd531b'."))
+}
+
 ```
 
 
