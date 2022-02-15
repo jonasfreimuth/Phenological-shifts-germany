@@ -71,7 +71,7 @@ on.exit(options("log_file" = NULL), add = TRUE)
 select_cols <- c('family', 'species', 'year', 'doy',
                  'decade', 'id.grp', 'long', 'lat', 'temp', 'elev')
 
-log_msg("Loading and centering data...")
+log_msg("Loading data...")
 
 
 dat.occ <- fread(dat_occ_file,
