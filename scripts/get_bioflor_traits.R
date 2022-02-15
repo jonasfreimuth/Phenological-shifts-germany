@@ -1,6 +1,9 @@
 
 # # download previously compiled dataset from github, as this script tends to 
 # #   fail and needs to be restarted which can be quite tedious
+# # also the data at the link might slightly differ from the data gotten from 
+# #   running this script fresh due to changes in the gbif taxonomy or, less 
+# #   likely in BiolFlor
 # download.file(paste0("https://raw.githubusercontent.com/jonasfreimuth/",
 #                      "Phenological-shifts-germany/first_submission_analysis",
 #                      "/static_data/bioflor_traits.csv"),
@@ -57,6 +60,10 @@ ger_rx_vec <- c(
 
 # just to be save, run functions script
 source("scripts/functions.R")
+
+# Check prerequisites -----------------------------------------------------
+
+dir.check("download")
 
 # Compile list of plant species with their traits from BioFlor ------------
 
