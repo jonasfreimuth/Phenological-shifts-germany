@@ -1974,11 +1974,13 @@ slopes_temp_polldep <- slopes_temp %>%
 slopes_year_polldep <- slopes_year %>% 
   drop_na(PollDep)
 
+join_vec <- unique(c("group",
+                     names(tax_df),
+                     names(plant_traits)))
+
 slopes_all_polldep <- left_join(slopes_temp_polldep,
                                 slopes_year_polldep,
-                                by = c("group",
-                                       names(tax_df),
-                                       names(plant_traits)[-1]),
+                                by = join_vec,
                                 suffix = c("_temp", "_year")) %>% 
   select(- contains("main_var"))
 ```
