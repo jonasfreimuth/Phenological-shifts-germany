@@ -1,15 +1,15 @@
 
-# # download previously compiled dataset from github, as this script tends to 
-# #   fail and needs to be restarted which can be quite tedious
-# # also the data at the link might slightly differ from the data gotten from 
-# #   running this script fresh due to changes in the gbif taxonomy or, less 
-# #   likely in BiolFlor
-# download.file(paste0("https://raw.githubusercontent.com/jonasfreimuth/",
-#                      "Phenological-shifts-germany/first_submission_analysis",
-#                      "/static_data/bioflor_traits.csv"),
-#               "static_data/bioflor_traits.csv")
-# 
-# warning("Downloaded old plant trait data from github instead of running script")
+# download previously compiled dataset from github, as this script tends to 
+#   fail and needs to be restarted which can be quite tedious
+# also the data at the link might slightly differ from the data gotten from 
+#   running this script fresh due to changes in the gbif taxonomy or, less 
+#   likely in BiolFlor
+download.file(paste0("https://raw.githubusercontent.com/jonasfreimuth/",
+                     "Phenological-shifts-germany/first_submission_analysis",
+                     "/static_data/bioflor_traits.csv"),
+              "static_data/bioflor_traits.csv")
+
+warning("Downloaded old plant trait data from github instead of running script")
 
 # Setup -------------------------------------------------------------------
 
@@ -61,228 +61,228 @@ ger_rx_vec <- c(
 # just to be save, run functions script
 source("scripts/functions.R")
 
-# Check prerequisites -----------------------------------------------------
-
-dir.check("download")
-
-# Compile list of plant species with their traits from BioFlor ------------
-
-
-max_rows <- 4000
-
-#initiate data frame
-plant_traits <- setNames(data.frame(
-  matrix(ncol = 19,
-         nrow = max_rows)),
-  c("AccName", "GbifKey", "OrigName", "species", "bioflor_id",  "LifeForm",
-    "LifeSpan", "FlStart", "FlEnd", "FlDur", "ReprType", "Dicliny", "Dichogamy",
-    "SelfComp", "PollVec", "PollVecGrp", "BreedSys", "FlowClass", "Habitat"))
-
-# for loop to scrape traits from each species page,
-# yes a while loop might be better but i cant be
-# asked to change it since the indexing relies on it
-for (i in 0:max_rows) {
-  
-  # get index
-  p <- i + 1
-  
-  # download bioflor page
-  # if an error occurs, catch that and continue
-  pagetext <- tryCatch(read_html(
-    paste("https://www.ufz.de/biolflor/taxonomie/taxonomie.jsp?ID_Taxonomie=",
-          i, sep = ""),
-    options = c("NOERROR", "RECOVER")) %>%
-      html_text(),
-    error = function(e) {
-      cat("Error while retreiving page, end probably reached\n")
-    }
-  )
-  
-  # if the error actually means the end is reached and we
-  #   don't have a pagetext, stop
-  if(is.null(pagetext)) {
-    
-    # wait half a minute and try again
-    Sys.sleep(30)
-    
-    pagetext <- tryCatch(read_html(
-      paste("https://www.ufz.de/biolflor/taxonomie/taxonomie.jsp?ID_Taxonomie=",
-            i, sep = ""),
-      options = c("NOERROR", "RECOVER")) %>%
-        html_text(),
-      error = function(e) {
-        cat("Error while retreiving page, end probably reached")
-      }
-    )
-    
-    # if it's still null stop the loop
-    if (is.null(pagetext)) { break }
-    
-  }
-  
-  # use right set of regex for the language,
-  # check if the end of bioflor is reached
-  if (str_detect(pagetext, "german name")) {
-    
-    # extract scientific name
-    OrigName <- pagetext %>%
-      str_extract_all(
-        "(?<=german name\\(s\\)\\s{10}).+"
-      ) %>%
-      paste() %>%
-      as.character() %>%
-      gsub(x = ., pattern = "\\([^\\)]{10,}\\)$", replacement = "") %>%
-      gsub(x = ., pattern = "excl\\..+$", replacement = "")
-    
-    # extract traits data
-    traits_i <- get_traits(pagetext,
-                           names(plant_traits)[6:length(names(plant_traits))],
-                           eng_rx_vec)
-    
-  } else if (str_detect(pagetext, "Deutsche\\(r\\) Name\\(n\\)")) {
-    
-    #extract scientific name
-    OrigName <- pagetext %>%
-      str_extract_all(
-        "(?<=Deutsche\\(r\\) Name\\(n\\)\\s{10}).+"
-      ) %>%
-      paste() %>%
-      as.character() %>%
-      gsub(x = ., pattern = "\\([^\\)]{10,}\\)$", replacement = "") %>%
-      gsub(x = ., pattern = "excl\\..+$", replacement = "")
-    
-    #extract traits data
-    traits_i <- get_traits(pagetext,
-                           names(plant_traits)[6:length(names(plant_traits))],
-                           ger_rx_vec)
-    
-  }
-  
-  
-  if (any(grep("agg\\.", OrigName))) {
-    
-    # next if the taxon is a conglomerate
-    plant_traits$OrigName[p] <- OrigName
-    
-    next
-    
-  } else if (any(grep("sect\\.", OrigName))) {
-    
-    # next if the taxon is a section of something
-    plant_traits$OrigName[p] <- OrigName
-    
-    next
-    
-  }
-  
-  #get gbif key and the most accepted name
-  #pretty hacky, might clean up later
-  keyname <- get_gbifid_(OrigName, messages = FALSE)[[1]]
-  
-  if (nrow(keyname) == 0) {
-    
-    #no names found, return NAs
-    keyname <- data.frame(AccName = NA,
-                          GbifKey = NA,
-                          stringsAsFactors = FALSE)
-    
-  } else {
-    
-    #get just the first row of the results
-    data <- keyname[1, ]
-    
-    if (anyNA(data$rank) | data$rank != "species") {
-      
-      #if we have a NA or not a species, return NA
-      keyname <- data.frame(
-        AccName = NA,
-        GbifKey = NA,
-        stringsAsFactors = FALSE)
-      
-    } else if (data$status == "ACCEPTED") {
-      
-      #it's an accepted name! Let's write that down!
-      keyname <- data.frame(
-        AccName = as.character(data$scientificname),
-        GbifKey = as.character(data$usagekey),
-        stringsAsFactors = FALSE)
-      
-    } else if (any(data$status == "SYNONYM", data$status == "DOUBTFUL") &
-               data$matchtype == "EXACT") {
-      
-      #if its an exact match, but the status is doubtful, get the usageKey
-      #and with that, determine the accepted name
-      keyname <- data.frame(
-        AccName = as.character(name_usage(
-          key = data$specieskey)$data$scientificName),
-        GbifKey = as.character(data$specieskey),
-        stringsAsFactors = FALSE)
-      
-    } else {
-      
-      #nothing above worked? return NA
-      keyname <- data.frame(
-        AccName = NA,
-        GbifKey = NA,
-        stringsAsFactors = FALSE)
-      
-    }
-  }
-  
-  #add original name
-  keyname$OrigName <- OrigName
-  
-  #extract species name
-  keyname$species <- str_extract(keyname$AccName, "^\\w+\\s\\w+")
-  
-  #save bioflor id
-  keyname$bioflor_id <- i
-  
-  row <- cbind(keyname, traits_i)
-  
-  plant_traits[p,] <- row[1,]
-  
-  cat(i, ": ", OrigName, ";   ", "\n", sep = "")
-  
-}
-
-# remove rows without species name
-plant_traits <- drop_na(plant_traits, species)
-
-# replace empty cells with NA
-plant_traits <- na_if(plant_traits, "")
-
-# save raw traits
-# done to preserve info abt duplicate species
-fwrite(plant_traits, "download/bioflor_traits_raw.csv")
-
-plant_traits <- fread("download/bioflor_traits_raw.csv",
-                      na.strings = c("", "NA"))
-
-# remove duplicate species, keeping trait information
-plant_traits <- plant_traits %>% 
-  select(- bioflor_id) %>% 
-  mutate(across(c(FlStart, FlEnd, FlDur),
-                ~ as.numeric(.x))) %>% 
-  group_by(species, GbifKey) %>% 
-  summarise(across(c(LifeForm, LifeSpan, ReprType:Habitat),
-                   ~ paste(.x, collapse = ", ") %>% 
-                     str_split(", ") %>% 
-                     lapply(unique) %>% 
-                     lapply(na_rm_str) %>% 
-                     lapply(sort) %>% 
-                     lapply(paste, collapse = ", ") %>% 
-                     unlist()), 
-            across(where(is.numeric),
-                   ~ mean(.x, na.rm = TRUE))) %>% 
-  ungroup() %>% 
-  mutate(across(everything(),
-                ~ na_if(.x, ""),
-                ~ na_if(.x, "NA"),
-                ~ na_if(.x, "NaN")))
-
-#save trait table
-fwrite(plant_traits, "static_data/bioflor_traits.csv")
+# # Check prerequisites -----------------------------------------------------
+# 
+# dir.check("download")
+# 
+# # Compile list of plant species with their traits from BioFlor ------------
+# 
+# 
+# max_rows <- 4000
+# 
+# #initiate data frame
+# plant_traits <- setNames(data.frame(
+#   matrix(ncol = 19,
+#          nrow = max_rows)),
+#   c("AccName", "GbifKey", "OrigName", "species", "bioflor_id",  "LifeForm",
+#     "LifeSpan", "FlStart", "FlEnd", "FlDur", "ReprType", "Dicliny", "Dichogamy",
+#     "SelfComp", "PollVec", "PollVecGrp", "BreedSys", "FlowClass", "Habitat"))
+# 
+# # for loop to scrape traits from each species page,
+# # yes a while loop might be better but i cant be
+# # asked to change it since the indexing relies on it
+# for (i in 0:max_rows) {
+#   
+#   # get index
+#   p <- i + 1
+#   
+#   # download bioflor page
+#   # if an error occurs, catch that and continue
+#   pagetext <- tryCatch(read_html(
+#     paste("https://www.ufz.de/biolflor/taxonomie/taxonomie.jsp?ID_Taxonomie=",
+#           i, sep = ""),
+#     options = c("NOERROR", "RECOVER")) %>%
+#       html_text(),
+#     error = function(e) {
+#       cat("Error while retreiving page, end probably reached\n")
+#     }
+#   )
+#   
+#   # if the error actually means the end is reached and we
+#   #   don't have a pagetext, stop
+#   if(is.null(pagetext)) {
+#     
+#     # wait half a minute and try again
+#     Sys.sleep(30)
+#     
+#     pagetext <- tryCatch(read_html(
+#       paste("https://www.ufz.de/biolflor/taxonomie/taxonomie.jsp?ID_Taxonomie=",
+#             i, sep = ""),
+#       options = c("NOERROR", "RECOVER")) %>%
+#         html_text(),
+#       error = function(e) {
+#         cat("Error while retreiving page, end probably reached")
+#       }
+#     )
+#     
+#     # if it's still null stop the loop
+#     if (is.null(pagetext)) { break }
+#     
+#   }
+#   
+#   # use right set of regex for the language,
+#   # check if the end of bioflor is reached
+#   if (str_detect(pagetext, "german name")) {
+#     
+#     # extract scientific name
+#     OrigName <- pagetext %>%
+#       str_extract_all(
+#         "(?<=german name\\(s\\)\\s{10}).+"
+#       ) %>%
+#       paste() %>%
+#       as.character() %>%
+#       gsub(x = ., pattern = "\\([^\\)]{10,}\\)$", replacement = "") %>%
+#       gsub(x = ., pattern = "excl\\..+$", replacement = "")
+#     
+#     # extract traits data
+#     traits_i <- get_traits(pagetext,
+#                            names(plant_traits)[6:length(names(plant_traits))],
+#                            eng_rx_vec)
+#     
+#   } else if (str_detect(pagetext, "Deutsche\\(r\\) Name\\(n\\)")) {
+#     
+#     #extract scientific name
+#     OrigName <- pagetext %>%
+#       str_extract_all(
+#         "(?<=Deutsche\\(r\\) Name\\(n\\)\\s{10}).+"
+#       ) %>%
+#       paste() %>%
+#       as.character() %>%
+#       gsub(x = ., pattern = "\\([^\\)]{10,}\\)$", replacement = "") %>%
+#       gsub(x = ., pattern = "excl\\..+$", replacement = "")
+#     
+#     #extract traits data
+#     traits_i <- get_traits(pagetext,
+#                            names(plant_traits)[6:length(names(plant_traits))],
+#                            ger_rx_vec)
+#     
+#   }
+#   
+#   
+#   if (any(grep("agg\\.", OrigName))) {
+#     
+#     # next if the taxon is a conglomerate
+#     plant_traits$OrigName[p] <- OrigName
+#     
+#     next
+#     
+#   } else if (any(grep("sect\\.", OrigName))) {
+#     
+#     # next if the taxon is a section of something
+#     plant_traits$OrigName[p] <- OrigName
+#     
+#     next
+#     
+#   }
+#   
+#   #get gbif key and the most accepted name
+#   #pretty hacky, might clean up later
+#   keyname <- get_gbifid_(OrigName, messages = FALSE)[[1]]
+#   
+#   if (nrow(keyname) == 0) {
+#     
+#     #no names found, return NAs
+#     keyname <- data.frame(AccName = NA,
+#                           GbifKey = NA,
+#                           stringsAsFactors = FALSE)
+#     
+#   } else {
+#     
+#     #get just the first row of the results
+#     data <- keyname[1, ]
+#     
+#     if (anyNA(data$rank) | data$rank != "species") {
+#       
+#       #if we have a NA or not a species, return NA
+#       keyname <- data.frame(
+#         AccName = NA,
+#         GbifKey = NA,
+#         stringsAsFactors = FALSE)
+#       
+#     } else if (data$status == "ACCEPTED") {
+#       
+#       #it's an accepted name! Let's write that down!
+#       keyname <- data.frame(
+#         AccName = as.character(data$scientificname),
+#         GbifKey = as.character(data$usagekey),
+#         stringsAsFactors = FALSE)
+#       
+#     } else if (any(data$status == "SYNONYM", data$status == "DOUBTFUL") &
+#                data$matchtype == "EXACT") {
+#       
+#       #if its an exact match, but the status is doubtful, get the usageKey
+#       #and with that, determine the accepted name
+#       keyname <- data.frame(
+#         AccName = as.character(name_usage(
+#           key = data$specieskey)$data$scientificName),
+#         GbifKey = as.character(data$specieskey),
+#         stringsAsFactors = FALSE)
+#       
+#     } else {
+#       
+#       #nothing above worked? return NA
+#       keyname <- data.frame(
+#         AccName = NA,
+#         GbifKey = NA,
+#         stringsAsFactors = FALSE)
+#       
+#     }
+#   }
+#   
+#   #add original name
+#   keyname$OrigName <- OrigName
+#   
+#   #extract species name
+#   keyname$species <- str_extract(keyname$AccName, "^\\w+\\s\\w+")
+#   
+#   #save bioflor id
+#   keyname$bioflor_id <- i
+#   
+#   row <- cbind(keyname, traits_i)
+#   
+#   plant_traits[p,] <- row[1,]
+#   
+#   cat(i, ": ", OrigName, ";   ", "\n", sep = "")
+#   
+# }
+# 
+# # remove rows without species name
+# plant_traits <- drop_na(plant_traits, species)
+# 
+# # replace empty cells with NA
+# plant_traits <- na_if(plant_traits, "")
+# 
+# # save raw traits
+# # done to preserve info abt duplicate species
+# fwrite(plant_traits, "download/bioflor_traits_raw.csv")
+# 
+# plant_traits <- fread("download/bioflor_traits_raw.csv",
+#                       na.strings = c("", "NA"))
+# 
+# # remove duplicate species, keeping trait information
+# plant_traits <- plant_traits %>% 
+#   select(- bioflor_id) %>% 
+#   mutate(across(c(FlStart, FlEnd, FlDur),
+#                 ~ as.numeric(.x))) %>% 
+#   group_by(species, GbifKey) %>% 
+#   summarise(across(c(LifeForm, LifeSpan, ReprType:Habitat),
+#                    ~ paste(.x, collapse = ", ") %>% 
+#                      str_split(", ") %>% 
+#                      lapply(unique) %>% 
+#                      lapply(na_rm_str) %>% 
+#                      lapply(sort) %>% 
+#                      lapply(paste, collapse = ", ") %>% 
+#                      unlist()), 
+#             across(where(is.numeric),
+#                    ~ mean(.x, na.rm = TRUE))) %>% 
+#   ungroup() %>% 
+#   mutate(across(everything(),
+#                 ~ na_if(.x, ""),
+#                 ~ na_if(.x, "NA"),
+#                 ~ na_if(.x, "NaN")))
+# 
+# #save trait table
+# fwrite(plant_traits, "static_data/bioflor_traits.csv")
 
 
 # Add degrees of pollinator dependence ------------------------------------
