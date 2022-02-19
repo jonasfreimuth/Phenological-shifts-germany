@@ -1198,10 +1198,10 @@ slopes_grp_all_corr_plt <- ggplot() +
                                  max(slopes_all$slope_year))),
                       y = ypos(slopes_all$slope_temp, frac = 0.5),
                       
-                      label = str_glue("n = {n_spec_temp}, ",
-                                       "r = {round(cor, 2)}\n{pval.sig}")),
+                      label = str_glue("~italic(r) == {round(cor, 2)}")),
                   col  = col.annot,
-                  size = size.annot.txt) +
+                  size = size.annot.txt,
+                  parse = TRUE) +
   
   # adjust ylim to fit text
   ylim(c(min(slopes_all$slope_temp), max(slopes_all$slope_temp) * 2)) +
@@ -1241,7 +1241,7 @@ over time and with temperature.
 int_data <- read.csv(paste0("static_data/",
                            "plant_pollinator_interactions_for_potential_",
                            "networks_2018.csv")) %>%
-  
+    
   # make names less unwieldy
   rename(poll = POLLINATOR_NAME, plant = PLANT_NAME, group = Group) %>%
   
@@ -1253,7 +1253,7 @@ int_data <- read.csv(paste0("static_data/",
     plant %in% unique(dat.occ$species) &
     poll  %in% unique(dat.occ$species)
     ) %>% 
-  
+    
   # add the plant trait data to the interactions
   left_join(plant_traits,
             by = c("plant" = "species")) %>%
