@@ -1,7 +1,7 @@
 # Phenological-shifts-germany
 
-R scripts for the analysis of shifts in phenology of plants and their pollinators in Germany. The latest preprint of the manuscript can be found on 
-[bioRxiv](https://doi.org/10.1101/2021.01.10.425984).
+R scripts for the analysis of shifts in phenology of plants and their pollinators in Germany. The artcile is now published
+in Proceedings of the Royal Society B ([DOI:10.1098/rspb.2021.2142](https://doi.org/10.1098/rspb.2021.2142)).
 
 ## Requirements
 
